@@ -100,8 +100,10 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     return "text-foreground";
   };
 
-  const isYearEnd = (month: string) => {
-    return month.includes("Dec");
+  const isYearStart = (month: string, index: number) => {
+    if (index === initialData.length - 1) return false;
+    const nextMonth = initialData[index + 1]?.month;
+    return month.includes("Dec") && nextMonth?.includes("Jan");
   };
 
   return (
@@ -131,7 +133,7 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                   key={row.month} 
                   className={cn(
                     "group",
-                    isYearEnd(row.month) && "border-b-2 border-gray-300"
+                    isYearStart(row.month, index) && "border-b-2 border-gray-300"
                   )}
                 >
                   <TableCell className="font-medium">{row.month}</TableCell>
