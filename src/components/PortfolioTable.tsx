@@ -100,6 +100,13 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     return "text-foreground";
   };
 
+  const isYearTransition = (currentMonth: string, prevMonth: string | undefined) => {
+    if (!prevMonth) return false;
+    const [currentMonthName, currentYear] = currentMonth.split(" ");
+    const [prevMonthName, prevYear] = prevMonth.split(" ");
+    return currentMonthName === "Jan" && prevMonthName === "Dec" && currentYear !== prevYear;
+  };
+
   return (
     <Card className="animate-fade-in">
       <CardHeader>
@@ -122,41 +129,49 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
               </TableRow>
             </TableHeader>
             <TableBody>
-              {initialData.map((row) => (
-                <TableRow 
-                  key={row.month} 
-                  className="group hover:bg-muted/50"
-                >
-                  <TableCell className="font-medium">{row.month}</TableCell>
-                  <TableCell className="text-right">
-                    ${row.value.toLocaleString()}
-                  </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(row.netFlow))}>
-                    ${row.netFlow.toLocaleString()}
-                  </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(row.ytdNetFlow))}>
-                    ${row.ytdNetFlow.toLocaleString()}
-                  </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(row.monthlyGain))}>
-                    ${row.monthlyGain.toLocaleString()}
-                  </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(row.monthlyReturn))}>
-                    {row.monthlyReturn}%
-                  </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(row.ytdGain))}>
-                    ${row.ytdGain.toLocaleString()}
-                  </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(row.ytdReturn))}>
-                    {row.ytdReturn}%
-                  </TableCell>
-                  <TableCell>
-                    <EditRowSheet 
-                      row={row} 
-                      onSave={(values) => handleSave(row, values)} 
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {initialData.map((row, index) => {
+                const prevMonth = index > 0 ? initialData[index - 1].month : undefined;
+                const yearTransition = isYearTransition(row.month, prevMonth);
+                
+                return (
+                  <TableRow 
+                    key={row.month} 
+                    className={cn(
+                      "group hover:bg-muted/50",
+                      yearTransition && "border-t-[6px] border-t-black"
+                    )}
+                  >
+                    <TableCell className="font-medium">{row.month}</TableCell>
+                    <TableCell className="text-right">
+                      ${row.value.toLocaleString()}
+                    </TableCell>
+                    <TableCell className={cn("text-right", getValueColor(row.netFlow))}>
+                      ${row.netFlow.toLocaleString()}
+                    </TableCell>
+                    <TableCell className={cn("text-right", getValueColor(row.ytdNetFlow))}>
+                      ${row.ytdNetFlow.toLocaleString()}
+                    </TableCell>
+                    <TableCell className={cn("text-right", getValueColor(row.monthlyGain))}>
+                      ${row.monthlyGain.toLocaleString()}
+                    </TableCell>
+                    <TableCell className={cn("text-right", getValueColor(row.monthlyReturn))}>
+                      {row.monthlyReturn}%
+                    </TableCell>
+                    <TableCell className={cn("text-right", getValueColor(row.ytdGain))}>
+                      ${row.ytdGain.toLocaleString()}
+                    </TableCell>
+                    <TableCell className={cn("text-right", getValueColor(row.ytdReturn))}>
+                      {row.ytdReturn}%
+                    </TableCell>
+                    <TableCell>
+                      <EditRowSheet 
+                        row={row} 
+                        onSave={(values) => handleSave(row, values)} 
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
