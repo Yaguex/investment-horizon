@@ -14,6 +14,7 @@ export interface PortfolioDataPoint {
   ytdGain: number;
   ytdReturn: string;
   ytdNetFlow: number;
+  accumulatedReturn: number;  // New field for accumulated monthly return
 }
 
 const formatDate = (dateStr: string) => {
@@ -45,7 +46,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   
   const result = sortedData.map((item) => {
     const formattedMonth = formatDate(item.month);
-    console.log(`Processing row: ${item.month} -> ${formattedMonth}`);
+    console.log(`Processing month: ${item.month} -> ${formattedMonth}`);
     
     const dataPoint = {
       month: formattedMonth,
@@ -58,6 +59,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
       ytdGain: Number(item.ytd_gain),
       ytdReturn: item.ytd_return.toFixed(2),
       ytdNetFlow: Number(item.ytd_flows),
+      accumulatedReturn: Number(item.accumulated_mom_return || 0), // Include the new field with fallback
     };
     console.log('Processed data point:', dataPoint);
     return dataPoint;
@@ -136,6 +138,7 @@ export const usePortfolioData = () => {
       mom_return: parseFloat(updatedRow.monthlyReturn),
       ytd_gain: updatedRow.ytdGain,
       ytd_return: parseFloat(updatedRow.ytdReturn),
+      accumulated_mom_return: updatedRow.accumulatedReturn,
     });
     
     const { error } = await supabase
@@ -148,6 +151,7 @@ export const usePortfolioData = () => {
         mom_return: parseFloat(updatedRow.monthlyReturn),
         ytd_gain: updatedRow.ytdGain,
         ytd_return: parseFloat(updatedRow.ytdReturn),
+        accumulated_mom_return: updatedRow.accumulatedReturn,
       })
       .eq('month', dateStr)
       .eq('profile_id', user.id);
@@ -174,6 +178,7 @@ export const usePortfolioData = () => {
       ytdGain: 0,
       ytdReturn: '0',
       ytdNetFlow: 0,
+      accumulatedReturn: 0,
     },
     updateData,
     isLoading,
