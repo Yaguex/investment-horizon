@@ -20,44 +20,18 @@ const MONTHS = [
 ];
 
 const formatDate = (dateStr: string) => {
-  console.log('Formatting date:', dateStr);
+  console.log('Formatting date input:', dateStr);
   const date = new Date(dateStr);
   const month = MONTHS[date.getMonth()];
   const year = date.getFullYear();
   const formattedDate = `${month} ${year}`;
-  console.log('Formatted date:', formattedDate);
+  console.log('Formatted date output:', formattedDate);
   return formattedDate;
 };
 
 const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   console.log('Raw data from DB:', data);
   console.log('Number of rows from DB:', data.length);
-  
-  // Generate expected dates from Nov 2021 to Nov 2024
-  const expectedDates = [];
-  let currentDate = new Date('2021-11-01');
-  const endDate = new Date('2024-11-30');
-  
-  while (currentDate <= endDate) {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    // Get the last day of the current month
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    expectedDates.push(
-      new Date(year, month, lastDay)
-        .toISOString()
-        .split('T')[0]
-    );
-    currentDate.setMonth(currentDate.getMonth() + 1);
-  }
-  
-  console.log('Expected dates:', expectedDates);
-  console.log('Actual dates in data:', data.map(d => d.month));
-  
-  // Find missing dates
-  const actualDates = new Set(data.map(d => d.month));
-  const missingDates = expectedDates.filter(date => !actualDates.has(date));
-  console.log('Missing dates:', missingDates);
   
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => {
@@ -112,23 +86,48 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       
-      // Use a single query that ensures we get ALL months in our range
+      // Try Claude's suggestion with explicit ISO dates
       const { data: portfolioData, error } = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .gte('month', '2021-11-01')  // Start from November 2021
-        .lte('month', '2024-11-30')  // End at November 2024
+        .gte('month', '2021-11-01T00:00:00.000Z')
+        .lte('month', '2024-11-30T23:59:59.999Z')
         .order('month', { ascending: false });
-      
+
       if (error) {
         console.error('Error fetching portfolio data:', error);
         throw error;
       }
+
+      // If no data, try alternative approach with between filter
+      if (!portfolioData?.length) {
+        console.log('No data found with ISO dates, trying between filter...');
+        const { data: altData, error: altError } = await supabase
+          .from('portfolio_data')
+          .select('*')
+          .eq('profile_id', user.id)
+          .filter('month', 'between', ['2021-11-01', '2024-11-30'])
+          .order('month', { ascending: false });
+
+        if (altError) {
+          console.error('Error with alternative query:', altError);
+          throw altError;
+        }
+
+        portfolioData = altData;
+      }
       
       console.log('Raw response from Supabase:', portfolioData);
       console.log('Number of rows returned from query:', portfolioData?.length);
-      return calculatePortfolioMetrics(portfolioData);
+
+      // Log all dates to debug
+      console.log('All dates:', portfolioData?.map(row => ({
+        month: row.month,
+        formatted: new Date(row.month).toISOString()
+      })));
+
+      return calculatePortfolioMetrics(portfolioData || []);
     },
     enabled: !!user,
   });
