@@ -69,25 +69,6 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
   const domainMin = Math.floor((minValue - padding) / 1000) * 1000;
   const domainMax = Math.ceil((maxValue + padding) / 1000) * 1000;
 
-  // Default props for Recharts components to suppress warnings
-  const xAxisProps = {
-    dataKey: "month",
-    tick: { fontSize: 12 },
-    interval: 2,
-  };
-
-  const yAxisProps = {
-    domain: [domainMin, domainMax],
-    tick: { fontSize: 12 },
-    tickCount: 6,
-    tickFormatter: (value: number) => `$${Math.round(value).toLocaleString()}`,
-  };
-
-  const referenceLineProps = {
-    stroke: "#94a3b8",
-    strokeDasharray: "3 3",
-  };
-
   return (
     <Card className="animate-fade-in">
       <CardHeader>
@@ -101,15 +82,25 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis {...xAxisProps} />
-              <YAxis {...yAxisProps} />
+              <XAxis 
+                dataKey="month"
+                tick={{ fontSize: 12 }}
+                interval={2}
+              />
+              <YAxis
+                domain={[domainMin, domainMax]}
+                tick={{ fontSize: 12 }}
+                tickCount={6}
+                tickFormatter={(value: number) => `$${Math.round(value).toLocaleString()}`}
+              />
               <Tooltip content={<CustomTooltip />} />
               {ascendingData.map((entry) => 
                 entry.month.includes("Dec") && (
                   <ReferenceLine
                     key={entry.month}
                     x={entry.month}
-                    {...referenceLineProps}
+                    stroke="#94a3b8"
+                    strokeDasharray="3 3"
                   />
                 )
               )}
