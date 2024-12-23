@@ -78,6 +78,7 @@ export const usePortfolioData = () => {
       const { data, error } = await supabase
         .from('portfolio_data')
         .select('*')
+        .eq('profile_id', user.id)
         .order('month', { ascending: false });
       
       if (error) {
