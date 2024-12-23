@@ -33,6 +33,27 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   console.log('Raw data from DB:', data);
   console.log('Number of rows from DB:', data.length);
   
+  // Generate expected dates from Dec 2021 to Dec 2024
+  const expectedDates = [];
+  let currentDate = new Date('2021-12-01');
+  const endDate = new Date('2024-12-31');
+  while (currentDate <= endDate) {
+    expectedDates.push(
+      new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+        .toISOString()
+        .split('T')[0]
+    );
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+  
+  console.log('Expected dates:', expectedDates);
+  console.log('Actual dates in data:', data.map(d => d.month));
+  
+  // Find missing dates
+  const actualDates = new Set(data.map(d => d.month));
+  const missingDates = expectedDates.filter(date => !actualDates.has(date));
+  console.log('Missing dates:', missingDates);
+  
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => {
     const dateA = new Date(a.month);
