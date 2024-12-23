@@ -28,8 +28,26 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
 
   const handleSave = async () => {
     try {
+      // Get the original date from the database for this row
+      const { data: existingData, error: fetchError } = await supabase
+        .from('portfolio_data')
+        .select('month')
+        .eq('profile_id', row.profileId)
+        .eq('month', row.originalDate)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching original date:', fetchError);
+        toast({
+          title: "Error",
+          description: "Failed to fetch original date. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       console.log('Saving row update to database:', {
-        month: row.month,
+        originalDate: row.originalDate,
         balance: editValues.value,
         flows: editValues.netFlow
       });
@@ -40,7 +58,8 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
           balance: Number(editValues.value),
           flows: Number(editValues.netFlow)
         })
-        .eq('month', row.month);
+        .eq('month', row.originalDate)
+        .eq('profile_id', row.profileId);
 
       if (error) {
         console.error('Error updating portfolio data:', error);

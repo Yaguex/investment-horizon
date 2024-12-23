@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface PortfolioDataPoint {
   month: string;
+  originalDate: string;  // The original ISO date from the database
+  profileId: string;     // The profile ID for the row
   value: number;
   netFlow: number;
   monthlyGain: number;
@@ -47,6 +49,8 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
     
     const dataPoint = {
       month: formattedMonth,
+      originalDate: item.month, // Store the original date for querying
+      profileId: item.profile_id, // Store the profile ID for querying
       value: Number(item.balance),
       netFlow: Number(item.flows),
       monthlyGain: Number(item.mom_gain),
@@ -118,7 +122,7 @@ export const usePortfolioData = () => {
       .from('portfolio_data')
       .select('month')
       .eq('profile_id', user.id)
-      .eq('month', updatedRow.month)
+      .eq('month', updatedRow.originalDate)
       .single();
     
     const dateStr = existingData?.month;
@@ -161,6 +165,8 @@ export const usePortfolioData = () => {
     data,
     latestData: data[0] || {
       month: '',
+      originalDate: '',
+      profileId: '',
       value: 0,
       netFlow: 0,
       monthlyGain: 0,
