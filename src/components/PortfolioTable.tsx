@@ -117,7 +117,7 @@ const PortfolioTable = () => {
                           <Edit className="h-4 w-4" />
                         </Button>
                       </SheetTrigger>
-                      <SheetContent>
+                      <SheetContent side="right">
                         <SheetHeader>
                           <SheetTitle>{editingRow?.month}</SheetTitle>
                         </SheetHeader>
