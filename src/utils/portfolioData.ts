@@ -8,6 +8,7 @@ export interface PortfolioDataPoint {
   monthlyReturn: string;
   ytdGain: number;
   ytdReturn: string;
+  ytdNetFlow: number;
 }
 
 export const generatePortfolioData = () => {
@@ -23,6 +24,7 @@ export const generatePortfolioData = () => {
   const endDate = new Date();
   let currentDate = startDate;
   
+  // Create initial data without YTD Net Flows
   while (currentDate <= endDate) {
     const month = months[currentDate.getMonth()];
     const year = currentDate.getFullYear();
@@ -46,13 +48,25 @@ export const generatePortfolioData = () => {
       monthlyReturn: monthlyReturn,
       ytdGain: Math.round(ytdGain),
       ytdReturn: ytdReturn,
+      ytdNetFlow: 0, // Initial value, will be calculated next
     });
     
     previousValue = value;
     currentDate.setMonth(currentDate.getMonth() + 1);
   }
+
+  // Calculate YTD Net Flows
+  const reversedData = [...data].reverse();
+  reversedData.forEach((item, index) => {
+    const [month, year] = item.month.split(" ");
+    const yearData = reversedData.filter(d => d.month.split(" ")[1] === year);
+    const monthIndex = months.indexOf(month);
+    const ytdData = yearData.filter(d => months.indexOf(d.month.split(" ")[0]) <= monthIndex);
+    const ytdNetFlow = ytdData.reduce((sum, d) => sum + d.netFlow, 0);
+    item.ytdNetFlow = ytdNetFlow;
+  });
   
-  return data.reverse(); // Return in descending order
+  return reversedData; // Return in descending order
 };
 
 export const usePortfolioData = () => {

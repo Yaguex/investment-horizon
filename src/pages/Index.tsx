@@ -14,10 +14,15 @@ const Index = () => {
       <main className="container mx-auto px-4 pt-24 pb-8">
         <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
         
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
           <MetricCard
             title="Portfolio Value"
             value={`$${latestData.value.toLocaleString()}`}
+            isNumeric={true}
+          />
+          <MetricCard
+            title="YTD Net Flows"
+            value={`$${latestData.ytdNetFlow.toLocaleString()}`}
             isNumeric={true}
           />
           <MetricCard

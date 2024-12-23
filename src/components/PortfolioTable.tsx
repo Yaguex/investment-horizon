@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Table,
   TableBody,
@@ -9,18 +8,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Edit } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { type PortfolioDataPoint } from "@/utils/portfolioData";
-import { useToast } from "@/components/ui/use-toast";
+import { EditRowSheet } from "./portfolio/EditRowSheet";
+import { cn } from "@/lib/utils";
 
 interface PortfolioTableProps {
   data: PortfolioDataPoint[];
@@ -28,17 +18,7 @@ interface PortfolioTableProps {
 }
 
 const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps) => {
-  const [editingRow, setEditingRow] = useState<PortfolioDataPoint | null>(null);
-  const [editValues, setEditValues] = useState({ value: "", netFlow: "" });
   const { toast } = useToast();
-
-  const handleEdit = (row: PortfolioDataPoint) => {
-    setEditingRow(row);
-    setEditValues({
-      value: row.value.toString(),
-      netFlow: row.netFlow.toString(),
-    });
-  };
 
   const calculateUpdatedRow = (
     originalRow: PortfolioDataPoint,
@@ -50,7 +30,6 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     const monthlyReturn = ((monthlyGain / previousValue) * 100).toFixed(2);
 
     // Find the first entry of the year for YTD calculations
-    // Instead of using findLast, we'll filter and get the last January entry
     const currentYear = originalRow.month.split(" ")[1];
     const yearStart = initialData
       .filter(item => 
@@ -63,6 +42,19 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     const ytdGain = newValue - startYearValue;
     const ytdReturn = ((ytdGain / startYearValue) * 100).toFixed(2);
 
+    // Calculate new YTD Net Flow
+    const [month, year] = originalRow.month.split(" ");
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+    const monthIndex = months.indexOf(month);
+    const yearData = initialData.filter(d => d.month.split(" ")[1] === year);
+    const ytdData = yearData
+      .filter(d => months.indexOf(d.month.split(" ")[0]) <= monthIndex)
+      .map(d => d.month === originalRow.month ? newNetFlow : d.netFlow);
+    const ytdNetFlow = ytdData.reduce((sum, flow) => sum + flow, 0);
+
     return {
       ...originalRow,
       value: newValue,
@@ -71,14 +63,13 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
       monthlyReturn,
       ytdGain,
       ytdReturn,
+      ytdNetFlow,
     };
   };
 
-  const handleSave = () => {
-    if (!editingRow) return;
-
-    const newValue = Number(editValues.value);
-    const newNetFlow = Number(editValues.netFlow);
+  const handleSave = (row: PortfolioDataPoint, values: { value: string; netFlow: string }) => {
+    const newValue = Number(values.value);
+    const newNetFlow = Number(values.netFlow);
 
     if (isNaN(newValue) || isNaN(newNetFlow)) {
       toast({
@@ -89,13 +80,12 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
       return;
     }
 
-    const updatedRow = calculateUpdatedRow(editingRow, newValue, newNetFlow);
-    const updatedData = initialData.map((row) =>
-      row.month === editingRow.month ? updatedRow : row
+    const updatedRow = calculateUpdatedRow(row, newValue, newNetFlow);
+    const updatedData = initialData.map((r) =>
+      r.month === row.month ? updatedRow : r
     );
 
     onDataUpdate(updatedData);
-    setEditingRow(null);
     
     toast({
       title: "Success",
@@ -123,6 +113,7 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                 <TableHead>Month</TableHead>
                 <TableHead className="text-right">Value</TableHead>
                 <TableHead className="text-right">Net Flows</TableHead>
+                <TableHead className="text-right">YTD Net Flows</TableHead>
                 <TableHead className="text-right">Monthly Gain</TableHead>
                 <TableHead className="text-right">Monthly Return</TableHead>
                 <TableHead className="text-right">YTD Gain</TableHead>
@@ -140,6 +131,9 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                   <TableCell className={cn("text-right", getValueColor(row.netFlow))}>
                     ${row.netFlow.toLocaleString()}
                   </TableCell>
+                  <TableCell className={cn("text-right", getValueColor(row.ytdNetFlow))}>
+                    ${row.ytdNetFlow.toLocaleString()}
+                  </TableCell>
                   <TableCell className={cn("text-right", getValueColor(row.monthlyGain))}>
                     ${row.monthlyGain.toLocaleString()}
                   </TableCell>
@@ -153,53 +147,10 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                     {row.ytdReturn}%
                   </TableCell>
                   <TableCell>
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="opacity-0 group-hover:opacity-100"
-                          onClick={() => handleEdit(row)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent>
-                        <SheetHeader>
-                          <SheetTitle>{row.month}</SheetTitle>
-                        </SheetHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid gap-2">
-                            <label htmlFor="value">Portfolio Value</label>
-                            <Input
-                              id="value"
-                              type="number"
-                              value={editValues.value}
-                              onChange={(e) =>
-                                setEditValues({ ...editValues, value: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <label htmlFor="netFlow">Net Flows</label>
-                            <Input
-                              id="netFlow"
-                              type="number"
-                              value={editValues.netFlow}
-                              onChange={(e) =>
-                                setEditValues({ ...editValues, netFlow: e.target.value })
-                              }
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2 mt-4">
-                          <Button variant="outline" onClick={() => setEditingRow(null)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleSave}>Save</Button>
-                        </div>
-                      </SheetContent>
-                    </Sheet>
+                    <EditRowSheet 
+                      row={row} 
+                      onSave={(values) => handleSave(row, values)} 
+                    />
                   </TableCell>
                 </TableRow>
               ))}
