@@ -69,7 +69,7 @@ export type Database = {
         Insert: {
           balance?: number | null
           flows?: number | null
-          id: number
+          id?: number
           mom_gain?: number | null
           mom_return?: number | null
           mom_return_accumulated?: number | null

@@ -72,7 +72,7 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
   return (
     <Card className="animate-fade-in">
       <CardHeader>
-        <CardTitle>Portfolio Value Over Time</CardTitle>
+        <CardTitle>Portfolio Value</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[400px] w-full">

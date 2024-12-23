@@ -66,7 +66,7 @@ const AccumulatedReturnChart = ({ data }: AccumulatedReturnChartProps) => {
   return (
     <Card className="animate-fade-in">
       <CardHeader>
-        <CardTitle>Accumulated Return Over Time</CardTitle>
+        <CardTitle>Accumulated Return</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[400px] w-full">
