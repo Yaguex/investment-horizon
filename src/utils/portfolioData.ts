@@ -89,7 +89,7 @@ export const usePortfolioData = () => {
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .order('month', { ascending: false });
+        .order('month', { ascending: false });  // Changed to order by month descending
       
       if (error) {
         console.error('Error fetching portfolio data:', error);
