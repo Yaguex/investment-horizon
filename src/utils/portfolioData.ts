@@ -31,6 +31,7 @@ const formatDate = (dateStr: string) => {
 
 const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   console.log('Raw data from DB:', data);
+  console.log('Number of rows from DB:', data.length);
   
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => {
@@ -70,6 +71,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   });
   
   console.log('Final processed and sorted data:', sortedResult);
+  console.log('Number of processed rows:', sortedResult.length);
   return sortedResult;
 };
 
@@ -83,20 +85,19 @@ export const usePortfolioData = () => {
       if (!user) throw new Error('User not authenticated');
       
       console.log('Fetching portfolio data for user:', user.id);
-      const { data, error } = await supabase
+      const { data: portfolioData, error } = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .order('month', { ascending: false })
-        .returns<any[]>();  // Add explicit return type
+        .order('month', { ascending: false });
       
       if (error) {
         console.error('Error fetching portfolio data:', error);
         throw error;
       }
       
-      console.log('Received portfolio data:', data);
-      return calculatePortfolioMetrics(data);
+      console.log('Number of rows returned from query:', portfolioData?.length);
+      return calculatePortfolioMetrics(portfolioData);
     },
     enabled: !!user,
   });
