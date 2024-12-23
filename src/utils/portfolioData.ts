@@ -14,10 +14,15 @@ export interface PortfolioDataPoint {
   ytdNetFlow: number;
 }
 
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
 const formatDate = (dateStr: string) => {
   console.log('Formatting date:', dateStr); // Debug log
   const date = new Date(dateStr);
-  const month = date.toLocaleString('default', { month: 'short' });
+  const month = MONTHS[date.getMonth()];
   const year = date.getFullYear();
   const formattedDate = `${month} ${year}`;
   console.log('Formatted date:', formattedDate); // Debug log
@@ -91,7 +96,7 @@ export const usePortfolioData = () => {
     
     // Convert the month string back to a date format
     const [month, year] = updatedRow.month.split(' ');
-    const monthIndex = new Date(Date.parse(`${month} 1, ${year}`)).getMonth();
+    const monthIndex = MONTHS.indexOf(month);
     const dateStr = new Date(Number(year), monthIndex, 1).toISOString().split('T')[0];
     
     console.log('Updating portfolio data:', {
