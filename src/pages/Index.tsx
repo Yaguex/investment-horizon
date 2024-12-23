@@ -6,7 +6,7 @@ import PortfolioTable from "@/components/PortfolioTable";
 import { usePortfolioData } from "@/utils/portfolioData";
 
 const Index = () => {
-  const { data, latestData, updateData } = usePortfolioData();
+  const { data, latestData } = usePortfolioData();
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -44,7 +44,7 @@ const Index = () => {
         </div>
 
         <div className="mt-8">
-          <PortfolioTable data={data} onDataUpdate={updateData} />
+          <PortfolioTable data={data} />
         </div>
       </main>
     </div>

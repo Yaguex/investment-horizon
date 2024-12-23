@@ -10,7 +10,6 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface EditRowSheetProps {
   row: PortfolioDataPoint;
-  onSave: (values: { value: string; netFlow: string }) => void;
 }
 
 export const EditRowSheet = ({ row }: EditRowSheetProps) => {
