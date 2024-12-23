@@ -2,48 +2,43 @@ import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
 import PortfolioChart from "@/components/PortfolioChart";
 import PortfolioTable from "@/components/PortfolioTable";
-import { PortfolioProvider, usePortfolio } from "@/contexts/PortfolioContext";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <PortfolioProvider>
-        <main className="container mx-auto px-4 pt-24 pb-8">
-          <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
-          <MetricCards />
-          <div className="mb-8">
-            <PortfolioChart />
-          </div>
-          <div>
-            <PortfolioTable />
-          </div>
-        </main>
-      </PortfolioProvider>
-    </div>
-  );
-};
+      
+      <main className="container mx-auto px-4 pt-24 pb-8">
+        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+        
+        <div className="grid gap-4 md:grid-cols-3 mb-8">
+          <MetricCard
+            title="Portfolio Value"
+            value="$125,430"
+            trend="up"
+          />
+          <MetricCard
+            title="YTD Gains"
+            value="$25,430"
+            trend="up"
+            isNumeric={true}
+          />
+          <MetricCard
+            title="YTD Return"
+            value="25.43%"
+            trend="up"
+            isNumeric={true}
+          />
+        </div>
 
-const MetricCards = () => {
-  const { portfolioData } = usePortfolio();
-  const latestData = portfolioData[0]; // Data is already sorted in descending order
+        <div className="mb-8">
+          <PortfolioChart />
+        </div>
 
-  return (
-    <div className="grid gap-4 md:grid-cols-3 mb-8">
-      <MetricCard
-        title="Portfolio Value"
-        value={`$${latestData.value.toLocaleString()}`}
-      />
-      <MetricCard
-        title="YTD Gains"
-        value={`$${latestData.ytdGain.toLocaleString()}`}
-        isNumeric={true}
-      />
-      <MetricCard
-        title="YTD Return"
-        value={`${latestData.ytdReturn}%`}
-        isNumeric={true}
-      />
+        <div>
+          <PortfolioTable />
+        </div>
+      </main>
     </div>
   );
 };
