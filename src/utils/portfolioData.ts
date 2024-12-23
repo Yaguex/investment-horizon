@@ -20,31 +20,31 @@ const MONTHS = [
 ];
 
 const formatDate = (dateStr: string) => {
-  console.log('Formatting date:', dateStr); // Debug log
+  console.log('Formatting date:', dateStr);
   const date = new Date(dateStr);
   const month = MONTHS[date.getMonth()];
   const year = date.getFullYear();
   const formattedDate = `${month} ${year}`;
-  console.log('Formatted date:', formattedDate); // Debug log
+  console.log('Formatted date:', formattedDate);
   return formattedDate;
 };
 
 const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
-  console.log('Raw data from DB:', data); // Debug log
+  console.log('Raw data from DB:', data);
   
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => {
     const dateA = new Date(a.month);
     const dateB = new Date(b.month);
-    console.log(`Comparing dates: ${dateA.toISOString()} vs ${dateB.toISOString()}`); // Debug log
+    console.log(`Comparing dates: ${dateA.toISOString()} vs ${dateB.toISOString()}`);
     return dateA.getTime() - dateB.getTime();
   });
   
-  console.log('Sorted data:', sortedData); // Debug log
+  console.log('Sorted data:', sortedData);
   
   const result = sortedData.map((item) => {
     const formattedMonth = formatDate(item.month);
-    console.log(`Processing month: ${item.month} -> ${formattedMonth}`); // Debug log
+    console.log(`Processing month: ${item.month} -> ${formattedMonth}`);
     
     const dataPoint = {
       month: formattedMonth,
@@ -56,7 +56,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
       ytdReturn: item.ytd_return.toFixed(2),
       ytdNetFlow: Number(item.ytd_flows),
     };
-    console.log('Processed data point:', dataPoint); // Debug log
+    console.log('Processed data point:', dataPoint);
     return dataPoint;
   });
   
@@ -69,7 +69,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
     return MONTHS.indexOf(monthB) - MONTHS.indexOf(monthA);
   });
   
-  console.log('Final processed and sorted data:', sortedResult); // Debug log
+  console.log('Final processed and sorted data:', sortedResult);
   return sortedResult;
 };
 
@@ -87,7 +87,8 @@ export const usePortfolioData = () => {
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .order('month', { ascending: false });
+        .order('month', { ascending: false })
+        .returns<any[]>();  // Add explicit return type
       
       if (error) {
         console.error('Error fetching portfolio data:', error);
@@ -104,7 +105,7 @@ export const usePortfolioData = () => {
     if (!user) throw new Error('User not authenticated');
     
     // Find the updated row
-    const updatedRow = newData[0]; // Since we're updating one row at a time
+    const updatedRow = newData[0];
     
     // Convert the month string back to a date format
     const [month, year] = updatedRow.month.split(' ');
