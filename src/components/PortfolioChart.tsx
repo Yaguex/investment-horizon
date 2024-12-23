@@ -125,7 +125,7 @@ const PortfolioChart = () => {
         <CardTitle>Portfolio Value Over Time</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[350px] w-full">
+        <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
