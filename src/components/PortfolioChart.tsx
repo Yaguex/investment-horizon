@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -18,25 +19,38 @@ const generateSampleData = () => {
   ];
   
   let value = 100000;
+  let previousValue = value;
   const startDate = new Date(2021, 6); // July 2021
   const endDate = new Date();
   let currentDate = startDate;
+  let yearStartValue = value;
   
   while (currentDate <= endDate) {
     const month = months[currentDate.getMonth()];
     const year = currentDate.getFullYear();
-    value = value * (1 + (Math.random() * 0.1 - 0.03));
     
-    const ytdReturn = ((value - 100000) / 100000) * 100;
-    const netFlow = Math.random() > 0.5 ? Math.round(Math.random() * 5000) : -Math.round(Math.random() * 5000);
+    // Reset YTD tracking at start of year
+    if (month === "Jan") {
+      yearStartValue = value;
+    }
+    
+    value = value * (1 + (Math.random() * 0.1 - 0.03));
+    const monthlyGain = value - previousValue;
+    const monthlyReturn = ((value - previousValue) / previousValue) * 100;
+    const ytdGain = value - yearStartValue;
+    const ytdReturn = ((value - yearStartValue) / yearStartValue) * 100;
     
     data.push({
       date: `${month} ${year}`,
       value: Math.round(value),
+      monthlyGain: Math.round(monthlyGain),
+      monthlyReturn: monthlyReturn.toFixed(2),
+      ytdGain: Math.round(ytdGain),
       ytdReturn: ytdReturn.toFixed(2),
-      netFlow
+      isYearEnd: month === "Dec"
     });
     
+    previousValue = value;
     currentDate.setMonth(currentDate.getMonth() + 1);
   }
   
@@ -45,20 +59,31 @@ const generateSampleData = () => {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const getReturnColor = (value: number) => {
+    const getValueColor = (value: number) => {
       if (value > 0) return "text-green-600";
       if (value < 0) return "text-red-600";
       return "text-foreground";
     };
 
+    const data = payload[0].payload;
+
     return (
       <div className="bg-white p-4 border rounded-lg shadow-lg">
-        <p className="font-bold">{label}</p>
+        <p className="font-bold mb-2">{label}</p>
         <p className="text-foreground">
-          Value: ${payload[0].value.toLocaleString()}
+          Portfolio Value: ${data.value.toLocaleString()}
         </p>
-        <p className={getReturnColor(Number(payload[0].payload.ytdReturn))}>
-          YTD Return: {payload[0].payload.ytdReturn}%
+        <p className={getValueColor(data.monthlyGain)}>
+          Monthly Gain: ${data.monthlyGain.toLocaleString()}
+        </p>
+        <p className={getValueColor(Number(data.monthlyReturn))}>
+          Monthly Return: {data.monthlyReturn}%
+        </p>
+        <p className={getValueColor(data.ytdGain)}>
+          YTD Gain: ${data.ytdGain.toLocaleString()}
+        </p>
+        <p className={getValueColor(Number(data.ytdReturn))}>
+          YTD Return: {data.ytdReturn}%
         </p>
       </div>
     );
@@ -98,9 +123,20 @@ const PortfolioChart = () => {
               <YAxis
                 domain={[domainMin, domainMax]}
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `$${(value / 1000)}k`}
+                tickCount={6}
+                tickFormatter={(value) => `$${value.toLocaleString()}`}
               />
               <Tooltip content={<CustomTooltip />} />
+              {data.map((entry) => 
+                entry.isYearEnd && (
+                  <ReferenceLine
+                    key={entry.date}
+                    x={entry.date}
+                    stroke="#gray"
+                    strokeDasharray="3 3"
+                  />
+                )
+              )}
               <Line
                 type="monotone"
                 dataKey="value"
