@@ -116,8 +116,8 @@ const PortfolioChart = () => {
   const maxValue = Math.max(...values);
   const minValue = Math.min(...values);
   const padding = (maxValue - minValue) * 0.1;
-  const domainMin = minValue - padding;
-  const domainMax = maxValue + padding;
+  const domainMin = Math.floor((minValue - padding) / 1000) * 1000;
+  const domainMax = Math.ceil((maxValue + padding) / 1000) * 1000;
 
   return (
     <Card className="animate-fade-in">
@@ -141,7 +141,7 @@ const PortfolioChart = () => {
                 domain={[domainMin, domainMax]}
                 tick={{ fontSize: 12 }}
                 tickCount={6}
-                tickFormatter={(value) => `$${value.toLocaleString()}`}
+                tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
               />
               <Tooltip content={<CustomTooltip />} />
               {data.map((entry) => 
@@ -149,7 +149,7 @@ const PortfolioChart = () => {
                   <ReferenceLine
                     key={entry.date}
                     x={entry.date}
-                    stroke="#gray"
+                    stroke="#94a3b8"
                     strokeDasharray="3 3"
                   />
                 )
