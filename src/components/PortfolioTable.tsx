@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -7,6 +8,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Edit } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const generateTableData = () => {
   const data = [];
@@ -54,7 +65,38 @@ const generateTableData = () => {
 };
 
 const PortfolioTable = () => {
-  const data = generateTableData();
+  const [data, setData] = useState(generateTableData());
+  const [editingRow, setEditingRow] = useState<any>(null);
+  const [editValues, setEditValues] = useState({ value: "", netFlow: "" });
+
+  const handleEdit = (row: any) => {
+    setEditingRow(row);
+    setEditValues({
+      value: row.value.toString(),
+      netFlow: row.netFlow.toString(),
+    });
+  };
+
+  const handleSave = () => {
+    const updatedData = data.map((row) => {
+      if (row.month === editingRow.month) {
+        return {
+          ...row,
+          value: Number(editValues.value),
+          netFlow: Number(editValues.netFlow),
+        };
+      }
+      return row;
+    });
+    setData(updatedData);
+    setEditingRow(null);
+  };
+
+  const getValueColor = (value: number) => {
+    if (value > 0) return "text-green-600";
+    if (value < 0) return "text-red-600";
+    return "text-foreground";
+  };
 
   return (
     <Card className="animate-fade-in">
@@ -73,39 +115,79 @@ const PortfolioTable = () => {
                 <TableHead className="text-right">Monthly Return</TableHead>
                 <TableHead className="text-right">YTD Gain</TableHead>
                 <TableHead className="text-right">YTD Return</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((row) => (
-                <TableRow key={row.month}>
+                <TableRow key={row.month} className="group">
                   <TableCell className="font-medium">{row.month}</TableCell>
                   <TableCell className="text-right">
                     ${row.value.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span className={row.netFlow >= 0 ? "text-green-600" : "text-red-600"}>
-                      ${row.netFlow.toLocaleString()}
-                    </span>
+                  <TableCell className={cn("text-right", getValueColor(row.netFlow))}>
+                    ${row.netFlow.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span className={row.monthlyGain >= 0 ? "text-green-600" : "text-red-600"}>
-                      ${row.monthlyGain.toLocaleString()}
-                    </span>
+                  <TableCell className={cn("text-right", getValueColor(row.monthlyGain))}>
+                    ${row.monthlyGain.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span className={Number(row.monthlyReturn) >= 0 ? "text-green-600" : "text-red-600"}>
-                      {row.monthlyReturn}%
-                    </span>
+                  <TableCell className={cn("text-right", getValueColor(Number(row.monthlyReturn)))}>
+                    {row.monthlyReturn}%
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span className={row.ytdGain >= 0 ? "text-green-600" : "text-red-600"}>
-                      ${row.ytdGain.toLocaleString()}
-                    </span>
+                  <TableCell className={cn("text-right", getValueColor(row.ytdGain))}>
+                    ${row.ytdGain.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span className={Number(row.ytdReturn) >= 0 ? "text-green-600" : "text-red-600"}>
-                      {row.ytdReturn}%
-                    </span>
+                  <TableCell className={cn("text-right", getValueColor(Number(row.ytdReturn)))}>
+                    {row.ytdReturn}%
+                  </TableCell>
+                  <TableCell>
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100"
+                          onClick={() => handleEdit(row)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent>
+                        <SheetHeader>
+                          <SheetTitle>{row.month}</SheetTitle>
+                        </SheetHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <label htmlFor="value">Portfolio Value</label>
+                            <Input
+                              id="value"
+                              type="number"
+                              value={editValues.value}
+                              onChange={(e) =>
+                                setEditValues({ ...editValues, value: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <label htmlFor="netFlow">Net Flows</label>
+                            <Input
+                              id="netFlow"
+                              type="number"
+                              value={editValues.netFlow}
+                              onChange={(e) =>
+                                setEditValues({ ...editValues, netFlow: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2 mt-4">
+                          <Button variant="outline" onClick={() => setEditingRow(null)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={handleSave}>Save</Button>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
                   </TableCell>
                 </TableRow>
               ))}

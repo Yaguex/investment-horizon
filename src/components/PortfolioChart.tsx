@@ -45,13 +45,19 @@ const generateSampleData = () => {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const getReturnColor = (value: number) => {
+      if (value > 0) return "text-green-600";
+      if (value < 0) return "text-red-600";
+      return "text-foreground";
+    };
+
     return (
       <div className="bg-white p-4 border rounded-lg shadow-lg">
         <p className="font-bold">{label}</p>
-        <p className="text-primary">
+        <p className="text-foreground">
           Value: ${payload[0].value.toLocaleString()}
         </p>
-        <p className={Number(payload[0].payload.ytdReturn) >= 0 ? "text-green-600" : "text-red-600"}>
+        <p className={getReturnColor(Number(payload[0].payload.ytdReturn))}>
           YTD Return: {payload[0].payload.ytdReturn}%
         </p>
       </div>
@@ -62,6 +68,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const PortfolioChart = () => {
   const [data, setData] = useState(generateSampleData());
+
+  // Calculate domain padding
+  const values = data.map(item => item.value);
+  const maxValue = Math.max(...values);
+  const minValue = Math.min(...values);
+  const padding = (maxValue - minValue) * 0.1;
+  const domainMin = minValue - padding;
+  const domainMax = maxValue + padding;
 
   return (
     <Card className="animate-fade-in">
@@ -75,13 +89,14 @@ const PortfolioChart = () => {
               data={data}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 12 }}
                 interval={2}
               />
               <YAxis
+                domain={[domainMin, domainMax]}
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => `$${(value / 1000)}k`}
               />

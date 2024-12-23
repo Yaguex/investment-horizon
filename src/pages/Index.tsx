@@ -21,11 +21,13 @@ const Index = () => {
             title="YTD Gains"
             value="$25,430"
             trend="up"
+            isNumeric={true}
           />
           <MetricCard
             title="YTD Return"
             value="25.43%"
             trend="up"
+            isNumeric={true}
           />
         </div>
 
