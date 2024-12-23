@@ -141,6 +141,7 @@ const PortfolioChart = () => {
                 domain={[domainMin, domainMax]}
                 tick={{ fontSize: 12 }}
                 tickCount={6}
+                interval={0}
                 tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
               />
               <Tooltip content={<CustomTooltip />} />
