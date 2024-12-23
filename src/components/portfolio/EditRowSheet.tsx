@@ -28,31 +28,10 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
 
   const handleSave = async () => {
     try {
-      // Get the original date from the database for this row
-      const { data: existingData, error: fetchError } = await supabase
-        .from('portfolio_data')
-        .select('month')
-        .eq('profile_id', row.profileId)
-        .eq('month', row.originalDate)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching original date:', fetchError);
-        toast({
-          title: "Error",
-          description: "Failed to fetch original date. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('Saving row update to database:', {
-        originalDate: row.originalDate,
-        balance: editValues.value,
-        flows: editValues.netFlow
-      });
-
-      const { error } = await supabase
+      console.log('Starting save operation for row:', row);
+      
+      // Update the portfolio data
+      const { error: updateError } = await supabase
         .from('portfolio_data')
         .update({
           balance: Number(editValues.value),
@@ -61,8 +40,8 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
         .eq('month', row.originalDate)
         .eq('profile_id', row.profileId);
 
-      if (error) {
-        console.error('Error updating portfolio data:', error);
+      if (updateError) {
+        console.error('Error updating portfolio data:', updateError);
         toast({
           title: "Error",
           description: "Failed to save changes. Please try again.",
@@ -70,6 +49,27 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
         });
         return;
       }
+
+      console.log('Successfully updated portfolio data, now calling recalculation function');
+
+      // Call the recalculate function
+      const { error: recalculateError } = await supabase
+        .rpc('recalculate_portfolio_data', {
+          edited_month: row.originalDate,
+          profile_id_param: row.profileId
+        });
+
+      if (recalculateError) {
+        console.error('Error recalculating portfolio data:', recalculateError);
+        toast({
+          title: "Error",
+          description: "Failed to recalculate portfolio metrics. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Successfully recalculated portfolio data');
 
       // Call the original onSave to update local state
       onSave(editValues);
@@ -81,7 +81,7 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
       
       toast({
         title: "Success",
-        description: "Changes saved successfully",
+        description: "Changes saved and portfolio metrics recalculated",
       });
     } catch (error) {
       console.error('Error in save operation:', error);
