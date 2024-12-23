@@ -15,26 +15,45 @@ export interface PortfolioDataPoint {
 }
 
 const formatDate = (dateStr: string) => {
+  console.log('Formatting date:', dateStr); // Debug log
   const date = new Date(dateStr);
   const month = date.toLocaleString('default', { month: 'short' });
   const year = date.getFullYear();
-  return `${month} ${year}`;
+  const formattedDate = `${month} ${year}`;
+  console.log('Formatted date:', formattedDate); // Debug log
+  return formattedDate;
 };
 
 const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
-  // Sort data by date in ascending order for calculations
-  const sortedData = [...data].sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
+  console.log('Raw data from DB:', data); // Debug log
   
-  return sortedData.map((item) => ({
-    month: formatDate(item.month),
-    value: Number(item.balance),
-    netFlow: Number(item.flows),
-    monthlyGain: Number(item.mom_gain),
-    monthlyReturn: item.mom_return.toFixed(2),
-    ytdGain: Number(item.ytd_gain),
-    ytdReturn: item.ytd_return.toFixed(2),
-    ytdNetFlow: Number(item.ytd_flows),
-  })).reverse(); // Return in descending order for display
+  // Sort data by date in ascending order for calculations
+  const sortedData = [...data].sort((a, b) => {
+    const dateA = new Date(a.month);
+    const dateB = new Date(b.month);
+    console.log(`Comparing dates: ${a.month} vs ${b.month}`); // Debug log
+    return dateA.getTime() - dateB.getTime();
+  });
+  
+  console.log('Sorted data:', sortedData); // Debug log
+  
+  const result = sortedData.map((item) => {
+    const dataPoint = {
+      month: formatDate(item.month),
+      value: Number(item.balance),
+      netFlow: Number(item.flows),
+      monthlyGain: Number(item.mom_gain),
+      monthlyReturn: item.mom_return.toFixed(2),
+      ytdGain: Number(item.ytd_gain),
+      ytdReturn: item.ytd_return.toFixed(2),
+      ytdNetFlow: Number(item.ytd_flows),
+    };
+    console.log('Processed data point:', dataPoint); // Debug log
+    return dataPoint;
+  }).reverse(); // Return in descending order for display
+  
+  console.log('Final processed data:', result); // Debug log
+  return result;
 };
 
 export const usePortfolioData = () => {
