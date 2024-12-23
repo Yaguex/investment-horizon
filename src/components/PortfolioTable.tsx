@@ -19,68 +19,26 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-const generateTableData = () => {
-  const data = [];
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-  
-  let previousValue = 100000;
-  let startYearValue = 100000;
-  const startDate = new Date(2021, 6); // July 2021
-  const endDate = new Date();
-  let currentDate = startDate;
-  
-  while (currentDate <= endDate) {
-    const month = months[currentDate.getMonth()];
-    const year = currentDate.getFullYear();
-    const value = previousValue * (1 + (Math.random() * 0.1 - 0.03));
-    
-    if (month === "Jan") {
-      startYearValue = value;
-    }
-    
-    const netFlow = Math.random() > 0.5 ? Math.round(Math.random() * 5000) : -Math.round(Math.random() * 5000);
-    const monthlyGain = value - previousValue - netFlow;
-    const monthlyReturn = (monthlyGain / previousValue) * 100;
-    const ytdGain = value - startYearValue;
-    const ytdReturn = (ytdGain / startYearValue) * 100;
-    
-    data.push({
-      month: `${month} ${year}`,
-      value: Math.round(value),
-      netFlow: netFlow,
-      monthlyGain: Math.round(monthlyGain),
-      monthlyReturn: monthlyReturn.toFixed(2),
-      ytdGain: Math.round(ytdGain),
-      ytdReturn: ytdReturn.toFixed(2),
-    });
-    
-    previousValue = value;
-    currentDate.setMonth(currentDate.getMonth() + 1);
-  }
-  
-  return data.reverse(); // Return in descending order
-};
+import { usePortfolio, PortfolioData } from "@/contexts/PortfolioContext";
 
 const PortfolioTable = () => {
-  const [data, setData] = useState(generateTableData());
-  const [editingRow, setEditingRow] = useState<any>(null);
+  const { portfolioData, setPortfolioData } = usePortfolio();
+  const [editingRow, setEditingRow] = useState<PortfolioData | null>(null);
   const [editValues, setEditValues] = useState({ value: "", netFlow: "" });
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleEdit = (row: any) => {
+  const handleEdit = (row: PortfolioData) => {
     setEditingRow(row);
     setEditValues({
       value: row.value.toString(),
       netFlow: row.netFlow.toString(),
     });
+    setIsOpen(true);
   };
 
   const handleSave = () => {
-    const updatedData = data.map((row) => {
-      if (row.month === editingRow.month) {
+    const updatedData = portfolioData.map((row) => {
+      if (row.month === editingRow?.month) {
         return {
           ...row,
           value: Number(editValues.value),
@@ -89,8 +47,14 @@ const PortfolioTable = () => {
       }
       return row;
     });
-    setData(updatedData);
+    setPortfolioData(updatedData);
     setEditingRow(null);
+    setIsOpen(false);
+  };
+
+  const handleCancel = () => {
+    setEditingRow(null);
+    setIsOpen(false);
   };
 
   const getValueColor = (value: number) => {
@@ -120,7 +84,7 @@ const PortfolioTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((row) => (
+              {portfolioData.map((row) => (
                 <TableRow key={row.month} className="group">
                   <TableCell className="font-medium">{row.month}</TableCell>
                   <TableCell className="text-right">
@@ -142,7 +106,7 @@ const PortfolioTable = () => {
                     {row.ytdReturn}%
                   </TableCell>
                   <TableCell>
-                    <Sheet>
+                    <Sheet open={isOpen} onOpenChange={setIsOpen}>
                       <SheetTrigger asChild>
                         <Button
                           variant="ghost"
@@ -155,7 +119,7 @@ const PortfolioTable = () => {
                       </SheetTrigger>
                       <SheetContent>
                         <SheetHeader>
-                          <SheetTitle>{row.month}</SheetTitle>
+                          <SheetTitle>{editingRow?.month}</SheetTitle>
                         </SheetHeader>
                         <div className="grid gap-4 py-4">
                           <div className="grid gap-2">
@@ -182,7 +146,7 @@ const PortfolioTable = () => {
                           </div>
                         </div>
                         <div className="flex justify-end gap-2 mt-4">
-                          <Button variant="outline" onClick={() => setEditingRow(null)}>
+                          <Button variant="outline" onClick={handleCancel}>
                             Cancel
                           </Button>
                           <Button onClick={handleSave}>Save</Button>

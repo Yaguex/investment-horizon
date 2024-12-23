@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -9,39 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const generateSampleData = () => {
-  const data = [];
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-  
-  let value = 100000;
-  const startDate = new Date(2021, 6); // July 2021
-  const endDate = new Date();
-  let currentDate = startDate;
-  
-  while (currentDate <= endDate) {
-    const month = months[currentDate.getMonth()];
-    const year = currentDate.getFullYear();
-    value = value * (1 + (Math.random() * 0.1 - 0.03));
-    
-    const ytdReturn = ((value - 100000) / 100000) * 100;
-    const netFlow = Math.random() > 0.5 ? Math.round(Math.random() * 5000) : -Math.round(Math.random() * 5000);
-    
-    data.push({
-      date: `${month} ${year}`,
-      value: Math.round(value),
-      ytdReturn: ytdReturn.toFixed(2),
-      netFlow
-    });
-    
-    currentDate.setMonth(currentDate.getMonth() + 1);
-  }
-  
-  return data;
-};
+import { usePortfolio } from "@/contexts/PortfolioContext";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -67,10 +34,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const PortfolioChart = () => {
-  const [data, setData] = useState(generateSampleData());
+  const { portfolioData } = usePortfolio();
+  const sortedData = [...portfolioData].reverse(); // Reverse to show ascending order
 
   // Calculate domain padding
-  const values = data.map(item => item.value);
+  const values = sortedData.map(item => item.value);
   const maxValue = Math.max(...values);
   const minValue = Math.min(...values);
   const padding = (maxValue - minValue) * 0.1;
@@ -86,12 +54,12 @@ const PortfolioChart = () => {
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={data}
+              data={sortedData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
-                dataKey="date"
+                dataKey="month"
                 tick={{ fontSize: 12 }}
                 interval={2}
               />
