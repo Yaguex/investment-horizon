@@ -19,6 +19,11 @@ const MONTHS = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
+const getLastDayOfMonth = (year: number, month: number) => {
+  // month is 0-based in JS Date
+  return new Date(year, month + 1, 0).getDate();
+};
+
 const formatDate = (dateStr: string) => {
   console.log('Formatting date input:', dateStr);
   const date = new Date(dateStr);
@@ -37,7 +42,6 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   const sortedData = [...data].sort((a, b) => {
     const dateA = new Date(a.month);
     const dateB = new Date(b.month);
-    console.log(`Comparing dates: ${dateA.toISOString()} vs ${dateB.toISOString()}`);
     return dateA.getTime() - dateB.getTime();
   });
   
@@ -86,13 +90,10 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       
-      // Use a more flexible date range that includes end-of-month dates
       let queryResult = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .gte('month', '2021-11-01')
-        .lte('month', '2024-12-31')  // Extended to include December
         .order('month', { ascending: false });
 
       if (queryResult.error) {
@@ -100,32 +101,8 @@ export const usePortfolioData = () => {
         throw queryResult.error;
       }
 
-      // If no data, try alternative approach with between filter
-      if (!queryResult.data?.length) {
-        console.log('No data found with date range, trying between filter...');
-        const altResult = await supabase
-          .from('portfolio_data')
-          .select('*')
-          .eq('profile_id', user.id)
-          .filter('month', 'between', ['2021-11-01', '2024-12-31'])
-          .order('month', { ascending: false });
-
-        if (altResult.error) {
-          console.error('Error with alternative query:', altResult.error);
-          throw altResult.error;
-        }
-
-        queryResult = altResult;
-      }
-      
       console.log('Raw response from Supabase:', queryResult.data);
       console.log('Number of rows returned from query:', queryResult.data?.length);
-
-      // Log all dates to debug
-      console.log('All dates:', queryResult.data?.map(row => ({
-        month: row.month,
-        formatted: new Date(row.month).toISOString()
-      })));
 
       return calculatePortfolioMetrics(queryResult.data || []);
     },
@@ -141,8 +118,8 @@ export const usePortfolioData = () => {
     // Convert the month string back to a date format
     const [month, year] = updatedRow.month.split(' ');
     const monthIndex = MONTHS.indexOf(month);
-    const date = new Date(Number(year), monthIndex + 1, 0); // Get last day of the month
-    const dateStr = date.toISOString().split('T')[0];
+    const lastDay = getLastDayOfMonth(Number(year), monthIndex);
+    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     
     console.log('Updating portfolio data:', {
       month: dateStr,
