@@ -86,7 +86,7 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       const { data: portfolioData, error } = await supabase
-        .from('monthly_portfolio_data')  // Changed from portfolio_data to monthly_portfolio_data
+        .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
         .order('month', { ascending: false });
@@ -125,7 +125,7 @@ export const usePortfolioData = () => {
     });
     
     const { error } = await supabase
-      .from('monthly_portfolio_data')  // Changed from portfolio_data to monthly_portfolio_data
+      .from('portfolio_data')
       .update({
         balance: updatedRow.value,
         flows: updatedRow.netFlow,
