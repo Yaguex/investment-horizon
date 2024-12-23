@@ -43,7 +43,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   
   const result = sortedData.map((item) => {
     const formattedMonth = formatDate(item.month);
-    console.log(`Processing month: ${item.month} -> ${formattedMonth}`);
+    console.log(`Processing row: ${item.month} -> ${formattedMonth}`);
     
     const dataPoint = {
       month: formattedMonth,
@@ -113,14 +113,15 @@ export const usePortfolioData = () => {
     // Find the updated row
     const updatedRow = newData[0];
     
-    // Convert the month string back to a date format
-    const [month, year] = updatedRow.month.split(' ');
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    const monthIndex = months.indexOf(month);
-    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`;
+    // Get the original date from the database for this row
+    const { data: existingData } = await supabase
+      .from('portfolio_data')
+      .select('month')
+      .eq('profile_id', user.id)
+      .eq('month', updatedRow.month)
+      .single();
+    
+    const dateStr = existingData?.month;
     
     console.log('Updating portfolio data:', {
       month: dateStr,
