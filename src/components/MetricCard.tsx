@@ -10,7 +10,11 @@ interface MetricCardProps {
 }
 
 const MetricCard = ({ title, value, className, trend, isNumeric = false }: MetricCardProps) => {
-  const getValueColor = (value: string) => {
+  const getValueColor = (value: string, title: string) => {
+    // Portfolio Value should always be black
+    if (title === "Portfolio Value") return "text-black";
+    
+    // For other metrics, keep the existing color logic
     if (!isNumeric) return "text-foreground";
     const numValue = parseFloat(value.replace(/[^0-9.-]+/g, ""));
     if (numValue > 0) return "text-green-600";
@@ -24,7 +28,7 @@ const MetricCard = ({ title, value, className, trend, isNumeric = false }: Metri
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className={cn("text-2xl font-bold", getValueColor(value))}>
+        <div className={cn("text-2xl font-bold", getValueColor(value, title))}>
           {value}
         </div>
       </CardContent>

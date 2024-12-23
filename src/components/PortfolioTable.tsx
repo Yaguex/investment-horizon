@@ -100,6 +100,10 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     return "text-foreground";
   };
 
+  const isYearEnd = (month: string) => {
+    return month.includes("Dec");
+  };
+
   return (
     <Card className="animate-fade-in">
       <CardHeader>
@@ -122,8 +126,14 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
               </TableRow>
             </TableHeader>
             <TableBody>
-              {initialData.map((row) => (
-                <TableRow key={row.month} className="group">
+              {initialData.map((row, index) => (
+                <TableRow 
+                  key={row.month} 
+                  className={cn(
+                    "group",
+                    isYearEnd(row.month) && "border-b-2 border-gray-300"
+                  )}
+                >
                   <TableCell className="font-medium">{row.month}</TableCell>
                   <TableCell className="text-right">
                     ${row.value.toLocaleString()}
