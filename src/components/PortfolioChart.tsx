@@ -60,16 +60,33 @@ interface PortfolioChartProps {
 }
 
 const PortfolioChart = ({ data }: PortfolioChartProps) => {
-  // Create a new array for the chart that's in ascending order
   const ascendingData = [...data].reverse();
   
-  // Calculate domain padding
   const values = ascendingData.map(item => item.value);
   const maxValue = Math.max(...values);
   const minValue = Math.min(...values);
   const padding = (maxValue - minValue) * 0.1;
   const domainMin = Math.floor((minValue - padding) / 1000) * 1000;
   const domainMax = Math.ceil((maxValue + padding) / 1000) * 1000;
+
+  // Default props for Recharts components to suppress warnings
+  const xAxisProps = {
+    dataKey: "month",
+    tick: { fontSize: 12 },
+    interval: 2,
+  };
+
+  const yAxisProps = {
+    domain: [domainMin, domainMax],
+    tick: { fontSize: 12 },
+    tickCount: 6,
+    tickFormatter: (value: number) => `$${Math.round(value).toLocaleString()}`,
+  };
+
+  const referenceLineProps = {
+    stroke: "#94a3b8",
+    strokeDasharray: "3 3",
+  };
 
   return (
     <Card className="animate-fade-in">
@@ -84,25 +101,15 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 12 }}
-                interval={2}
-              />
-              <YAxis
-                domain={[domainMin, domainMax]}
-                tick={{ fontSize: 12 }}
-                tickCount={6}
-                tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
-              />
+              <XAxis {...xAxisProps} />
+              <YAxis {...yAxisProps} />
               <Tooltip content={<CustomTooltip />} />
               {ascendingData.map((entry) => 
                 entry.month.includes("Dec") && (
                   <ReferenceLine
                     key={entry.month}
                     x={entry.month}
-                    stroke="#94a3b8"
-                    strokeDasharray="3 3"
+                    {...referenceLineProps}
                   />
                 )
               )}
