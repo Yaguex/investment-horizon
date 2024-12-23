@@ -19,13 +19,24 @@ const MONTHS = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
-const formatDate = (dateStr: string) => {
-  console.log('Formatting date input:', dateStr);
-  const date = new Date(dateStr);
+const parseDate = (dateStr: string) => {
+  console.log('Parsing date input:', dateStr);
+  // Split MM-DD-YYYY format
+  const [month, day, year] = dateStr.split('-').map(Number);
+  // Months are 0-based in JS Date
+  const date = new Date(year, month - 1, day);
+  
   if (isNaN(date.getTime())) {
-    console.error('Invalid date:', dateStr);
-    return '';
+    console.error('Invalid date components:', { month, day, year });
+    return null;
   }
+  
+  console.log('Parsed date:', date.toISOString());
+  return date;
+};
+
+const formatDate = (date: Date | null) => {
+  if (!date) return '';
   const month = MONTHS[date.getMonth()];
   const year = date.getFullYear();
   const formattedDate = `${month} ${year}`;
@@ -39,23 +50,22 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => {
-    const dateA = new Date(a.month);
-    const dateB = new Date(b.month);
-    if (isNaN(dateA.getTime())) {
-      console.error('Invalid date A:', a.month);
-      return 1;
+    const dateA = parseDate(a.month);
+    const dateB = parseDate(b.month);
+    
+    if (!dateA || !dateB) {
+      console.error('Invalid date comparison:', { a: a.month, b: b.month });
+      return 0;
     }
-    if (isNaN(dateB.getTime())) {
-      console.error('Invalid date B:', b.month);
-      return -1;
-    }
+    
     return dateA.getTime() - dateB.getTime();
   });
   
   console.log('Sorted data:', sortedData);
   
   const result = sortedData.map((item) => {
-    const formattedMonth = formatDate(item.month);
+    const parsedDate = parseDate(item.month);
+    const formattedMonth = formatDate(parsedDate);
     console.log(`Processing month: ${item.month} -> ${formattedMonth}`);
     
     if (!formattedMonth) {
@@ -102,7 +112,6 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       
-      // Use a single query with explicit date range and type casting
       const { data: portfolioData, error } = await supabase
         .from('portfolio_data')
         .select('*')
@@ -135,7 +144,8 @@ export const usePortfolioData = () => {
     const monthIndex = MONTHS.indexOf(month);
     // Get the last day of the month
     const lastDay = new Date(Number(year), monthIndex + 1, 0).getDate();
-    const dateStr = new Date(Number(year), monthIndex, lastDay).toISOString().split('T')[0];
+    // Format as MM-DD-YYYY
+    const dateStr = `${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}-${year}`;
     
     console.log('Updating portfolio data:', {
       month: dateStr,
