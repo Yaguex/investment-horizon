@@ -101,14 +101,17 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
   };
 
   const isYearTransition = (currentMonth: string, prevMonth: string | undefined) => {
-    return currentMonth.includes("Jan") && prevMonth?.includes("Dec");
+    if (!prevMonth) return false;
+    const [currentMonthName, currentYear] = currentMonth.split(" ");
+    const [prevMonthName, prevYear] = prevMonth.split(" ");
+    return currentMonthName === "Jan" && prevMonthName === "Dec" && currentYear !== prevYear;
   };
 
   console.log("Checking year transitions in table data:");
   initialData.forEach((row, index) => {
     const prevMonth = index > 0 ? initialData[index - 1].month : undefined;
     if (isYearTransition(row.month, prevMonth)) {
-      console.log(`Year transition detected at index ${index}, month: ${row.month}`);
+      console.log(`Year transition detected at index ${index}, month: ${row.month}, prev month: ${prevMonth}`);
     }
   });
 
@@ -136,12 +139,14 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
             <TableBody>
               {initialData.map((row, index) => {
                 const prevMonth = index > 0 ? initialData[index - 1].month : undefined;
+                const yearTransition = isYearTransition(row.month, prevMonth);
+                
                 return (
                   <TableRow 
                     key={row.month} 
                     className={cn(
-                      "group",
-                      isYearTransition(row.month, prevMonth) && "border-t-4 border-gray-400"
+                      "group hover:bg-muted/50",
+                      yearTransition && "border-t-[6px] border-t-gray-400"
                     )}
                   >
                     <TableCell className="font-medium">{row.month}</TableCell>
