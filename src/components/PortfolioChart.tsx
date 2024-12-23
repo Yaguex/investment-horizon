@@ -60,8 +60,11 @@ interface PortfolioChartProps {
 }
 
 const PortfolioChart = ({ data }: PortfolioChartProps) => {
+  // Create a new array for the chart that's in ascending order
+  const ascendingData = [...data].reverse();
+  
   // Calculate domain padding
-  const values = data.map(item => item.value);
+  const values = ascendingData.map(item => item.value);
   const maxValue = Math.max(...values);
   const minValue = Math.min(...values);
   const padding = (maxValue - minValue) * 0.1;
@@ -77,7 +80,7 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={data}
+              data={ascendingData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -93,7 +96,7 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
                 tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
               />
               <Tooltip content={<CustomTooltip />} />
-              {data.map((entry) => 
+              {ascendingData.map((entry) => 
                 entry.month.includes("Dec") && (
                   <ReferenceLine
                     key={entry.month}
