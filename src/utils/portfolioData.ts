@@ -36,15 +36,18 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   const sortedData = [...data].sort((a, b) => {
     const dateA = new Date(a.month);
     const dateB = new Date(b.month);
-    console.log(`Comparing dates: ${a.month} vs ${b.month}`); // Debug log
+    console.log(`Comparing dates: ${dateA.toISOString()} vs ${dateB.toISOString()}`); // Debug log
     return dateA.getTime() - dateB.getTime();
   });
   
   console.log('Sorted data:', sortedData); // Debug log
   
   const result = sortedData.map((item) => {
+    const formattedMonth = formatDate(item.month);
+    console.log(`Processing month: ${item.month} -> ${formattedMonth}`); // Debug log
+    
     const dataPoint = {
-      month: formatDate(item.month),
+      month: formattedMonth,
       value: Number(item.balance),
       netFlow: Number(item.flows),
       monthlyGain: Number(item.mom_gain),
@@ -55,10 +58,19 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
     };
     console.log('Processed data point:', dataPoint); // Debug log
     return dataPoint;
-  }).reverse(); // Return in descending order for display
+  });
   
-  console.log('Final processed data:', result); // Debug log
-  return result;
+  // Sort in reverse chronological order for display
+  const sortedResult = result.sort((a, b) => {
+    const [monthA, yearA] = a.month.split(' ');
+    const [monthB, yearB] = b.month.split(' ');
+    const yearDiff = Number(yearB) - Number(yearA);
+    if (yearDiff !== 0) return yearDiff;
+    return MONTHS.indexOf(monthB) - MONTHS.indexOf(monthA);
+  });
+  
+  console.log('Final processed and sorted data:', sortedResult); // Debug log
+  return sortedResult;
 };
 
 export const usePortfolioData = () => {
