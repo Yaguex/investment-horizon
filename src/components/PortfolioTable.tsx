@@ -14,94 +14,9 @@ import { cn } from "@/lib/utils";
 
 interface PortfolioTableProps {
   data: PortfolioDataPoint[];
-  onDataUpdate: (updatedData: PortfolioDataPoint[]) => void;
 }
 
-const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps) => {
-  const { toast } = useToast();
-
-  const calculateUpdatedRow = (
-    originalRow: PortfolioDataPoint,
-    newValue: number,
-    newNetFlow: number
-  ): PortfolioDataPoint => {
-    const previousValue = originalRow.value;
-    const monthlyGain = newValue - previousValue - newNetFlow;
-    const monthlyReturn = ((monthlyGain / previousValue) * 100).toFixed(2);
-
-    // Find the first entry of the year for YTD calculations
-    const currentYear = originalRow.month.split(" ")[1];
-    const yearStart = initialData
-      .filter(item => 
-        item.month.includes("Jan") && 
-        item.month.split(" ")[1] === currentYear
-      )
-      .reverse()[0];  // Get the last matching item
-
-    const startYearValue = yearStart ? yearStart.value : previousValue;
-    const ytdGain = newValue - startYearValue;
-    const ytdReturn = ((ytdGain / startYearValue) * 100).toFixed(2);
-
-    // Calculate new YTD Net Flow
-    const [month, year] = originalRow.month.split(" ");
-    const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
-    const monthIndex = months.indexOf(month);
-    const yearData = initialData.filter(d => d.month.split(" ")[1] === year);
-    const ytdData = yearData
-      .filter(d => months.indexOf(d.month.split(" ")[0]) <= monthIndex)
-      .map(d => d.month === originalRow.month ? newNetFlow : d.netFlow);
-    const ytdNetFlow = ytdData.reduce((sum, flow) => sum + flow, 0);
-
-    // Calculate accumulated monthly return
-    const previousMonthIndex = monthIndex > 0 ? monthIndex - 1 : -1;
-    const previousMonthData = previousMonthIndex >= 0
-      ? yearData.find(d => months.indexOf(d.month.split(" ")[0]) === previousMonthIndex)
-      : null;
-    const previousAccumulatedReturn = previousMonthData?.monthlyReturnAccumulated || 0;
-    const monthlyReturnAccumulated = previousAccumulatedReturn + parseFloat(monthlyReturn);
-
-    return {
-      ...originalRow,
-      value: newValue,
-      netFlow: newNetFlow,
-      monthlyGain,
-      monthlyReturn,
-      ytdGain,
-      ytdReturn,
-      ytdNetFlow,
-      monthlyReturnAccumulated,
-    };
-  };
-
-  const handleSave = (row: PortfolioDataPoint, values: { value: string; netFlow: string }) => {
-    const newValue = Number(values.value);
-    const newNetFlow = Number(values.netFlow);
-
-    if (isNaN(newValue) || isNaN(newNetFlow)) {
-      toast({
-        title: "Invalid input",
-        description: "Please enter valid numbers for Portfolio Value and Net Flows",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const updatedRow = calculateUpdatedRow(row, newValue, newNetFlow);
-    const updatedData = initialData.map((r) =>
-      r.month === row.month ? updatedRow : r
-    );
-
-    onDataUpdate(updatedData);
-    
-    toast({
-      title: "Success",
-      description: "Portfolio data has been updated",
-    });
-  };
-
+const PortfolioTable = ({ data: initialData }: PortfolioTableProps) => {
   const getValueColor = (value: number | string) => {
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
     if (numValue > 0) return "text-green-600";
@@ -163,10 +78,7 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                     {row.ytdReturn}%
                   </TableCell>
                   <TableCell>
-                    <EditRowSheet 
-                      row={row} 
-                      onSave={(values) => handleSave(row, values)} 
-                    />
+                    <EditRowSheet row={row} />
                   </TableCell>
                 </TableRow>
               ))}

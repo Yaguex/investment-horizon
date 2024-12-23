@@ -13,7 +13,7 @@ interface EditRowSheetProps {
   onSave: (values: { value: string; netFlow: string }) => void;
 }
 
-export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
+export const EditRowSheet = ({ row }: EditRowSheetProps) => {
   const [editValues, setEditValues] = useState({ value: "", netFlow: "" });
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
@@ -70,9 +70,6 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
       }
 
       console.log('Successfully recalculated portfolio data');
-
-      // Call the original onSave to update local state
-      onSave(editValues);
 
       // Invalidate and refetch the query to update the UI
       await queryClient.invalidateQueries({ queryKey: ['portfolioData'] });
