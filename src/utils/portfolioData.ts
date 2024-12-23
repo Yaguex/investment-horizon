@@ -96,6 +96,7 @@ export const usePortfolioData = () => {
         throw error;
       }
       
+      console.log('Raw response from Supabase:', portfolioData);
       console.log('Number of rows returned from query:', portfolioData?.length);
       return calculatePortfolioMetrics(portfolioData);
     },
