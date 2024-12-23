@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface PortfolioDataPoint {
   month: string;
@@ -11,75 +14,142 @@ export interface PortfolioDataPoint {
   ytdNetFlow: number;
 }
 
-export const generatePortfolioData = () => {
-  const data: PortfolioDataPoint[] = [];
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const month = date.toLocaleString('default', { month: 'short' });
+  const year = date.getFullYear();
+  return `${month} ${year}`;
+};
+
+const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
+  // Sort data by date in ascending order for calculations
+  const sortedData = [...data].sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
   
-  let previousValue = 100000;
-  let startYearValue = 100000;
-  const startDate = new Date(2021, 6); // July 2021
-  const endDate = new Date();
-  let currentDate = startDate;
+  const result: PortfolioDataPoint[] = [];
+  let previousValue = 0;
+  let startYearValue = 0;
+  let currentYear = '';
   
-  // Create initial data without YTD Net Flows
-  while (currentDate <= endDate) {
-    const month = months[currentDate.getMonth()];
-    const year = currentDate.getFullYear();
-    const value = previousValue * (1 + (Math.random() * 0.1 - 0.03));
+  sortedData.forEach((item) => {
+    const itemDate = new Date(item.month);
+    const year = itemDate.getFullYear().toString();
     
-    if (month === "Jan") {
-      startYearValue = value;
+    // Reset start year value when year changes
+    if (year !== currentYear) {
+      startYearValue = previousValue;
+      currentYear = year;
     }
     
-    const netFlow = Math.random() > 0.5 ? Math.round(Math.random() * 5000) : -Math.round(Math.random() * 5000);
+    const value = Number(item.balance);
+    const netFlow = Number(item.flows);
     const monthlyGain = value - previousValue - netFlow;
-    const monthlyReturn = ((monthlyGain / previousValue) * 100).toFixed(2);
+    const monthlyReturn = ((monthlyGain / (previousValue || 1)) * 100).toFixed(2);
     const ytdGain = value - startYearValue;
-    const ytdReturn = ((ytdGain / startYearValue) * 100).toFixed(2);
+    const ytdReturn = ((ytdGain / (startYearValue || 1)) * 100).toFixed(2);
     
-    data.push({
-      month: `${month} ${year}`,
-      value: Math.round(value),
-      netFlow: netFlow,
-      monthlyGain: Math.round(monthlyGain),
-      monthlyReturn: monthlyReturn,
-      ytdGain: Math.round(ytdGain),
-      ytdReturn: ytdReturn,
-      ytdNetFlow: 0, // Initial value, will be calculated next
+    result.push({
+      month: formatDate(item.month),
+      value,
+      netFlow,
+      monthlyGain,
+      monthlyReturn,
+      ytdGain,
+      ytdReturn,
+      ytdNetFlow: Number(item.ytd_flows),
     });
     
     previousValue = value;
-    currentDate.setMonth(currentDate.getMonth() + 1);
-  }
-
-  // Calculate YTD Net Flows
-  const reversedData = [...data].reverse();
-  reversedData.forEach((item, index) => {
-    const [month, year] = item.month.split(" ");
-    const yearData = reversedData.filter(d => d.month.split(" ")[1] === year);
-    const monthIndex = months.indexOf(month);
-    const ytdData = yearData.filter(d => months.indexOf(d.month.split(" ")[0]) <= monthIndex);
-    const ytdNetFlow = ytdData.reduce((sum, d) => sum + d.netFlow, 0);
-    item.ytdNetFlow = ytdNetFlow;
   });
   
-  return reversedData; // Return in descending order
+  // Return in descending order for display
+  return result.reverse();
 };
 
 export const usePortfolioData = () => {
-  const [data, setData] = useState<PortfolioDataPoint[]>(generatePortfolioData());
-  const latestData = data[0]; // First item since data is in descending order
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   
-  const updateData = (newData: PortfolioDataPoint[]) => {
-    setData(newData);
+  const { data = [], isLoading, error } = useQuery({
+    queryKey: ['portfolioData', user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+      
+      console.log('Fetching portfolio data for user:', user.id);
+      const { data, error } = await supabase
+        .from('portfolio_data')
+        .select('*')
+        .order('month', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching portfolio data:', error);
+        throw error;
+      }
+      
+      console.log('Received portfolio data:', data);
+      return calculatePortfolioMetrics(data);
+    },
+    enabled: !!user,
+  });
+  
+  const updateData = async (newData: PortfolioDataPoint[]) => {
+    if (!user) throw new Error('User not authenticated');
+    
+    // Find the updated row
+    const updatedRow = newData[0]; // Since we're updating one row at a time
+    
+    // Convert the month string back to a date format
+    const [month, year] = updatedRow.month.split(' ');
+    const monthIndex = new Date(Date.parse(`${month} 1, ${year}`)).getMonth();
+    const dateStr = new Date(Number(year), monthIndex, 1).toISOString().split('T')[0];
+    
+    console.log('Updating portfolio data:', {
+      month: dateStr,
+      balance: updatedRow.value,
+      flows: updatedRow.netFlow,
+      ytd_flows: updatedRow.ytdNetFlow,
+      mom_gain: updatedRow.monthlyGain,
+      mom_return: parseFloat(updatedRow.monthlyReturn),
+      ytd_gain: updatedRow.ytdGain,
+      ytd_return: parseFloat(updatedRow.ytdReturn),
+    });
+    
+    const { error } = await supabase
+      .from('portfolio_data')
+      .update({
+        balance: updatedRow.value,
+        flows: updatedRow.netFlow,
+        ytd_flows: updatedRow.ytdNetFlow,
+        mom_gain: updatedRow.monthlyGain,
+        mom_return: parseFloat(updatedRow.monthlyReturn),
+        ytd_gain: updatedRow.ytdGain,
+        ytd_return: parseFloat(updatedRow.ytdReturn),
+      })
+      .eq('month', dateStr)
+      .eq('profile_id', user.id);
+    
+    if (error) {
+      console.error('Error updating portfolio data:', error);
+      throw error;
+    }
+    
+    // Invalidate and refetch the query to update the UI
+    await queryClient.invalidateQueries({ queryKey: ['portfolioData', user.id] });
   };
   
   return {
     data,
-    latestData,
+    latestData: data[0] || {
+      month: '',
+      value: 0,
+      netFlow: 0,
+      monthlyGain: 0,
+      monthlyReturn: '0',
+      ytdGain: 0,
+      ytdReturn: '0',
+      ytdNetFlow: 0,
+    },
     updateData,
+    isLoading,
+    error,
   };
 };
