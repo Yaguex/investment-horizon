@@ -89,7 +89,8 @@ export const usePortfolioData = () => {
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .order('month', { ascending: false });
+        .order('month', { ascending: false })
+        .limit(100); // Added limit to ensure we get all rows
       
       if (error) {
         console.error('Error fetching portfolio data:', error);
