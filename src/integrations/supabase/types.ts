@@ -93,6 +93,51 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_data_2: {
+        Row: {
+          accumulated_mom_return: number | null
+          balance: number | null
+          flows: number | null
+          id: number
+          mom_gain: number | null
+          mom_return: number | null
+          month: string | null
+          portfolio_id: number | null
+          profile_id: string | null
+          ytd_flows: number | null
+          ytd_gain: number | null
+          ytd_return: number | null
+        }
+        Insert: {
+          accumulated_mom_return?: number | null
+          balance?: number | null
+          flows?: number | null
+          id: number
+          mom_gain?: number | null
+          mom_return?: number | null
+          month?: string | null
+          portfolio_id?: number | null
+          profile_id?: string | null
+          ytd_flows?: number | null
+          ytd_gain?: number | null
+          ytd_return?: number | null
+        }
+        Update: {
+          accumulated_mom_return?: number | null
+          balance?: number | null
+          flows?: number | null
+          id?: number
+          mom_gain?: number | null
+          mom_return?: number | null
+          month?: string | null
+          portfolio_id?: number | null
+          profile_id?: string | null
+          ytd_flows?: number | null
+          ytd_gain?: number | null
+          ytd_return?: number | null
+        }
+        Relationships: []
+      }
       portfolios: {
         Row: {
           id: number
