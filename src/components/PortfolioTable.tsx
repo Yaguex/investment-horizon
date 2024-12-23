@@ -10,9 +10,6 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { usePortfolio, PortfolioData } from "@/contexts/PortfolioContext";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +17,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { usePortfolio, PortfolioData } from "@/contexts/PortfolioContext";
 
 const PortfolioTable = () => {
   const { portfolioData, setPortfolioData } = usePortfolio();
@@ -117,7 +117,7 @@ const PortfolioTable = () => {
                           <Edit className="h-4 w-4" />
                         </Button>
                       </SheetTrigger>
-                      <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                      <SheetContent>
                         <SheetHeader>
                           <SheetTitle>{editingRow?.month}</SheetTitle>
                         </SheetHeader>
