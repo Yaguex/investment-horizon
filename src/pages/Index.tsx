@@ -1,12 +1,40 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Header from "@/components/Header";
+import MetricCard from "@/components/MetricCard";
+import PortfolioChart from "@/components/PortfolioChart";
+import PortfolioTable from "@/components/PortfolioTable";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <main className="container mx-auto px-4 pt-24 pb-8">
+        <div className="grid gap-4 md:grid-cols-3 mb-8">
+          <MetricCard
+            title="Portfolio Value"
+            value="$125,430"
+            trend="up"
+          />
+          <MetricCard
+            title="YTD Gains"
+            value="$25,430"
+            trend="up"
+          />
+          <MetricCard
+            title="YTD Return"
+            value="25.43%"
+            trend="up"
+          />
+        </div>
+
+        <div className="mb-8">
+          <PortfolioChart />
+        </div>
+
+        <div>
+          <PortfolioTable />
+        </div>
+      </main>
     </div>
   );
 };
