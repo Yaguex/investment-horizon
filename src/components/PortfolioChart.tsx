@@ -140,7 +140,7 @@ const PortfolioChart = () => {
               <YAxis
                 domain={[domainMin, domainMax]}
                 tick={{ fontSize: 12 }}
-                tickCount={4}
+                tickCount={6}
                 tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
               />
               <Tooltip content={<CustomTooltip />} />
