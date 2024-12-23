@@ -125,7 +125,7 @@ const PortfolioChart = () => {
         <CardTitle>Portfolio Value Over Time</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[500px] w-full">
+        <div className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
@@ -140,7 +140,7 @@ const PortfolioChart = () => {
               <YAxis
                 domain={[domainMin, domainMax]}
                 tick={{ fontSize: 12 }}
-                tickCount={6}
+                tickCount={4}
                 tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
               />
               <Tooltip content={<CustomTooltip />} />
