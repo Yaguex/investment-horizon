@@ -145,6 +145,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_portfolio_data_row: {
+        Args: {
+          profile_id_param: string
+        }
+        Returns: undefined
+      }
       recalculate_portfolio_data: {
         Args: {
           edited_month: string

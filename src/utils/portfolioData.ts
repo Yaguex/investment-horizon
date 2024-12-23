@@ -94,6 +94,18 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       
+      // First, call the create_portfolio_data_row function
+      const { error: createError } = await supabase
+        .rpc('create_portfolio_data_row', {
+          profile_id_param: user.id
+        });
+      
+      if (createError) {
+        console.error('Error creating portfolio data:', createError);
+        throw createError;
+      }
+
+      // Then fetch the updated data
       let queryResult = await supabase
         .from('portfolio_data')
         .select('*')
