@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -94,33 +93,35 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       
-      // First, call the create_portfolio_data_row function
-      const { error: createError } = await supabase
+      // First, explicitly call the create_portfolio_data_row function
+      const { data: functionResult, error: functionError } = await supabase
         .rpc('create_portfolio_data_row', {
           profile_id_param: user.id
         });
       
-      if (createError) {
-        console.error('Error creating portfolio data:', createError);
-        throw createError;
+      if (functionError) {
+        console.error('Error calling create_portfolio_data_row:', functionError);
+        throw functionError;
       }
 
+      console.log('Successfully called create_portfolio_data_row');
+
       // Then fetch the updated data
-      let queryResult = await supabase
+      const { data: queryResult, error: queryError } = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
         .order('month', { ascending: false });
 
-      if (queryResult.error) {
-        console.error('Error fetching portfolio data:', queryResult.error);
-        throw queryResult.error;
+      if (queryError) {
+        console.error('Error fetching portfolio data:', queryError);
+        throw queryError;
       }
 
-      console.log('Raw response from Supabase:', queryResult.data);
-      console.log('Number of rows returned from query:', queryResult.data?.length);
+      console.log('Raw response from Supabase:', queryResult);
+      console.log('Number of rows returned from query:', queryResult?.length);
 
-      return calculatePortfolioMetrics(queryResult.data || []);
+      return calculatePortfolioMetrics(queryResult || []);
     },
     enabled: !!user,
   });
