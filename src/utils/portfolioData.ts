@@ -23,14 +23,18 @@ const parseDate = (dateStr: string) => {
   console.log('Parsing date input:', dateStr);
   // Split MM-DD-YYYY format
   const [month, day, year] = dateStr.split('-').map(Number);
-  // Months are 0-based in JS Date
-  const date = new Date(year, month - 1, day);
   
-  if (isNaN(date.getTime())) {
+  // Validate date components
+  if (!month || !day || !year || 
+      month < 1 || month > 12 || 
+      day < 1 || day > 31 || 
+      year < 2000 || year > 2024) {
     console.error('Invalid date components:', { month, day, year });
     return null;
   }
   
+  // Months are 0-based in JS Date
+  const date = new Date(year, month - 1, day);
   console.log('Parsed date:', date.toISOString());
   return date;
 };
@@ -91,9 +95,19 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   const sortedResult = result.sort((a, b) => {
     const [monthA, yearA] = a.month.split(' ');
     const [monthB, yearB] = b.month.split(' ');
+    
     const yearDiff = Number(yearB) - Number(yearA);
     if (yearDiff !== 0) return yearDiff;
-    return MONTHS.indexOf(monthB) - MONTHS.indexOf(monthA);
+    
+    const monthIndexA = MONTHS.indexOf(monthA);
+    const monthIndexB = MONTHS.indexOf(monthB);
+    
+    if (monthIndexA === -1 || monthIndexB === -1) {
+      console.error('Invalid month comparison:', { monthA, monthB });
+      return 0;
+    }
+    
+    return monthIndexB - monthIndexA;
   });
   
   console.log('Final processed and sorted data:', sortedResult);
