@@ -86,13 +86,13 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       
-      // Try Claude's suggestion with explicit ISO dates
+      // Use a more flexible date range that includes end-of-month dates
       let queryResult = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .gte('month', '2021-11-01T00:00:00.000Z')
-        .lte('month', '2024-11-30T23:59:59.999Z')
+        .gte('month', '2021-11-01')
+        .lte('month', '2024-12-31')  // Extended to include December
         .order('month', { ascending: false });
 
       if (queryResult.error) {
@@ -102,12 +102,12 @@ export const usePortfolioData = () => {
 
       // If no data, try alternative approach with between filter
       if (!queryResult.data?.length) {
-        console.log('No data found with ISO dates, trying between filter...');
+        console.log('No data found with date range, trying between filter...');
         const altResult = await supabase
           .from('portfolio_data')
           .select('*')
           .eq('profile_id', user.id)
-          .filter('month', 'between', ['2021-11-01', '2024-11-30'])
+          .filter('month', 'between', ['2021-11-01', '2024-12-31'])
           .order('month', { ascending: false });
 
         if (altResult.error) {
@@ -141,7 +141,8 @@ export const usePortfolioData = () => {
     // Convert the month string back to a date format
     const [month, year] = updatedRow.month.split(' ');
     const monthIndex = MONTHS.indexOf(month);
-    const dateStr = new Date(Number(year), monthIndex, 1).toISOString().split('T')[0];
+    const date = new Date(Number(year), monthIndex + 1, 0); // Get last day of the month
+    const dateStr = date.toISOString().split('T')[0];
     
     console.log('Updating portfolio data:', {
       month: dateStr,
