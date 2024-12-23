@@ -57,38 +57,55 @@ const generateSampleData = () => {
   return data;
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    const getValueColor = (value: number) => {
-      if (value > 0) return "text-green-600";
-      if (value < 0) return "text-red-600";
-      return "text-foreground";
-    };
+interface TooltipData {
+  value: number;
+  monthlyGain: number;
+  monthlyReturn: string;
+  ytdGain: number;
+  ytdReturn: string;
+}
 
-    const data = payload[0].payload;
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    payload: TooltipData;
+  }>;
+  label?: string;
+}
 
-    return (
-      <div className="bg-white p-4 border rounded-lg shadow-lg">
-        <p className="font-bold mb-2">{label}</p>
-        <p className="text-foreground">
-          Portfolio Value: ${data.value.toLocaleString()}
-        </p>
-        <p className={getValueColor(data.monthlyGain)}>
-          Monthly Gain: ${data.monthlyGain.toLocaleString()}
-        </p>
-        <p className={getValueColor(Number(data.monthlyReturn))}>
-          Monthly Return: {data.monthlyReturn}%
-        </p>
-        <p className={getValueColor(data.ytdGain)}>
-          YTD Gain: ${data.ytdGain.toLocaleString()}
-        </p>
-        <p className={getValueColor(Number(data.ytdReturn))}>
-          YTD Return: {data.ytdReturn}%
-        </p>
-      </div>
-    );
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (!active || !payload || !payload[0] || !payload[0].payload) {
+    return null;
   }
-  return null;
+
+  const getValueColor = (value: number) => {
+    if (value > 0) return "text-green-600";
+    if (value < 0) return "text-red-600";
+    return "text-foreground";
+  };
+
+  const data = payload[0].payload;
+
+  return (
+    <div className="bg-white p-4 border rounded-lg shadow-lg">
+      <p className="font-bold mb-2">{label}</p>
+      <p className="text-foreground">
+        Portfolio Value: ${data.value?.toLocaleString() ?? 'N/A'}
+      </p>
+      <p className={getValueColor(data.monthlyGain)}>
+        Monthly Gain: ${data.monthlyGain?.toLocaleString() ?? 'N/A'}
+      </p>
+      <p className={getValueColor(Number(data.monthlyReturn))}>
+        Monthly Return: {data.monthlyReturn ?? 'N/A'}%
+      </p>
+      <p className={getValueColor(data.ytdGain)}>
+        YTD Gain: ${data.ytdGain?.toLocaleString() ?? 'N/A'}
+      </p>
+      <p className={getValueColor(Number(data.ytdReturn))}>
+        YTD Return: {data.ytdReturn ?? 'N/A'}%
+      </p>
+    </div>
+  );
 };
 
 const PortfolioChart = () => {
