@@ -14,20 +14,14 @@ export interface PortfolioDataPoint {
   ytdNetFlow: number;
 }
 
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
-const getLastDayOfMonth = (year: number, month: number) => {
-  // month is 0-based in JS Date
-  return new Date(year, month + 1, 0).getDate();
-};
-
 const formatDate = (dateStr: string) => {
   console.log('Formatting date input:', dateStr);
   const date = new Date(dateStr);
-  const month = MONTHS[date.getMonth()];
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const month = months[date.getMonth()];
   const year = date.getFullYear();
   const formattedDate = `${month} ${year}`;
   console.log('Formatted date output:', formattedDate);
@@ -71,7 +65,11 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
     const [monthB, yearB] = b.month.split(' ');
     const yearDiff = Number(yearB) - Number(yearA);
     if (yearDiff !== 0) return yearDiff;
-    return MONTHS.indexOf(monthB) - MONTHS.indexOf(monthA);
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months.indexOf(monthB) - months.indexOf(monthA);
   });
   
   console.log('Final processed and sorted data:', sortedResult);
@@ -117,9 +115,12 @@ export const usePortfolioData = () => {
     
     // Convert the month string back to a date format
     const [month, year] = updatedRow.month.split(' ');
-    const monthIndex = MONTHS.indexOf(month);
-    const lastDay = getLastDayOfMonth(Number(year), monthIndex);
-    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    const monthIndex = months.indexOf(month);
+    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(new Date(Number(year), monthIndex + 1, 0).getDate()).padStart(2, '0')}`;
     
     console.log('Updating portfolio data:', {
       month: dateStr,
