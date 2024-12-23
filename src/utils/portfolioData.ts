@@ -25,44 +25,16 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
   
-  const result: PortfolioDataPoint[] = [];
-  let previousValue = 0;
-  let startYearValue = 0;
-  let currentYear = '';
-  
-  sortedData.forEach((item) => {
-    const itemDate = new Date(item.month);
-    const year = itemDate.getFullYear().toString();
-    
-    // Reset start year value when year changes
-    if (year !== currentYear) {
-      startYearValue = previousValue;
-      currentYear = year;
-    }
-    
-    const value = Number(item.balance);
-    const netFlow = Number(item.flows);
-    const monthlyGain = value - previousValue - netFlow;
-    const monthlyReturn = ((monthlyGain / (previousValue || 1)) * 100).toFixed(2);
-    const ytdGain = value - startYearValue;
-    const ytdReturn = ((ytdGain / (startYearValue || 1)) * 100).toFixed(2);
-    
-    result.push({
-      month: formatDate(item.month),
-      value,
-      netFlow,
-      monthlyGain,
-      monthlyReturn,
-      ytdGain,
-      ytdReturn,
-      ytdNetFlow: Number(item.ytd_flows),
-    });
-    
-    previousValue = value;
-  });
-  
-  // Return in descending order for display
-  return result.reverse();
+  return sortedData.map((item) => ({
+    month: formatDate(item.month),
+    value: Number(item.balance),
+    netFlow: Number(item.flows),
+    monthlyGain: Number(item.mom_gain),
+    monthlyReturn: item.mom_return.toFixed(2),
+    ytdGain: Number(item.ytd_gain),
+    ytdReturn: item.ytd_return.toFixed(2),
+    ytdNetFlow: Number(item.ytd_flows),
+  })).reverse(); // Return in descending order for display
 };
 
 export const usePortfolioData = () => {
