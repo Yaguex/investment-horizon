@@ -42,6 +42,9 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
       <p className={getValueColor(data.monthlyReturn)}>
         Monthly Return: {data.monthlyReturn ?? 'N/A'}%
       </p>
+      <p className={getValueColor(data.ytdReturn)}>
+        YTD Return: {data.ytdReturn ?? 'N/A'}%
+      </p>
     </div>
   );
 };
