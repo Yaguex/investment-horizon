@@ -1,8 +1,10 @@
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
+  const { signOut } = useAuth();
   const menuItems = ["Dashboard", "Portfolio", "Transactions", "Settings"];
 
   return (
@@ -10,25 +12,35 @@ const Header = () => {
       <div className="container h-full mx-auto px-4 flex items-center justify-between">
         <div className="text-2xl font-bold text-white">InvestTrack</div>
         
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-primary/90">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <nav className="flex flex-col gap-4 mt-8">
-              {menuItems.map((item) => (
-                <button
-                  key={item}
-                  className="text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  {item}
-                </button>
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            onClick={signOut}
+            className="text-white hover:bg-primary/90"
+          >
+            Sign out
+          </Button>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white hover:bg-primary/90">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <nav className="flex flex-col gap-4 mt-8">
+                {menuItems.map((item) => (
+                  <button
+                    key={item}
+                    className="text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );
