@@ -58,6 +58,7 @@ export type Database = {
           id: number
           mom_gain: number | null
           mom_return: number | null
+          mom_return_accumulated: number | null
           month: string | null
           portfolio_id: number | null
           profile_id: string | null
@@ -71,6 +72,7 @@ export type Database = {
           id: number
           mom_gain?: number | null
           mom_return?: number | null
+          mom_return_accumulated?: number | null
           month?: string | null
           portfolio_id?: number | null
           profile_id?: string | null
@@ -84,6 +86,7 @@ export type Database = {
           id?: number
           mom_gain?: number | null
           mom_return?: number | null
+          mom_return_accumulated?: number | null
           month?: string | null
           portfolio_id?: number | null
           profile_id?: string | null

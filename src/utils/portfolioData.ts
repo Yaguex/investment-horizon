@@ -5,8 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface PortfolioDataPoint {
   month: string;
-  originalDate: string;  // The original ISO date from the database
-  profileId: string;     // The profile ID for the row
+  originalDate: string;
+  profileId: string;
   value: number;
   netFlow: number;
   monthlyGain: number;
@@ -14,6 +14,7 @@ export interface PortfolioDataPoint {
   ytdGain: number;
   ytdReturn: string;
   ytdNetFlow: number;
+  monthlyReturnAccumulated: number;
 }
 
 const formatDate = (dateStr: string) => {
@@ -49,8 +50,8 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
     
     const dataPoint = {
       month: formattedMonth,
-      originalDate: item.month, // Store the original date for querying
-      profileId: item.profile_id, // Store the profile ID for querying
+      originalDate: item.month,
+      profileId: item.profile_id,
       value: Number(item.balance),
       netFlow: Number(item.flows),
       monthlyGain: Number(item.mom_gain),
@@ -58,6 +59,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
       ytdGain: Number(item.ytd_gain),
       ytdReturn: item.ytd_return.toFixed(2),
       ytdNetFlow: Number(item.ytd_flows),
+      monthlyReturnAccumulated: Number(item.mom_return_accumulated || 0),
     };
     console.log('Processed data point:', dataPoint);
     return dataPoint;
@@ -136,6 +138,7 @@ export const usePortfolioData = () => {
       mom_return: parseFloat(updatedRow.monthlyReturn),
       ytd_gain: updatedRow.ytdGain,
       ytd_return: parseFloat(updatedRow.ytdReturn),
+      mom_return_accumulated: updatedRow.monthlyReturnAccumulated,
     });
     
     const { error } = await supabase
@@ -148,6 +151,7 @@ export const usePortfolioData = () => {
         mom_return: parseFloat(updatedRow.monthlyReturn),
         ytd_gain: updatedRow.ytdGain,
         ytd_return: parseFloat(updatedRow.ytdReturn),
+        mom_return_accumulated: updatedRow.monthlyReturnAccumulated,
       })
       .eq('month', dateStr)
       .eq('profile_id', user.id);
@@ -174,6 +178,7 @@ export const usePortfolioData = () => {
       ytdGain: 0,
       ytdReturn: '0',
       ytdNetFlow: 0,
+      monthlyReturnAccumulated: 0,
     },
     updateData,
     isLoading,

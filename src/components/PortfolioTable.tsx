@@ -55,6 +55,14 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
       .map(d => d.month === originalRow.month ? newNetFlow : d.netFlow);
     const ytdNetFlow = ytdData.reduce((sum, flow) => sum + flow, 0);
 
+    // Calculate accumulated monthly return
+    const previousMonthIndex = monthIndex > 0 ? monthIndex - 1 : -1;
+    const previousMonthData = previousMonthIndex >= 0
+      ? yearData.find(d => months.indexOf(d.month.split(" ")[0]) === previousMonthIndex)
+      : null;
+    const previousAccumulatedReturn = previousMonthData?.monthlyReturnAccumulated || 0;
+    const monthlyReturnAccumulated = previousAccumulatedReturn + parseFloat(monthlyReturn);
+
     return {
       ...originalRow,
       value: newValue,
@@ -64,6 +72,7 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
       ytdGain,
       ytdReturn,
       ytdNetFlow,
+      monthlyReturnAccumulated,
     };
   };
 
@@ -116,6 +125,7 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                 <TableHead className="text-right">YTD Net Flows</TableHead>
                 <TableHead className="text-right">Monthly Gain</TableHead>
                 <TableHead className="text-right">Monthly Return</TableHead>
+                <TableHead className="text-right">Accumulated Return</TableHead>
                 <TableHead className="text-right">YTD Gain</TableHead>
                 <TableHead className="text-right">YTD Return</TableHead>
                 <TableHead></TableHead>
@@ -142,6 +152,9 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                   </TableCell>
                   <TableCell className={cn("text-right", getValueColor(row.monthlyReturn))}>
                     {row.monthlyReturn}%
+                  </TableCell>
+                  <TableCell className={cn("text-right", getValueColor(row.monthlyReturnAccumulated))}>
+                    {row.monthlyReturnAccumulated.toFixed(2)}%
                   </TableCell>
                   <TableCell className={cn("text-right", getValueColor(row.ytdGain))}>
                     ${row.ytdGain.toLocaleString()}
