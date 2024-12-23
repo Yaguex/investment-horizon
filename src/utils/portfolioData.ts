@@ -2,31 +2,76 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { parseDate, formatDate, compareMonths } from "./dateUtils";
-import type { PortfolioDataPoint } from "./types";
+
+export interface PortfolioDataPoint {
+  month: string;
+  value: number;
+  netFlow: number;
+  monthlyGain: number;
+  monthlyReturn: string;
+  ytdGain: number;
+  ytdReturn: string;
+  ytdNetFlow: number;
+}
+
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+const formatDate = (dateStr: string) => {
+  console.log('Formatting date:', dateStr);
+  const date = new Date(dateStr);
+  const month = MONTHS[date.getMonth()];
+  const year = date.getFullYear();
+  const formattedDate = `${month} ${year}`;
+  console.log('Formatted date:', formattedDate);
+  return formattedDate;
+};
 
 const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   console.log('Raw data from DB:', data);
   console.log('Number of rows from DB:', data.length);
   
+  // Generate expected dates from Nov 2021 to Nov 2024
+  const expectedDates = [];
+  let currentDate = new Date('2021-11-01');
+  const endDate = new Date('2024-11-30');
+  
+  while (currentDate <= endDate) {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    // Get the last day of the current month
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    expectedDates.push(
+      new Date(year, month, lastDay)
+        .toISOString()
+        .split('T')[0]
+    );
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+  
+  console.log('Expected dates:', expectedDates);
+  console.log('Actual dates in data:', data.map(d => d.month));
+  
+  // Find missing dates
+  const actualDates = new Set(data.map(d => d.month));
+  const missingDates = expectedDates.filter(date => !actualDates.has(date));
+  console.log('Missing dates:', missingDates);
+  
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => {
     const dateA = new Date(a.month);
     const dateB = new Date(b.month);
+    console.log(`Comparing dates: ${dateA.toISOString()} vs ${dateB.toISOString()}`);
     return dateA.getTime() - dateB.getTime();
   });
   
   console.log('Sorted data:', sortedData);
   
   const result = sortedData.map((item) => {
-    console.log(`Processing month: ${item.month}`);
-    const parsedDate = parseDate(item.month);
-    const formattedMonth = formatDate(parsedDate);
-    
-    if (!formattedMonth) {
-      console.error('Failed to format month:', item.month);
-      return null;
-    }
+    const formattedMonth = formatDate(item.month);
+    console.log(`Processing month: ${item.month} -> ${formattedMonth}`);
     
     const dataPoint = {
       month: formattedMonth,
@@ -40,17 +85,15 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
     };
     console.log('Processed data point:', dataPoint);
     return dataPoint;
-  }).filter(Boolean) as PortfolioDataPoint[];
+  });
   
   // Sort in reverse chronological order for display
   const sortedResult = result.sort((a, b) => {
     const [monthA, yearA] = a.month.split(' ');
     const [monthB, yearB] = b.month.split(' ');
-    
     const yearDiff = Number(yearB) - Number(yearA);
     if (yearDiff !== 0) return yearDiff;
-    
-    return compareMonths(monthA, monthB);
+    return MONTHS.indexOf(monthB) - MONTHS.indexOf(monthA);
   });
   
   console.log('Final processed and sorted data:', sortedResult);
@@ -69,10 +112,13 @@ export const usePortfolioData = () => {
       
       console.log('Fetching portfolio data for user:', user.id);
       
+      // Use a single query that ensures we get ALL months in our range
       const { data: portfolioData, error } = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
+        .gte('month', '2021-11-01')  // Start from November 2021
+        .lte('month', '2024-11-30')  // End at November 2024
         .order('month', { ascending: false });
       
       if (error) {
@@ -82,8 +128,7 @@ export const usePortfolioData = () => {
       
       console.log('Raw response from Supabase:', portfolioData);
       console.log('Number of rows returned from query:', portfolioData?.length);
-      
-      return calculatePortfolioMetrics(portfolioData || []);
+      return calculatePortfolioMetrics(portfolioData);
     },
     enabled: !!user,
   });
@@ -97,10 +142,7 @@ export const usePortfolioData = () => {
     // Convert the month string back to a date format
     const [month, year] = updatedRow.month.split(' ');
     const monthIndex = MONTHS.indexOf(month);
-    // Get the last day of the month
-    const lastDay = new Date(Number(year), monthIndex + 1, 0).getDate();
-    // Format as YYYY-MM-DD for Supabase
-    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    const dateStr = new Date(Number(year), monthIndex, 1).toISOString().split('T')[0];
     
     console.log('Updating portfolio data:', {
       month: dateStr,
