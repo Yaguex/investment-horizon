@@ -2,51 +2,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
-export interface PortfolioDataPoint {
-  month: string;
-  value: number;
-  netFlow: number;
-  monthlyGain: number;
-  monthlyReturn: string;
-  ytdGain: number;
-  ytdReturn: string;
-  ytdNetFlow: number;
-}
-
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
-const parseDate = (dateStr: string) => {
-  console.log('Parsing date input:', dateStr);
-  // Split MM-DD-YYYY format
-  const [month, day, year] = dateStr.split('-').map(Number);
-  
-  // Validate date components
-  if (!month || !day || !year || 
-      month < 1 || month > 12 || 
-      day < 1 || day > 31 || 
-      year < 2000 || year > 2024) {
-    console.error('Invalid date components:', { month, day, year });
-    return null;
-  }
-  
-  // Months are 0-based in JS Date
-  const date = new Date(year, month - 1, day);
-  console.log('Parsed date:', date.toISOString());
-  return date;
-};
-
-const formatDate = (date: Date | null) => {
-  if (!date) return '';
-  const month = MONTHS[date.getMonth()];
-  const year = date.getFullYear();
-  const formattedDate = `${month} ${year}`;
-  console.log('Formatted date output:', formattedDate);
-  return formattedDate;
-};
+import { parseDate, formatDate, compareMonths } from "./dateUtils";
+import type { PortfolioDataPoint } from "./types";
 
 const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   console.log('Raw data from DB:', data);
@@ -54,23 +11,17 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   
   // Sort data by date in ascending order for calculations
   const sortedData = [...data].sort((a, b) => {
-    const dateA = parseDate(a.month);
-    const dateB = parseDate(b.month);
-    
-    if (!dateA || !dateB) {
-      console.error('Invalid date comparison:', { a: a.month, b: b.month });
-      return 0;
-    }
-    
+    const dateA = new Date(a.month);
+    const dateB = new Date(b.month);
     return dateA.getTime() - dateB.getTime();
   });
   
   console.log('Sorted data:', sortedData);
   
   const result = sortedData.map((item) => {
+    console.log(`Processing month: ${item.month}`);
     const parsedDate = parseDate(item.month);
     const formattedMonth = formatDate(parsedDate);
-    console.log(`Processing month: ${item.month} -> ${formattedMonth}`);
     
     if (!formattedMonth) {
       console.error('Failed to format month:', item.month);
@@ -99,15 +50,7 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
     const yearDiff = Number(yearB) - Number(yearA);
     if (yearDiff !== 0) return yearDiff;
     
-    const monthIndexA = MONTHS.indexOf(monthA);
-    const monthIndexB = MONTHS.indexOf(monthB);
-    
-    if (monthIndexA === -1 || monthIndexB === -1) {
-      console.error('Invalid month comparison:', { monthA, monthB });
-      return 0;
-    }
-    
-    return monthIndexB - monthIndexA;
+    return compareMonths(monthA, monthB);
   });
   
   console.log('Final processed and sorted data:', sortedResult);
@@ -130,8 +73,6 @@ export const usePortfolioData = () => {
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .gte('month', '2021-11-01')
-        .lte('month', '2024-11-30')
         .order('month', { ascending: false });
       
       if (error) {
@@ -158,8 +99,8 @@ export const usePortfolioData = () => {
     const monthIndex = MONTHS.indexOf(month);
     // Get the last day of the month
     const lastDay = new Date(Number(year), monthIndex + 1, 0).getDate();
-    // Format as MM-DD-YYYY
-    const dateStr = `${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}-${year}`;
+    // Format as YYYY-MM-DD for Supabase
+    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     
     console.log('Updating portfolio data:', {
       month: dateStr,
