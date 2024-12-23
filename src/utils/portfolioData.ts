@@ -33,13 +33,18 @@ const calculatePortfolioMetrics = (data: any[]): PortfolioDataPoint[] => {
   console.log('Raw data from DB:', data);
   console.log('Number of rows from DB:', data.length);
   
-  // Generate expected dates from Dec 2021 to Dec 2024
+  // Generate expected dates from Nov 2021 to Nov 2024
   const expectedDates = [];
-  let currentDate = new Date('2021-12-01');
-  const endDate = new Date('2024-12-31');
+  let currentDate = new Date('2021-11-01');
+  const endDate = new Date('2024-11-30');
+  
   while (currentDate <= endDate) {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    // Get the last day of the current month
+    const lastDay = new Date(year, month + 1, 0).getDate();
     expectedDates.push(
-      new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+      new Date(year, month, lastDay)
         .toISOString()
         .split('T')[0]
     );
@@ -106,12 +111,14 @@ export const usePortfolioData = () => {
       if (!user) throw new Error('User not authenticated');
       
       console.log('Fetching portfolio data for user:', user.id);
+      
+      // Use a single query that ensures we get ALL months in our range
       const { data: portfolioData, error } = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
-        .gte('month', '2021-12-01')
-        .lte('month', '2024-12-31')
+        .gte('month', '2021-11-01')  // Start from November 2021
+        .lte('month', '2024-11-30')  // End at November 2024
         .order('month', { ascending: false });
       
       if (error) {
