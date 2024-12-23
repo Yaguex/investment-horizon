@@ -100,10 +100,10 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     return "text-foreground";
   };
 
-  const isYearStart = (month: string, index: number) => {
-    if (index === initialData.length - 1) return false;
-    const nextMonth = initialData[index + 1]?.month;
-    return month.includes("Dec") && nextMonth?.includes("Jan");
+  const isYearTransition = (month: string, index: number) => {
+    if (index === 0) return false;
+    const prevMonth = initialData[index - 1]?.month;
+    return month.includes("Jan") && prevMonth?.includes("Dec");
   };
 
   return (
@@ -133,7 +133,7 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                   key={row.month} 
                   className={cn(
                     "group",
-                    isYearStart(row.month, index) && "border-b-2 border-gray-300"
+                    isYearTransition(row.month, index) && "border-t-2 border-gray-400"
                   )}
                 >
                   <TableCell className="font-medium">{row.month}</TableCell>
