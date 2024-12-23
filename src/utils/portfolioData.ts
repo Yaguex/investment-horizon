@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 export interface PortfolioDataPoint {
   month: string;
   value: number;
@@ -54,11 +56,16 @@ export const generatePortfolioData = () => {
 };
 
 export const usePortfolioData = () => {
-  const data = generatePortfolioData();
+  const [data, setData] = useState<PortfolioDataPoint[]>(generatePortfolioData());
   const latestData = data[0]; // First item since data is in descending order
+  
+  const updateData = (newData: PortfolioDataPoint[]) => {
+    setData(newData);
+  };
   
   return {
     data,
     latestData,
+    updateData,
   };
 };

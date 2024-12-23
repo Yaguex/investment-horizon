@@ -20,15 +20,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { type PortfolioDataPoint } from "@/utils/portfolioData";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PortfolioTableProps {
   data: PortfolioDataPoint[];
+  onDataUpdate: (updatedData: PortfolioDataPoint[]) => void;
 }
 
-const PortfolioTable = ({ data: initialData }: PortfolioTableProps) => {
-  const [data, setData] = useState(initialData);
+const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps) => {
   const [editingRow, setEditingRow] = useState<PortfolioDataPoint | null>(null);
   const [editValues, setEditValues] = useState({ value: "", netFlow: "" });
+  const { toast } = useToast();
 
   const handleEdit = (row: PortfolioDataPoint) => {
     setEditingRow(row);
@@ -38,19 +40,62 @@ const PortfolioTable = ({ data: initialData }: PortfolioTableProps) => {
     });
   };
 
+  const calculateUpdatedRow = (
+    originalRow: PortfolioDataPoint,
+    newValue: number,
+    newNetFlow: number
+  ): PortfolioDataPoint => {
+    const previousValue = originalRow.value;
+    const monthlyGain = newValue - previousValue - newNetFlow;
+    const monthlyReturn = ((monthlyGain / previousValue) * 100).toFixed(2);
+
+    // Find the first entry of the year for YTD calculations
+    const yearStart = initialData.findLast(
+      (item) => item.month.includes("Jan") && 
+      item.month.split(" ")[1] === originalRow.month.split(" ")[1]
+    );
+    const startYearValue = yearStart ? yearStart.value : previousValue;
+    const ytdGain = newValue - startYearValue;
+    const ytdReturn = ((ytdGain / startYearValue) * 100).toFixed(2);
+
+    return {
+      ...originalRow,
+      value: newValue,
+      netFlow: newNetFlow,
+      monthlyGain,
+      monthlyReturn,
+      ytdGain,
+      ytdReturn,
+    };
+  };
+
   const handleSave = () => {
-    const updatedData = data.map((row) => {
-      if (row.month === editingRow?.month) {
-        return {
-          ...row,
-          value: Number(editValues.value),
-          netFlow: Number(editValues.netFlow),
-        };
-      }
-      return row;
-    });
-    setData(updatedData);
+    if (!editingRow) return;
+
+    const newValue = Number(editValues.value);
+    const newNetFlow = Number(editValues.netFlow);
+
+    if (isNaN(newValue) || isNaN(newNetFlow)) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter valid numbers for Portfolio Value and Net Flows",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedRow = calculateUpdatedRow(editingRow, newValue, newNetFlow);
+    const updatedData = initialData.map((row) =>
+      row.month === editingRow.month ? updatedRow : row
+    );
+
+    onDataUpdate(updatedData);
     setEditingRow(null);
+    
+    toast({
+      title: "Success",
+      description: "Portfolio data has been updated",
+    });
   };
 
   const getValueColor = (value: number | string) => {
@@ -81,7 +126,7 @@ const PortfolioTable = ({ data: initialData }: PortfolioTableProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((row) => (
+              {initialData.map((row) => (
                 <TableRow key={row.month} className="group">
                   <TableCell className="font-medium">{row.month}</TableCell>
                   <TableCell className="text-right">
