@@ -106,6 +106,13 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     return month.includes("Jan") && prevMonth?.includes("Dec");
   };
 
+  console.log("Checking year transitions in table data:");
+  initialData.forEach((row, index) => {
+    if (isYearTransition(row.month, index)) {
+      console.log(`Year transition detected at index ${index}, month: ${row.month}`);
+    }
+  });
+
   return (
     <Card className="animate-fade-in">
       <CardHeader>
@@ -133,7 +140,7 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
                   key={row.month} 
                   className={cn(
                     "group",
-                    isYearTransition(row.month, index) && "border-t-2 border-gray-400"
+                    isYearTransition(row.month, index) && "border-t-4 border-gray-400"
                   )}
                 >
                   <TableCell className="font-medium">{row.month}</TableCell>
