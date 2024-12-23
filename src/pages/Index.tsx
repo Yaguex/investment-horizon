@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
 import PortfolioChart from "@/components/PortfolioChart";
 import PortfolioTable from "@/components/PortfolioTable";
-import { PortfolioProvider } from "@/contexts/PortfolioContext";
+import { PortfolioProvider, usePortfolio } from "@/contexts/PortfolioContext";
 
 const Index = () => {
   return (
