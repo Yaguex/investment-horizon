@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
 import PortfolioChart from "@/components/PortfolioChart";
+import AccumulatedReturnChart from "@/components/AccumulatedReturnChart";
 import PortfolioTable from "@/components/PortfolioTable";
 import { usePortfolioData } from "@/utils/portfolioData";
 
@@ -37,11 +38,12 @@ const Index = () => {
           />
         </div>
 
-        <div className="mb-8">
+        <div className="space-y-8">
           <PortfolioChart data={data} />
+          <AccumulatedReturnChart data={data} />
         </div>
 
-        <div>
+        <div className="mt-8">
           <PortfolioTable data={data} onDataUpdate={updateData} />
         </div>
       </main>
