@@ -50,10 +50,15 @@ const PortfolioTable = ({ data: initialData, onDataUpdate }: PortfolioTableProps
     const monthlyReturn = ((monthlyGain / previousValue) * 100).toFixed(2);
 
     // Find the first entry of the year for YTD calculations
-    const yearStart = initialData.findLast(
-      (item) => item.month.includes("Jan") && 
-      item.month.split(" ")[1] === originalRow.month.split(" ")[1]
-    );
+    // Instead of using findLast, we'll filter and get the last January entry
+    const currentYear = originalRow.month.split(" ")[1];
+    const yearStart = initialData
+      .filter(item => 
+        item.month.includes("Jan") && 
+        item.month.split(" ")[1] === currentYear
+      )
+      .reverse()[0];  // Get the last matching item
+
     const startYearValue = yearStart ? yearStart.value : previousValue;
     const ytdGain = newValue - startYearValue;
     const ytdReturn = ((ytdGain / startYearValue) * 100).toFixed(2);
