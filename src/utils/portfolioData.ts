@@ -87,7 +87,7 @@ export const usePortfolioData = () => {
       console.log('Fetching portfolio data for user:', user.id);
       
       // Try Claude's suggestion with explicit ISO dates
-      const { data: portfolioData, error } = await supabase
+      let queryResult = await supabase
         .from('portfolio_data')
         .select('*')
         .eq('profile_id', user.id)
@@ -95,39 +95,39 @@ export const usePortfolioData = () => {
         .lte('month', '2024-11-30T23:59:59.999Z')
         .order('month', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching portfolio data:', error);
-        throw error;
+      if (queryResult.error) {
+        console.error('Error fetching portfolio data:', queryResult.error);
+        throw queryResult.error;
       }
 
       // If no data, try alternative approach with between filter
-      if (!portfolioData?.length) {
+      if (!queryResult.data?.length) {
         console.log('No data found with ISO dates, trying between filter...');
-        const { data: altData, error: altError } = await supabase
+        const altResult = await supabase
           .from('portfolio_data')
           .select('*')
           .eq('profile_id', user.id)
           .filter('month', 'between', ['2021-11-01', '2024-11-30'])
           .order('month', { ascending: false });
 
-        if (altError) {
-          console.error('Error with alternative query:', altError);
-          throw altError;
+        if (altResult.error) {
+          console.error('Error with alternative query:', altResult.error);
+          throw altResult.error;
         }
 
-        portfolioData = altData;
+        queryResult = altResult;
       }
       
-      console.log('Raw response from Supabase:', portfolioData);
-      console.log('Number of rows returned from query:', portfolioData?.length);
+      console.log('Raw response from Supabase:', queryResult.data);
+      console.log('Number of rows returned from query:', queryResult.data?.length);
 
       // Log all dates to debug
-      console.log('All dates:', portfolioData?.map(row => ({
+      console.log('All dates:', queryResult.data?.map(row => ({
         month: row.month,
         formatted: new Date(row.month).toISOString()
       })));
 
-      return calculatePortfolioMetrics(portfolioData || []);
+      return calculatePortfolioMetrics(queryResult.data || []);
     },
     enabled: !!user,
   });
