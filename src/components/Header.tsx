@@ -6,13 +6,13 @@ const Header = () => {
   const menuItems = ["Dashboard", "Portfolio", "Transactions", "Settings"];
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50">
+    <header className="fixed top-0 left-0 right-0 h-16 bg-primary border-b border-gray-200 z-50">
       <div className="container h-full mx-auto px-4 flex items-center justify-between">
-        <div className="text-2xl font-bold text-primary">InvestTrack</div>
+        <div className="text-2xl font-bold text-white">InvestTrack</div>
         
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-primary/90">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>

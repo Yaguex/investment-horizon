@@ -10,7 +10,6 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Sample data - replace with real data
 const generateSampleData = () => {
   const data = [];
   const months = [
@@ -19,18 +18,26 @@ const generateSampleData = () => {
   ];
   
   let value = 100000;
-  for (let i = 0; i < 24; i++) {
-    const month = months[i % 12];
-    const year = 2022 + Math.floor(i / 12);
+  const startDate = new Date(2021, 6); // July 2021
+  const endDate = new Date();
+  let currentDate = startDate;
+  
+  while (currentDate <= endDate) {
+    const month = months[currentDate.getMonth()];
+    const year = currentDate.getFullYear();
     value = value * (1 + (Math.random() * 0.1 - 0.03));
     
     const ytdReturn = ((value - 100000) / 100000) * 100;
+    const netFlow = Math.random() > 0.5 ? Math.round(Math.random() * 5000) : -Math.round(Math.random() * 5000);
     
     data.push({
       date: `${month} ${year}`,
       value: Math.round(value),
-      ytdReturn: ytdReturn.toFixed(2)
+      ytdReturn: ytdReturn.toFixed(2),
+      netFlow
     });
+    
+    currentDate.setMonth(currentDate.getMonth() + 1);
   }
   
   return data;
@@ -44,7 +51,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p className="text-primary">
           Value: ${payload[0].value.toLocaleString()}
         </p>
-        <p className="text-secondary">
+        <p className={Number(payload[0].payload.ytdReturn) >= 0 ? "text-green-600" : "text-red-600"}>
           YTD Return: {payload[0].payload.ytdReturn}%
         </p>
       </div>
