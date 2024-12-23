@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import { useState } from "react";
 import { type PortfolioDataPoint } from "@/utils/portfolioData";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EditRowSheetProps {
   row: PortfolioDataPoint;
@@ -12,6 +15,9 @@ interface EditRowSheetProps {
 
 export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
   const [editValues, setEditValues] = useState({ value: "", netFlow: "" });
+  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleEdit = () => {
     setEditValues({
@@ -20,8 +26,56 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
     });
   };
 
+  const handleSave = async () => {
+    try {
+      console.log('Saving row update to database:', {
+        month: row.month,
+        balance: editValues.value,
+        flows: editValues.netFlow
+      });
+
+      const { error } = await supabase
+        .from('portfolio_data')
+        .update({
+          balance: Number(editValues.value),
+          flows: Number(editValues.netFlow)
+        })
+        .eq('month', row.month);
+
+      if (error) {
+        console.error('Error updating portfolio data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save changes. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Call the original onSave to update local state
+      onSave(editValues);
+
+      // Invalidate and refetch the query to update the UI
+      await queryClient.invalidateQueries({ queryKey: ['portfolioData'] });
+
+      setIsOpen(false);
+      
+      toast({
+        title: "Success",
+        description: "Changes saved successfully",
+      });
+    } catch (error) {
+      console.error('Error in save operation:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button
           variant="ghost"
@@ -61,10 +115,10 @@ export const EditRowSheet = ({ row, onSave }: EditRowSheetProps) => {
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={() => setEditValues({ value: "", netFlow: "" })}>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={() => onSave(editValues)}>Save</Button>
+          <Button onClick={handleSave}>Save</Button>
         </div>
       </SheetContent>
     </Sheet>
