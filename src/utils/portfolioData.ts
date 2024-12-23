@@ -120,7 +120,7 @@ export const usePortfolioData = () => {
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     const monthIndex = months.indexOf(month);
-    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(new Date(Number(year), monthIndex + 1, 0).getDate()).padStart(2, '0')}`;
+    const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`;
     
     console.log('Updating portfolio data:', {
       month: dateStr,
