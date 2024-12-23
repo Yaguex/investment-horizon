@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -10,65 +9,12 @@ import {
   ReferenceLine,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const generateSampleData = () => {
-  const data = [];
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-  
-  let value = 100000;
-  let previousValue = value;
-  const startDate = new Date(2021, 6); // July 2021
-  const endDate = new Date();
-  let currentDate = startDate;
-  let yearStartValue = value;
-  
-  while (currentDate <= endDate) {
-    const month = months[currentDate.getMonth()];
-    const year = currentDate.getFullYear();
-    
-    // Reset YTD tracking at start of year
-    if (month === "Jan") {
-      yearStartValue = value;
-    }
-    
-    value = value * (1 + (Math.random() * 0.1 - 0.03));
-    const monthlyGain = value - previousValue;
-    const monthlyReturn = ((value - previousValue) / previousValue) * 100;
-    const ytdGain = value - yearStartValue;
-    const ytdReturn = ((value - yearStartValue) / yearStartValue) * 100;
-    
-    data.push({
-      date: `${month} ${year}`,
-      value: Math.round(value),
-      monthlyGain: Math.round(monthlyGain),
-      monthlyReturn: monthlyReturn.toFixed(2),
-      ytdGain: Math.round(ytdGain),
-      ytdReturn: ytdReturn.toFixed(2),
-      isYearEnd: month === "Dec"
-    });
-    
-    previousValue = value;
-    currentDate.setMonth(currentDate.getMonth() + 1);
-  }
-  
-  return data;
-};
-
-interface TooltipData {
-  value: number;
-  monthlyGain: number;
-  monthlyReturn: string;
-  ytdGain: number;
-  ytdReturn: string;
-}
+import { type PortfolioDataPoint } from "@/utils/portfolioData";
 
 interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{
-    payload: TooltipData;
+    payload: PortfolioDataPoint;
   }>;
   label?: string;
 }
@@ -78,9 +24,10 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     return null;
   }
 
-  const getValueColor = (value: number) => {
-    if (value > 0) return "text-green-600";
-    if (value < 0) return "text-red-600";
+  const getValueColor = (value: number | string) => {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (numValue > 0) return "text-green-600";
+    if (numValue < 0) return "text-red-600";
     return "text-foreground";
   };
 
@@ -95,22 +42,24 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
       <p className={getValueColor(data.monthlyGain)}>
         Monthly Gain: ${data.monthlyGain?.toLocaleString() ?? 'N/A'}
       </p>
-      <p className={getValueColor(Number(data.monthlyReturn))}>
+      <p className={getValueColor(data.monthlyReturn)}>
         Monthly Return: {data.monthlyReturn ?? 'N/A'}%
       </p>
       <p className={getValueColor(data.ytdGain)}>
         YTD Gain: ${data.ytdGain?.toLocaleString() ?? 'N/A'}
       </p>
-      <p className={getValueColor(Number(data.ytdReturn))}>
+      <p className={getValueColor(data.ytdReturn)}>
         YTD Return: {data.ytdReturn ?? 'N/A'}%
       </p>
     </div>
   );
 };
 
-const PortfolioChart = () => {
-  const [data, setData] = useState(generateSampleData());
+interface PortfolioChartProps {
+  data: PortfolioDataPoint[];
+}
 
+const PortfolioChart = ({ data }: PortfolioChartProps) => {
   // Calculate domain padding
   const values = data.map(item => item.value);
   const maxValue = Math.max(...values);
@@ -133,7 +82,7 @@ const PortfolioChart = () => {
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
-                dataKey="date"
+                dataKey="month"
                 tick={{ fontSize: 12 }}
                 interval={2}
               />
@@ -145,10 +94,10 @@ const PortfolioChart = () => {
               />
               <Tooltip content={<CustomTooltip />} />
               {data.map((entry) => 
-                entry.isYearEnd && (
+                entry.month.includes("Dec") && (
                   <ReferenceLine
-                    key={entry.date}
-                    x={entry.date}
+                    key={entry.month}
+                    x={entry.month}
                     stroke="#94a3b8"
                     strokeDasharray="3 3"
                   />

@@ -19,58 +19,18 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { type PortfolioDataPoint } from "@/utils/portfolioData";
 
-const generateTableData = () => {
-  const data = [];
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-  
-  let previousValue = 100000;
-  let startYearValue = 100000;
-  const startDate = new Date(2021, 6); // July 2021
-  const endDate = new Date();
-  let currentDate = startDate;
-  
-  while (currentDate <= endDate) {
-    const month = months[currentDate.getMonth()];
-    const year = currentDate.getFullYear();
-    const value = previousValue * (1 + (Math.random() * 0.1 - 0.03));
-    
-    if (month === "Jan") {
-      startYearValue = value;
-    }
-    
-    const netFlow = Math.random() > 0.5 ? Math.round(Math.random() * 5000) : -Math.round(Math.random() * 5000);
-    const monthlyGain = value - previousValue - netFlow;
-    const monthlyReturn = (monthlyGain / previousValue) * 100;
-    const ytdGain = value - startYearValue;
-    const ytdReturn = (ytdGain / startYearValue) * 100;
-    
-    data.push({
-      month: `${month} ${year}`,
-      value: Math.round(value),
-      netFlow: netFlow,
-      monthlyGain: Math.round(monthlyGain),
-      monthlyReturn: monthlyReturn.toFixed(2),
-      ytdGain: Math.round(ytdGain),
-      ytdReturn: ytdReturn.toFixed(2),
-    });
-    
-    previousValue = value;
-    currentDate.setMonth(currentDate.getMonth() + 1);
-  }
-  
-  return data.reverse(); // Return in descending order
-};
+interface PortfolioTableProps {
+  data: PortfolioDataPoint[];
+}
 
-const PortfolioTable = () => {
-  const [data, setData] = useState(generateTableData());
-  const [editingRow, setEditingRow] = useState<any>(null);
+const PortfolioTable = ({ data: initialData }: PortfolioTableProps) => {
+  const [data, setData] = useState(initialData);
+  const [editingRow, setEditingRow] = useState<PortfolioDataPoint | null>(null);
   const [editValues, setEditValues] = useState({ value: "", netFlow: "" });
 
-  const handleEdit = (row: any) => {
+  const handleEdit = (row: PortfolioDataPoint) => {
     setEditingRow(row);
     setEditValues({
       value: row.value.toString(),
@@ -80,7 +40,7 @@ const PortfolioTable = () => {
 
   const handleSave = () => {
     const updatedData = data.map((row) => {
-      if (row.month === editingRow.month) {
+      if (row.month === editingRow?.month) {
         return {
           ...row,
           value: Number(editValues.value),
@@ -93,9 +53,10 @@ const PortfolioTable = () => {
     setEditingRow(null);
   };
 
-  const getValueColor = (value: number) => {
-    if (value > 0) return "text-green-600";
-    if (value < 0) return "text-red-600";
+  const getValueColor = (value: number | string) => {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (numValue > 0) return "text-green-600";
+    if (numValue < 0) return "text-red-600";
     return "text-foreground";
   };
 
@@ -132,13 +93,13 @@ const PortfolioTable = () => {
                   <TableCell className={cn("text-right", getValueColor(row.monthlyGain))}>
                     ${row.monthlyGain.toLocaleString()}
                   </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(Number(row.monthlyReturn)))}>
+                  <TableCell className={cn("text-right", getValueColor(row.monthlyReturn))}>
                     {row.monthlyReturn}%
                   </TableCell>
                   <TableCell className={cn("text-right", getValueColor(row.ytdGain))}>
                     ${row.ytdGain.toLocaleString()}
                   </TableCell>
-                  <TableCell className={cn("text-right", getValueColor(Number(row.ytdReturn)))}>
+                  <TableCell className={cn("text-right", getValueColor(row.ytdReturn))}>
                     {row.ytdReturn}%
                   </TableCell>
                   <TableCell>

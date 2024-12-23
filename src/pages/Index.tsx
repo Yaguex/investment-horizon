@@ -2,8 +2,11 @@ import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
 import PortfolioChart from "@/components/PortfolioChart";
 import PortfolioTable from "@/components/PortfolioTable";
+import { usePortfolioData } from "@/utils/portfolioData";
 
 const Index = () => {
+  const { data, latestData } = usePortfolioData();
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -14,29 +17,27 @@ const Index = () => {
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <MetricCard
             title="Portfolio Value"
-            value="$125,430"
-            trend="up"
+            value={`$${latestData.value.toLocaleString()}`}
+            isNumeric={true}
           />
           <MetricCard
             title="YTD Gains"
-            value="$25,430"
-            trend="up"
+            value={`$${latestData.ytdGain.toLocaleString()}`}
             isNumeric={true}
           />
           <MetricCard
             title="YTD Return"
-            value="25.43%"
-            trend="up"
+            value={`${latestData.ytdReturn}%`}
             isNumeric={true}
           />
         </div>
 
         <div className="mb-8">
-          <PortfolioChart />
+          <PortfolioChart data={data} />
         </div>
 
         <div>
-          <PortfolioTable />
+          <PortfolioTable data={data} />
         </div>
       </main>
     </div>
