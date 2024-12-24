@@ -2,13 +2,30 @@ import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { signOut } = useAuth();
-  const menuItems = ["Dashboard", "Portfolio", "Transactions", "Settings", {
-    label: "Sign out",
-    onClick: signOut
-  }];
+  const navigate = useNavigate();
+  
+  const menuItems = [
+    {
+      label: "Dashboard",
+      onClick: () => navigate("/")
+    },
+    {
+      label: "Trade Log",
+      onClick: () => navigate("/trade-log")
+    },
+    {
+      label: "Settings",
+      onClick: () => navigate("/settings")
+    },
+    {
+      label: "Sign out",
+      onClick: signOut
+    }
+  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-primary border-b border-gray-200 z-50">
@@ -23,13 +40,13 @@ const Header = () => {
           </SheetTrigger>
           <SheetContent>
             <nav className="flex flex-col gap-4 mt-8">
-              {menuItems.map((item, index) => (
+              {menuItems.map((item) => (
                 <button
-                  key={typeof item === 'string' ? item : item.label}
+                  key={item.label}
                   className="text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  onClick={typeof item === 'string' ? undefined : item.onClick}
+                  onClick={item.onClick}
                 >
-                  {typeof item === 'string' ? item : item.label}
+                  {item.label}
                 </button>
               ))}
             </nav>
