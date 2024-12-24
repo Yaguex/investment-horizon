@@ -1,0 +1,30 @@
+export interface TradeData {
+  id: string
+  ticker: string
+  vehicle: string
+  order: string
+  qty: number
+  dateEntry: string
+  dateExpiration: string
+  dateExit: string
+  daysInTrade: number
+  strikeStart: number
+  strikeEnd: number
+  premium: number
+  stockPrice: number
+  riskPercentage: number
+  riskDollars: number
+  commission: number
+  pnl: number
+  roi: number
+  roiYearly: number
+  roiPortfolio: number
+  be0: number
+  be1: number
+  be2: number
+  delta: number
+  iv: number
+  ivPercentile: number
+  notes: string
+  subRows?: TradeData[]
+}
