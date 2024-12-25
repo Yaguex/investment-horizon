@@ -21,9 +21,24 @@ interface TableRowProps {
 }
 
 export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableRowProps) => {
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
     if (!dateString) return ""
     return format(new Date(dateString), "dd MMM yyyy")
+  }
+
+  const formatNumber = (value?: number) => {
+    if (value === undefined || value === null) return ""
+    return value.toLocaleString()
+  }
+
+  const formatCurrency = (value?: number) => {
+    if (value === undefined || value === null) return ""
+    return `$${value.toLocaleString()}`
+  }
+
+  const formatPercentage = (value?: number) => {
+    if (value === undefined || value === null) return ""
+    return `${value}%`
   }
 
   return (
@@ -74,28 +89,28 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
       <TableCell>{row.ticker}</TableCell>
       <TableCell>{row.vehicle}</TableCell>
       <TableCell>{row.order}</TableCell>
-      <TableCell>{row.qty}</TableCell>
+      <TableCell>{formatNumber(row.qty)}</TableCell>
       <TableCell className="min-w-[140px]">{formatDate(row.date_entry)}</TableCell>
       <TableCell className="min-w-[140px]">{formatDate(row.date_expiration)}</TableCell>
       <TableCell className="min-w-[140px]">{formatDate(row.date_exit)}</TableCell>
-      <TableCell className="min-w-[140px]">{row.days_in_trade}</TableCell>
-      <TableCell>{row.strike_start}</TableCell>
-      <TableCell>{row.strike_end}</TableCell>
-      <TableCell>${row.premium}</TableCell>
-      <TableCell>${row.stock_price}</TableCell>
-      <TableCell className="min-w-[100px]">{row["risk_%"]}%</TableCell>
-      <TableCell className="min-w-[100px]">${row["risk_$"]}</TableCell>
-      <TableCell>${row.commission}</TableCell>
-      <TableCell>${row.pnl}</TableCell>
-      <TableCell>{row.roi}%</TableCell>
-      <TableCell>{row.roi_yearly}%</TableCell>
-      <TableCell>{row.roi_portfolio}%</TableCell>
-      <TableCell className="min-w-[120px]">${row.be_0}</TableCell>
-      <TableCell className="min-w-[120px]">${row.be_1}</TableCell>
-      <TableCell className="min-w-[120px]">${row.be_2}</TableCell>
-      <TableCell>{row.delta}</TableCell>
-      <TableCell>{row.iv}%</TableCell>
-      <TableCell>{row.iv_percentile}%</TableCell>
+      <TableCell className="min-w-[140px]">{formatNumber(row.days_in_trade)}</TableCell>
+      <TableCell>{formatNumber(row.strike_start)}</TableCell>
+      <TableCell>{formatNumber(row.strike_end)}</TableCell>
+      <TableCell>{formatCurrency(row.premium)}</TableCell>
+      <TableCell>{formatCurrency(row.stock_price)}</TableCell>
+      <TableCell className="min-w-[100px]">{formatPercentage(row["risk_%"])}</TableCell>
+      <TableCell className="min-w-[100px]">{formatCurrency(row["risk_$"])}</TableCell>
+      <TableCell>{formatCurrency(row.commission)}</TableCell>
+      <TableCell>{formatCurrency(row.pnl)}</TableCell>
+      <TableCell>{formatPercentage(row.roi)}</TableCell>
+      <TableCell>{formatPercentage(row.roi_yearly)}</TableCell>
+      <TableCell>{formatPercentage(row.roi_portfolio)}</TableCell>
+      <TableCell className="min-w-[120px]">{formatCurrency(row.be_0)}</TableCell>
+      <TableCell className="min-w-[120px]">{formatCurrency(row.be_1)}</TableCell>
+      <TableCell className="min-w-[120px]">{formatCurrency(row.be_2)}</TableCell>
+      <TableCell>{formatNumber(row.delta)}</TableCell>
+      <TableCell>{formatPercentage(row.iv)}</TableCell>
+      <TableCell>{formatPercentage(row.iv_percentile)}</TableCell>
       <TableCell className="min-w-[400px]">{row.notes}</TableCell>
     </TableRowBase>
   )
