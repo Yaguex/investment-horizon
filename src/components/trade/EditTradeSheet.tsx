@@ -162,12 +162,19 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                           {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" onInteractOutside={(e) => e.preventDefault()}>
+                      <PopoverContent 
+                        className="w-auto p-0" 
+                        align="start" 
+                        onInteractOutside={(e) => e.preventDefault()}
+                        style={{ zIndex: 9999 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Calendar
                           mode="single"
                           selected={field.value || undefined}
                           onSelect={field.onChange}
                           initialFocus
+                          className="rounded-md border"
                         />
                       </PopoverContent>
                     </Popover>
@@ -196,12 +203,19 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                           {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" onInteractOutside={(e) => e.preventDefault()}>
+                      <PopoverContent 
+                        className="w-auto p-0" 
+                        align="start" 
+                        onInteractOutside={(e) => e.preventDefault()}
+                        style={{ zIndex: 9999 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Calendar
                           mode="single"
                           selected={field.value || undefined}
                           onSelect={field.onChange}
                           initialFocus
+                          className="rounded-md border"
                         />
                       </PopoverContent>
                     </Popover>
