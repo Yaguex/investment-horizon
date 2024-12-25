@@ -203,6 +203,111 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_log_duplicate: {
+        Row: {
+          be_0: number | null
+          be_1: number | null
+          be_2: number | null
+          commission: number | null
+          date_entry: string | null
+          date_exit: string | null
+          date_expiration: string | null
+          days_in_trade: number | null
+          delta: number | null
+          id: number
+          iv: number | null
+          iv_percentile: number | null
+          notes: string | null
+          order: string | null
+          pnl: number | null
+          portfolio_id: number | null
+          premium: number | null
+          profile_id: string | null
+          qty: number | null
+          "risk_%": number | null
+          risk_$: number | null
+          roi: number | null
+          roi_portfolio: number | null
+          roi_yearly: number | null
+          row_type: string | null
+          stock_price: number | null
+          strike_end: number | null
+          strike_start: number | null
+          ticker: string | null
+          trade_id: number | null
+          trade_status: string | null
+          vehicle: string | null
+        }
+        Insert: {
+          be_0?: number | null
+          be_1?: number | null
+          be_2?: number | null
+          commission?: number | null
+          date_entry?: string | null
+          date_exit?: string | null
+          date_expiration?: string | null
+          days_in_trade?: number | null
+          delta?: number | null
+          id: number
+          iv?: number | null
+          iv_percentile?: number | null
+          notes?: string | null
+          order?: string | null
+          pnl?: number | null
+          portfolio_id?: number | null
+          premium?: number | null
+          profile_id?: string | null
+          qty?: number | null
+          "risk_%"?: number | null
+          risk_$?: number | null
+          roi?: number | null
+          roi_portfolio?: number | null
+          roi_yearly?: number | null
+          row_type?: string | null
+          stock_price?: number | null
+          strike_end?: number | null
+          strike_start?: number | null
+          ticker?: string | null
+          trade_id?: number | null
+          trade_status?: string | null
+          vehicle?: string | null
+        }
+        Update: {
+          be_0?: number | null
+          be_1?: number | null
+          be_2?: number | null
+          commission?: number | null
+          date_entry?: string | null
+          date_exit?: string | null
+          date_expiration?: string | null
+          days_in_trade?: number | null
+          delta?: number | null
+          id?: number
+          iv?: number | null
+          iv_percentile?: number | null
+          notes?: string | null
+          order?: string | null
+          pnl?: number | null
+          portfolio_id?: number | null
+          premium?: number | null
+          profile_id?: string | null
+          qty?: number | null
+          "risk_%"?: number | null
+          risk_$?: number | null
+          roi?: number | null
+          roi_portfolio?: number | null
+          roi_yearly?: number | null
+          row_type?: string | null
+          stock_price?: number | null
+          strike_end?: number | null
+          strike_start?: number | null
+          ticker?: string | null
+          trade_id?: number | null
+          trade_status?: string | null
+          vehicle?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
