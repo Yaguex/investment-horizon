@@ -38,8 +38,6 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         console.error('No user found')
         throw new Error('User not authenticated')
       }
-
-      console.log('Fetching trades for user:', user.id)
       
       const { data, error } = await supabase
         .from('trade_log')
