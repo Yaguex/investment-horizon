@@ -162,7 +162,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                           {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0" align="start" onInteractOutside={(e) => e.preventDefault()}>
                         <Calendar
                           mode="single"
                           selected={field.value || undefined}
@@ -196,7 +196,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                           {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0" align="start" onInteractOutside={(e) => e.preventDefault()}>
                         <Calendar
                           mode="single"
                           selected={field.value || undefined}
