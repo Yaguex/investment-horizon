@@ -11,14 +11,18 @@ const TradeLog = () => {
       <main className="container mx-auto px-4 pt-24 pb-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Trade Log</h1>
-          <NewTradeDialog />
         </div>
         
         <Tabs defaultValue="open" className="w-full">
-          <TabsList>
-            <TabsTrigger value="open">Open Trades</TabsTrigger>
-            <TabsTrigger value="closed">Closed Trades</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="open">Open Trades</TabsTrigger>
+              <TabsTrigger value="closed">Closed Trades</TabsTrigger>
+            </TabsList>
+            <TabsContent value="open" className="m-0">
+              <NewTradeDialog />
+            </TabsContent>
+          </div>
           <TabsContent value="open" className="animate-fade-in mt-6">
             <TradeTable tradeStatus="open" />
           </TabsContent>
