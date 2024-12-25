@@ -119,8 +119,8 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
               <TableRow>
                 <TableHead className="w-[100px]">Actions</TableHead>
                 <TableHead>Ticker</TableHead>
-                <TableHead>Vehicle</TableHead>
-                <TableHead>Order</TableHead>
+                <TableHead className="min-w-[140px]">Vehicle</TableHead>
+                <TableHead className="min-w-[140px]">Order</TableHead>
                 <TableHead>QTY</TableHead>
                 <TableHead className="min-w-[140px]">Date Entry</TableHead>
                 <TableHead className="min-w-[140px]">Date Expiration</TableHead>
@@ -154,6 +154,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
                     row={trade}
                     isExpanded={expandedRows[trade.id]}
                     onToggle={() => toggleRow(trade.id.toString())}
+                    tradeStatus={tradeStatus}
                   />
                   {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
                     <TradeTableRow 
@@ -162,6 +163,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
                       isExpanded={false}
                       isSubRow={true}
                       onToggle={() => {}}
+                      tradeStatus={tradeStatus}
                     />
                   ))}
                 </>
