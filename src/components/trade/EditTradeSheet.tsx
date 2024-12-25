@@ -122,7 +122,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <SheetHeader>
           <SheetTitle>Edit Trade</SheetTitle>
         </SheetHeader>
@@ -164,18 +164,21 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                       </PopoverTrigger>
                       <PopoverContent 
                         className="w-auto p-0" 
-                        align="start" 
-                        onInteractOutside={(e) => e.preventDefault()}
-                        style={{ zIndex: 9999 }}
-                        onClick={(e) => e.stopPropagation()}
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
                       >
-                        <Calendar
-                          mode="single"
-                          selected={field.value || undefined}
-                          onSelect={field.onChange}
-                          initialFocus
-                          className="rounded-md border"
-                        />
+                        <div 
+                          className="p-2 bg-white rounded-md shadow-lg border"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={field.value || undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </div>
                       </PopoverContent>
                     </Popover>
                   </FormControl>
@@ -205,18 +208,21 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                       </PopoverTrigger>
                       <PopoverContent 
                         className="w-auto p-0" 
-                        align="start" 
-                        onInteractOutside={(e) => e.preventDefault()}
-                        style={{ zIndex: 9999 }}
-                        onClick={(e) => e.stopPropagation()}
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
                       >
-                        <Calendar
-                          mode="single"
-                          selected={field.value || undefined}
-                          onSelect={field.onChange}
-                          initialFocus
-                          className="rounded-md border"
-                        />
+                        <div 
+                          className="p-2 bg-white rounded-md shadow-lg border"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={field.value || undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </div>
                       </PopoverContent>
                     </Popover>
                   </FormControl>
