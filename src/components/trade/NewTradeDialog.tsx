@@ -1,4 +1,3 @@
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { supabase } from "@/integrations/supabase/client"
@@ -89,16 +88,6 @@ export function NewTradeDialog() {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>New Trade</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogTitle>New Trade</DialogTitle>
-        <div className="flex justify-end mt-4">
-          <Button onClick={handleNewTrade}>Create Trade</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <Button onClick={handleNewTrade}>New Trade</Button>
   )
 }
