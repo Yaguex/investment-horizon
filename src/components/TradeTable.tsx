@@ -100,9 +100,9 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
       // Filter trades based on parent's trade_status
       const filteredTrades = processedTrades.filter(trade => trade.trade_status === tradeStatus)
       
-      // Sort parent trades by date_entry ascending
+      // Sort parent trades by date_entry descending (newest first)
       const sortedTrades = filteredTrades.sort(
-        (a, b) => new Date(a.date_entry).getTime() - new Date(b.date_entry).getTime()
+        (a, b) => new Date(b.date_entry).getTime() - new Date(a.date_entry).getTime()
       )
       
       console.log('Final processed and sorted trades:', sortedTrades)
