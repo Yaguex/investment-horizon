@@ -143,7 +143,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
                 <TableHead>Delta</TableHead>
                 <TableHead>IV</TableHead>
                 <TableHead>IV Percentile</TableHead>
-                <TableHead className="min-w-[4000px]">Notes</TableHead>
+                <TableHead className="min-w-[7000px]">Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
