@@ -50,7 +50,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
     <TableRowBase 
       className={cn(getRowBackground())}
     >
-      <TableCell className="w-[100px]">
+      <TableCell className="sticky left-0 z-10 w-[100px]">
         <div className="flex items-center gap-2">
           {!isSubRow && (
             <div 
@@ -103,7 +103,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
           )}
         </div>
       </TableCell>
-      <TableCell className="min-w-[200px]">{row.ticker}</TableCell>
+      <TableCell className="sticky left-[100px] z-10 min-w-[200px]">{row.ticker}</TableCell>
       <TableCell className="min-w-[180px]">{row.vehicle}</TableCell>
       <TableCell className="min-w-[180px]">{row.order}</TableCell>
       <TableCell>{formatNumber(row.qty)}</TableCell>

@@ -44,7 +44,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         .select('*')
         .eq('profile_id', user.id)
         .eq('trade_status', tradeStatus)
-        .order('date_entry', { ascending: true }) // Changed to ascending order
+        .order('date_entry', { ascending: true })
       
       if (error) {
         console.error('Error fetching trades:', error)
@@ -121,12 +121,12 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
   return (
     <Card className="mt-6">
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Actions</TableHead>
-                <TableHead className="min-w-[200px]">Ticker</TableHead>
+                <TableHead className="sticky left-0 z-20 w-[100px] bg-white">Actions</TableHead>
+                <TableHead className="sticky left-[100px] z-20 min-w-[200px] bg-white">Ticker</TableHead>
                 <TableHead className="min-w-[140px]">Vehicle</TableHead>
                 <TableHead className="min-w-[140px]">Order</TableHead>
                 <TableHead>QTY</TableHead>
