@@ -119,7 +119,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
             )}
           </div>
         </TableCell>
-        <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px]", getStickyBackground())}>{row.ticker}</TableCell>
+        <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px] font-bold", getStickyBackground())}>{row.ticker}</TableCell>
         <TableCell className="min-w-[180px]">{row.vehicle}</TableCell>
         <TableCell className="min-w-[180px]">{row.order}</TableCell>
         <TableCell>{formatNumber(row.qty)}</TableCell>
@@ -134,7 +134,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
         <TableCell className="min-w-[100px]">{row["risk_%"] !== undefined && row["risk_%"] !== null ? `${formatNumber(row["risk_%"], 2)}%` : ""}</TableCell>
         <TableCell className="min-w-[100px]">{row["risk_$"] !== undefined && row["risk_$"] !== null ? `$${formatNumber(row["risk_$"])}` : ""}</TableCell>
         <TableCell>{row.commission !== undefined && row.commission !== null ? `$${formatNumber(row.commission)}` : ""}</TableCell>
-        <TableCell>{row.pnl !== undefined && row.pnl !== null ? `$${formatNumber(row.pnl)}` : ""}</TableCell>
+        <TableCell className="font-bold">{row.pnl !== undefined && row.pnl !== null ? `$${formatNumber(row.pnl)}` : ""}</TableCell>
         <TableCell>{row.roi !== undefined && row.roi !== null ? `${formatNumber(row.roi, 2)}%` : ""}</TableCell>
         <TableCell>{row.roi_yearly !== undefined && row.roi_yearly !== null ? `${formatNumber(row.roi_yearly, 2)}%` : ""}</TableCell>
         <TableCell>{row.roi_portfolio !== undefined && row.roi_portfolio !== null ? `${formatNumber(row.roi_portfolio, 2)}%` : ""}</TableCell>
