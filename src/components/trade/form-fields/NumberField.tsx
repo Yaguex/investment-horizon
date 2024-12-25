@@ -20,8 +20,8 @@ export function NumberField({ control, name, label }: NumberFieldProps) {
           <FormControl>
             <Input 
               type="number" 
-              {...field} 
-              value={field.value === null ? '' : field.value} 
+              {...field}
+              value={field.value === null ? '' : typeof field.value === 'number' ? field.value : ''} 
               onChange={e => {
                 const value = e.target.value ? Number(e.target.value) : null;
                 field.onChange(value);
