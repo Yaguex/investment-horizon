@@ -32,9 +32,12 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
   const { data: trades = [], isLoading } = useQuery({
     queryKey: ['trades', tradeStatus, user?.id],
     queryFn: async () => {
-      console.log('Fetching trades with status:', tradeStatus)
+      console.log('Starting trade fetch with params:', { tradeStatus, userId: user?.id })
       
-      if (!user) throw new Error('User not authenticated')
+      if (!user) {
+        console.error('No user found')
+        throw new Error('User not authenticated')
+      }
       
       const { data, error } = await supabase
         .from('trade_log')
@@ -48,11 +51,16 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         throw error
       }
       
-      console.log('Fetched trades:', data)
+      console.log('Raw trades data:', data)
+      
+      if (!data || data.length === 0) {
+        console.log('No trades found for user')
+        return []
+      }
       
       // Group trades by trade_id
       const groupedTrades: Record<number, any[]> = {}
-      data?.forEach((trade) => {
+      data.forEach((trade) => {
         if (!groupedTrades[trade.trade_id]) {
           groupedTrades[trade.trade_id] = []
         }
@@ -60,9 +68,11 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         if (trade.row_type === 'parent' || trade.row_type === 'child') {
           groupedTrades[trade.trade_id].push(trade)
         } else {
-          console.error('Invalid row_type found:', trade.row_type)
+          console.error('Invalid row_type found:', trade.row_type, 'for trade:', trade)
         }
       })
+      
+      console.log('Grouped trades:', groupedTrades)
       
       // Process each group to create parent-child structure
       const processedTrades = Object.values(groupedTrades).map(group => {
@@ -84,7 +94,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         } as TradeData
       }).filter(Boolean) as TradeData[]
       
-      console.log('Processed trades:', processedTrades)
+      console.log('Final processed trades:', processedTrades)
       return processedTrades
     },
     enabled: !!user
