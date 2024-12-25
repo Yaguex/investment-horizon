@@ -24,8 +24,8 @@ export interface TradeData {
   strike_end?: number
   premium?: number
   stock_price?: number
-  risk_?: number
-  risk_$?: number
+  "risk_%"?: number
+  "risk_$"?: number
   delta?: number
   iv?: number
   iv_percentile?: number
@@ -34,8 +34,19 @@ export interface TradeData {
 
 export interface FormValues {
   ticker: string
+  vehicle: string
+  order: string
+  qty: number | null
   date_entry: Date | null
+  date_expiration: Date | null
   date_exit: Date | null
+  days_in_trade: number | null
+  strike_start: number | null
+  strike_end: number | null
+  premium: number | null
+  stock_price: number | null
+  "risk_%": number | null
+  "risk_$": number | null
   commission: number | null
   pnl: number | null
   roi: number | null
@@ -44,6 +55,9 @@ export interface FormValues {
   be_0: number | null
   be_1: number | null
   be_2: number | null
-  notes: string | null
+  delta: number | null
+  iv: number | null
+  iv_percentile: number | null
+  notes: string
   trade_status: "open" | "closed"
 }
