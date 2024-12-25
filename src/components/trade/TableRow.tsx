@@ -128,7 +128,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
       <TableCell>{formatNumber(row.delta)}</TableCell>
       <TableCell>{row.iv !== undefined && row.iv !== null ? `${formatNumber(row.iv)}%` : ""}</TableCell>
       <TableCell>{row.iv_percentile !== undefined && row.iv_percentile !== null ? `${formatNumber(row.iv_percentile)}%` : ""}</TableCell>
-      <TableCell className="min-w-[400px]">{row.notes}</TableCell>
+      <TableCell className="min-w-[4000px]">{row.notes}</TableCell>
     </TableRowBase>
   )
 }
