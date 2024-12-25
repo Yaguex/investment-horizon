@@ -1,39 +1,20 @@
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { CalendarIcon } from "lucide-react"
-import { TradeData } from "./types"
+import { TradeData, FormValues } from "./types"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
+import { TextField } from "./form-fields/TextField"
+import { DateField } from "./form-fields/DateField"
+import { NumberField } from "./form-fields/NumberField"
 
 interface EditTradeSheetProps {
   isOpen: boolean
   onClose: () => void
   trade: TradeData
-}
-
-interface FormValues {
-  ticker: string
-  date_entry: Date | null
-  date_exit: Date | null
-  commission: number | null
-  pnl: number | null
-  roi: number | null
-  roi_yearly: number | null
-  roi_portfolio: number | null
-  be_0: number | null
-  be_1: number | null
-  be_2: number | null
-  notes: string | null
-  trade_status: "open" | "closed"
 }
 
 export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) {
@@ -67,10 +48,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     console.log('Submitting trade update with values:', values)
     
     try {
-      // Calculate days in trade
       const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
       
-      // Update parent row
       const { error: parentError } = await supabase
         .from('trade_log')
         .update({
@@ -96,7 +75,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         throw parentError
       }
       
-      // If trade status changed and this is a parent row, update all child rows with same trade_id
       if (values.trade_status !== trade.trade_status && trade.row_type === 'parent' && trade.trade_id) {
         const { error: childError } = await supabase
           .from('trade_log')
@@ -122,248 +100,35 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Edit Trade</SheetTitle>
         </SheetHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="ticker"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ticker</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <TextField control={form.control} name="ticker" label="Ticker" />
+            <DateField control={form.control} name="date_entry" label="Date Entry" />
+            <DateField control={form.control} name="date_exit" label="Date Exit" />
+            <NumberField control={form.control} name="commission" label="Commission" />
+            <NumberField control={form.control} name="pnl" label="PnL" />
+            <NumberField control={form.control} name="roi" label="ROI" />
+            <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
+            <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
+            <NumberField control={form.control} name="be_0" label="B/E 0" />
+            <NumberField control={form.control} name="be_1" label="B/E 1" />
+            <NumberField control={form.control} name="be_2" label="B/E 2" />
+            <TextField control={form.control} name="notes" label="Notes" />
             
-            <FormField
-              control={form.control}
-              name="date_entry"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date Entry</FormLabel>
-                  <FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent 
-                        className="w-auto p-0" 
-                        align="start"
-                        side="bottom"
-                        sideOffset={4}
-                      >
-                        <div 
-                          className="p-2 bg-white rounded-md shadow-lg border"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="date_exit"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date Exit</FormLabel>
-                  <FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent 
-                        className="w-auto p-0" 
-                        align="start"
-                        side="bottom"
-                        sideOffset={4}
-                      >
-                        <div 
-                          className="p-2 bg-white rounded-md shadow-lg border"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="commission"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Commission</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="pnl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>PnL</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="roi"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ROI</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="roi_yearly"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ROI Yearly</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="roi_portfolio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ROI Portfolio</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="be_0"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>B/E 0</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="be_1"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>B/E 1</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="be_2"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>B/E 2</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} value={field.value || ''} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="trade_status"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Closed Trade</FormLabel>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value === "closed"}
-                      onCheckedChange={(checked) => field.onChange(checked ? "closed" : "open")}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <div className="text-base">Closed Trade</div>
+              </div>
+              <Switch
+                checked={form.watch("trade_status") === "closed"}
+                onCheckedChange={(checked) => form.setValue("trade_status", checked ? "closed" : "open")}
+              />
+            </div>
             
             <div className="flex justify-end space-x-4 pt-4">
               <Button variant="outline" type="button" onClick={onClose}>

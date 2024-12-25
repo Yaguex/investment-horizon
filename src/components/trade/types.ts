@@ -1,33 +1,48 @@
 export interface TradeData {
   id: number
-  trade_id: number // required
-  row_type: "parent" | "child" // required
-  trade_status: "open" | "closed" // required
-  ticker: string // required
+  ticker: string
+  date_entry: string | null
+  date_exit: string | null
+  commission: number | null
+  pnl: number | null
+  roi: number | null
+  roi_yearly: number | null
+  roi_portfolio: number | null
+  be_0: number | null
+  be_1: number | null
+  be_2: number | null
+  notes: string | null
+  trade_status: "open" | "closed"
+  row_type: "parent" | "child"
+  trade_id?: number
   vehicle?: string
   order?: string
   qty?: number
-  date_entry: string // required
   date_expiration?: string
-  date_exit?: string
   days_in_trade?: number
   strike_start?: number
   strike_end?: number
   premium?: number
   stock_price?: number
-  "risk_%"?: number
-  "risk_$"?: number
-  commission?: number
-  pnl?: number
-  roi?: number
-  roi_yearly?: number
-  roi_portfolio?: number
-  be_0?: number
-  be_1?: number
-  be_2?: number
+  risk_?: number
+  risk_$?: number
   delta?: number
   iv?: number
   iv_percentile?: number
-  notes?: string
-  subRows?: TradeData[]
+}
+
+export interface FormValues {
+  ticker: string
+  date_entry: Date | null
+  date_exit: Date | null
+  commission: number | null
+  pnl: number | null
+  roi: number | null
+  roi_yearly: number | null
+  roi_portfolio: number | null
+  be_0: number | null
+  be_1: number | null
+  be_2: number | null
+  notes: string | null
+  trade_status: "open" | "closed"
 }
