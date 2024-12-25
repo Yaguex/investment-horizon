@@ -1,8 +1,7 @@
-import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import Header from "@/components/Header"
 import TradeTable from "@/components/TradeTable"
+import { NewTradeDialog } from "@/components/trade/NewTradeDialog"
 
 const TradeLog = () => {
   return (
@@ -21,15 +20,7 @@ const TradeLog = () => {
               <TabsTrigger value="closed">Closed Trades</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="m-0">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button>New Trade</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogTitle>New Trade</DialogTitle>
-                  {/* Trade form content will go here */}
-                </DialogContent>
-              </Dialog>
+              <NewTradeDialog />
             </TabsContent>
           </div>
           <TabsContent value="open" className="animate-fade-in mt-6">
