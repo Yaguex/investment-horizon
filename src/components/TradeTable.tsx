@@ -39,7 +39,8 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         throw new Error('User not authenticated')
       }
 
-      // Cast the user.id to UUID type in the query
+      console.log('Fetching trades for user:', user.id)
+      
       const { data, error } = await supabase
         .from('trade_log')
         .select('*')
