@@ -73,7 +73,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
           ...parent,
           subRows: children
         }
-      }).filter(Boolean)
+      }).filter(Boolean) as TradeData[]
       
       console.log('Processed trades:', processedTrades)
       return processedTrades
@@ -132,48 +132,14 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
                 <>
                   <TradeTableRow 
                     key={trade.id}
-                    row={{
-                      ...trade,
-                      riskPercentage: trade["risk_%"],
-                      riskDollars: trade["risk_$"],
-                      be0: trade.be_0,
-                      be1: trade.be_1,
-                      be2: trade.be_2,
-                      dateEntry: trade.date_entry,
-                      dateExpiration: trade.date_expiration,
-                      dateExit: trade.date_exit,
-                      daysInTrade: trade.days_in_trade,
-                      stockPrice: trade.stock_price,
-                      strikeStart: trade.strike_start,
-                      strikeEnd: trade.strike_end,
-                      roiYearly: trade.roi_yearly,
-                      roiPortfolio: trade.roi_portfolio,
-                      ivPercentile: trade.iv_percentile
-                    }}
+                    row={trade}
                     isExpanded={expandedRows[trade.id]}
                     onToggle={() => toggleRow(trade.id.toString())}
                   />
                   {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
                     <TradeTableRow 
                       key={subRow.id}
-                      row={{
-                        ...subRow,
-                        riskPercentage: subRow["risk_%"],
-                        riskDollars: subRow["risk_$"],
-                        be0: subRow.be_0,
-                        be1: subRow.be_1,
-                        be2: subRow.be_2,
-                        dateEntry: subRow.date_entry,
-                        dateExpiration: subRow.date_expiration,
-                        dateExit: subRow.date_exit,
-                        daysInTrade: subRow.days_in_trade,
-                        stockPrice: subRow.stock_price,
-                        strikeStart: subRow.strike_start,
-                        strikeEnd: subRow.strike_end,
-                        roiYearly: subRow.roi_yearly,
-                        roiPortfolio: subRow.roi_portfolio,
-                        ivPercentile: subRow.iv_percentile
-                      }}
+                      row={subRow}
                       isExpanded={false}
                       isSubRow={true}
                       onToggle={() => {}}

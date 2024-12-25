@@ -1,8 +1,8 @@
 export interface TradeData {
   id: number
   trade_id: number
-  row_type: 'parent' | 'child'
-  trade_status: 'open' | 'closed'
+  row_type: "parent" | "child"
+  trade_status: "open" | "closed"
   ticker: string
   vehicle: string
   order: string
@@ -29,4 +29,5 @@ export interface TradeData {
   iv: number
   iv_percentile: number
   notes: string
+  subRows?: TradeData[]
 }

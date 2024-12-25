@@ -75,27 +75,27 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
       <TableCell>{row.vehicle}</TableCell>
       <TableCell>{row.order}</TableCell>
       <TableCell>{row.qty}</TableCell>
-      <TableCell className="min-w-[140px]">{formatDate(row.dateEntry)}</TableCell>
-      <TableCell className="min-w-[140px]">{formatDate(row.dateExpiration)}</TableCell>
-      <TableCell className="min-w-[140px]">{formatDate(row.dateExit)}</TableCell>
-      <TableCell className="min-w-[140px]">{row.daysInTrade}</TableCell>
-      <TableCell>{row.strikeStart}</TableCell>
-      <TableCell>{row.strikeEnd}</TableCell>
+      <TableCell className="min-w-[140px]">{formatDate(row.date_entry)}</TableCell>
+      <TableCell className="min-w-[140px]">{formatDate(row.date_expiration)}</TableCell>
+      <TableCell className="min-w-[140px]">{formatDate(row.date_exit)}</TableCell>
+      <TableCell className="min-w-[140px]">{row.days_in_trade}</TableCell>
+      <TableCell>{row.strike_start}</TableCell>
+      <TableCell>{row.strike_end}</TableCell>
       <TableCell>${row.premium}</TableCell>
-      <TableCell>${row.stockPrice}</TableCell>
-      <TableCell className="min-w-[100px]">{row.riskPercentage}%</TableCell>
-      <TableCell className="min-w-[100px]">${row.riskDollars}</TableCell>
+      <TableCell>${row.stock_price}</TableCell>
+      <TableCell className="min-w-[100px]">{row["risk_%"]}%</TableCell>
+      <TableCell className="min-w-[100px]">${row["risk_$"]}</TableCell>
       <TableCell>${row.commission}</TableCell>
       <TableCell>${row.pnl}</TableCell>
       <TableCell>{row.roi}%</TableCell>
-      <TableCell>{row.roiYearly}%</TableCell>
-      <TableCell>{row.roiPortfolio}%</TableCell>
-      <TableCell className="min-w-[120px]">${row.be0}</TableCell>
-      <TableCell className="min-w-[120px]">${row.be1}</TableCell>
-      <TableCell className="min-w-[120px]">${row.be2}</TableCell>
+      <TableCell>{row.roi_yearly}%</TableCell>
+      <TableCell>{row.roi_portfolio}%</TableCell>
+      <TableCell className="min-w-[120px]">${row.be_0}</TableCell>
+      <TableCell className="min-w-[120px]">${row.be_1}</TableCell>
+      <TableCell className="min-w-[120px]">${row.be_2}</TableCell>
       <TableCell>{row.delta}</TableCell>
       <TableCell>{row.iv}%</TableCell>
-      <TableCell>{row.ivPercentile}%</TableCell>
+      <TableCell>{row.iv_percentile}%</TableCell>
       <TableCell className="min-w-[400px]">{row.notes}</TableCell>
     </TableRowBase>
   )
