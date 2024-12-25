@@ -5,7 +5,12 @@ import { FormValues } from "../types"
 
 interface TextFieldProps {
   control: Control<FormValues>
-  name: "ticker" | "notes"
+  name: keyof Pick<FormValues, 
+    "ticker" | 
+    "notes" | 
+    "vehicle" | 
+    "order"
+  >
   label: string
   type?: "text" | "textarea"
 }
