@@ -9,48 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      monthly_portfolio_data: {
-        Row: {
-          balance: number | null
-          flows: number | null
-          id: number
-          mom_gain: number | null
-          mom_return: number | null
-          month: string | null
-          portfolio_id: number | null
-          profile_id: string | null
-          ytd_gain: number | null
-          ytd_return: number | null
-          "ytd-flows": number | null
-        }
-        Insert: {
-          balance?: number | null
-          flows?: number | null
-          id?: number
-          mom_gain?: number | null
-          mom_return?: number | null
-          month?: string | null
-          portfolio_id?: number | null
-          profile_id?: string | null
-          ytd_gain?: number | null
-          ytd_return?: number | null
-          "ytd-flows"?: number | null
-        }
-        Update: {
-          balance?: number | null
-          flows?: number | null
-          id?: number
-          mom_gain?: number | null
-          mom_return?: number | null
-          month?: string | null
-          portfolio_id?: number | null
-          profile_id?: string | null
-          ytd_gain?: number | null
-          ytd_return?: number | null
-          "ytd-flows"?: number | null
-        }
-        Relationships: []
-      }
       portfolio_data: {
         Row: {
           balance: number | null

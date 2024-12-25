@@ -51,12 +51,17 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
       console.log('Fetched trades:', data)
       
       // Group trades by trade_id
-      const groupedTrades: Record<number, TradeData[]> = {}
-      data?.forEach((trade: TradeData) => {
+      const groupedTrades: Record<number, any[]> = {}
+      data?.forEach((trade) => {
         if (!groupedTrades[trade.trade_id]) {
           groupedTrades[trade.trade_id] = []
         }
-        groupedTrades[trade.trade_id].push(trade)
+        // Validate row_type before adding to grouped trades
+        if (trade.row_type === 'parent' || trade.row_type === 'child') {
+          groupedTrades[trade.trade_id].push(trade)
+        } else {
+          console.error('Invalid row_type found:', trade.row_type)
+        }
       })
       
       // Process each group to create parent-child structure
@@ -71,8 +76,12 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         
         return {
           ...parent,
-          subRows: children
-        }
+          row_type: parent.row_type as "parent",
+          subRows: children.map(child => ({
+            ...child,
+            row_type: child.row_type as "child"
+          }))
+        } as TradeData
       }).filter(Boolean) as TradeData[]
       
       console.log('Processed trades:', processedTrades)
