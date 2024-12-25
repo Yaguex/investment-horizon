@@ -40,7 +40,9 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
   }
 
   const getRowBackground = () => {
-    if (isSubRow) return "bg-white hover:bg-gray-50"
+    if (isSubRow) {
+      return row.trade_status === "closed" ? "bg-gray-50 hover:bg-gray-100" : "bg-white hover:bg-gray-50"
+    }
     
     if (tradeStatus === "open") return "bg-yellow-50 hover:bg-yellow-100"
     
@@ -51,7 +53,9 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
   }
 
   const getStickyBackground = () => {
-    if (isSubRow) return "bg-white group-hover:bg-gray-50"
+    if (isSubRow) {
+      return row.trade_status === "closed" ? "bg-gray-50 group-hover:bg-gray-100" : "bg-white group-hover:bg-gray-50"
+    }
     
     if (tradeStatus === "open") return "bg-yellow-50 group-hover:bg-yellow-100"
     

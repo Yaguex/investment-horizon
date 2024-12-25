@@ -44,7 +44,6 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         .from('trade_log')
         .select('*')
         .eq('profile_id', user.id)
-        .eq('trade_status', tradeStatus)
         .order('date_entry', { ascending: true })
       
       if (error) {
@@ -98,8 +97,11 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         } as TradeData
       }).filter(Boolean) as TradeData[]
       
+      // Filter trades based on parent's trade_status
+      const filteredTrades = processedTrades.filter(trade => trade.trade_status === tradeStatus)
+      
       // Sort parent trades by date_entry ascending
-      const sortedTrades = processedTrades.sort(
+      const sortedTrades = filteredTrades.sort(
         (a, b) => new Date(a.date_entry).getTime() - new Date(b.date_entry).getTime()
       )
       
