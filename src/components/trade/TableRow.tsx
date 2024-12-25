@@ -46,11 +46,22 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
     return "bg-yellow-50 hover:bg-yellow-100"
   }
 
+  const getStickyBackground = () => {
+    if (isSubRow) return "bg-white group-hover:bg-gray-50"
+    
+    if (tradeStatus === "open") return "bg-yellow-50 group-hover:bg-yellow-100"
+    
+    if (row.pnl === undefined || row.pnl === null) return "bg-yellow-50 group-hover:bg-yellow-100"
+    if (row.pnl > 0) return "bg-green-50 group-hover:bg-green-100"
+    if (row.pnl < 0) return "bg-red-50 group-hover:bg-red-100"
+    return "bg-yellow-50 group-hover:bg-yellow-100"
+  }
+
   return (
     <TableRowBase 
-      className={cn(getRowBackground())}
+      className={cn("group", getRowBackground())}
     >
-      <TableCell className="sticky left-0 z-10 w-[100px]">
+      <TableCell className={cn("sticky left-0 z-10 w-[100px]", getStickyBackground())}>
         <div className="flex items-center gap-2">
           {!isSubRow && (
             <div 
@@ -103,7 +114,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
           )}
         </div>
       </TableCell>
-      <TableCell className="sticky left-[100px] z-10 min-w-[200px]">{row.ticker}</TableCell>
+      <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px]", getStickyBackground())}>{row.ticker}</TableCell>
       <TableCell className="min-w-[180px]">{row.vehicle}</TableCell>
       <TableCell className="min-w-[180px]">{row.order}</TableCell>
       <TableCell>{formatNumber(row.qty)}</TableCell>
