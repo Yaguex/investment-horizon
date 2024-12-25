@@ -44,7 +44,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         .select('*')
         .eq('profile_id', user.id)
         .eq('trade_status', tradeStatus)
-        .order('date_entry', { ascending: false })
+        .order('date_entry', { ascending: true }) // Changed to ascending order
       
       if (error) {
         console.error('Error fetching trades:', error)
@@ -77,7 +77,10 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
       // Process each group to create parent-child structure
       const processedTrades = Object.values(groupedTrades).map(group => {
         const parent = group.find(trade => trade.row_type === 'parent')
-        const children = group.filter(trade => trade.row_type === 'child')
+        // Sort children by date_entry ascending
+        const children = group
+          .filter(trade => trade.row_type === 'child')
+          .sort((a, b) => new Date(a.date_entry).getTime() - new Date(b.date_entry).getTime())
         
         if (!parent) {
           console.error('No parent found for trade group:', group)
@@ -94,8 +97,13 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
         } as TradeData
       }).filter(Boolean) as TradeData[]
       
-      console.log('Final processed trades:', processedTrades)
-      return processedTrades
+      // Sort parent trades by date_entry ascending
+      const sortedTrades = processedTrades.sort(
+        (a, b) => new Date(a.date_entry).getTime() - new Date(b.date_entry).getTime()
+      )
+      
+      console.log('Final processed and sorted trades:', sortedTrades)
+      return sortedTrades
     },
     enabled: !!user
   })
