@@ -16,7 +16,7 @@ export function DateField({ control, name, label }: DateFieldProps) {
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className="flex flex-col space-y-2">
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <DatePicker
