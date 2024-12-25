@@ -166,7 +166,7 @@ export type Database = {
           roi: number | null
           roi_portfolio: number | null
           roi_yearly: number | null
-          row_type: number | null
+          row_type: string | null
           stock_price: number | null
           strike_end: number | null
           strike_start: number | null
@@ -200,7 +200,7 @@ export type Database = {
           roi?: number | null
           roi_portfolio?: number | null
           roi_yearly?: number | null
-          row_type?: number | null
+          row_type?: string | null
           stock_price?: number | null
           strike_end?: number | null
           strike_start?: number | null
@@ -234,7 +234,7 @@ export type Database = {
           roi?: number | null
           roi_portfolio?: number | null
           roi_yearly?: number | null
-          row_type?: number | null
+          row_type?: string | null
           stock_price?: number | null
           strike_end?: number | null
           strike_start?: number | null
