@@ -39,9 +39,21 @@ export const TradeActions = ({
     }
 
     const today = new Date()
+    
+    // First get the max id from the trade_log table
+    const { data: maxIdResult } = await supabase
+      .from('trade_log')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1)
+      .single()
+
+    const newId = (maxIdResult?.id || 0) + 1
+
     const { error } = await supabase
       .from('trade_log')
       .insert({
+        id: newId,
         profile_id: profileId,
         trade_id: tradeId,
         row_type: 'child',
