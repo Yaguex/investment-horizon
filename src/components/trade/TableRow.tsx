@@ -57,25 +57,39 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
               )}
             </div>
           )}
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Edit className="h-4 w-4 cursor-pointer" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit trade</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
           
-          {isSubRow && (
+          {isSubRow ? (
+            <>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Plus className="h-4 w-4 cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add trade</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Edit className="h-4 w-4 cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit trade</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </>
+          ) : (
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Plus className="h-4 w-4 cursor-pointer" />
+                  <Edit className="h-4 w-4 cursor-pointer" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Add trade</p>
+                  <p>Edit trade</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -83,8 +97,8 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
         </div>
       </TableCell>
       <TableCell>{row.ticker}</TableCell>
-      <TableCell className="min-w-[140px]">{row.vehicle}</TableCell>
-      <TableCell className="min-w-[140px]">{row.order}</TableCell>
+      <TableCell className="min-w-[180px]">{row.vehicle}</TableCell>
+      <TableCell className="min-w-[180px]">{row.order}</TableCell>
       <TableCell>{row.qty}</TableCell>
       <TableCell className="min-w-[140px]">{formatDate(row.date_entry)}</TableCell>
       <TableCell className="min-w-[140px]">{formatDate(row.date_expiration)}</TableCell>
