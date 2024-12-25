@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
 import Header from "@/components/Header"
 import TradeTable from "@/components/TradeTable"
 
@@ -27,6 +27,9 @@ const TradeLog = () => {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogTitle>New Trade</DialogTitle>
+                  <DialogDescription>
+                    Add a new trade to your trade log.
+                  </DialogDescription>
                   {/* Trade form content will go here */}
                 </DialogContent>
               </Dialog>
