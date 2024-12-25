@@ -103,7 +103,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
           )}
         </div>
       </TableCell>
-      <TableCell>{row.ticker}</TableCell>
+      <TableCell className="min-w-[200px]">{row.ticker}</TableCell>
       <TableCell className="min-w-[180px]">{row.vehicle}</TableCell>
       <TableCell className="min-w-[180px]">{row.order}</TableCell>
       <TableCell>{formatNumber(row.qty)}</TableCell>

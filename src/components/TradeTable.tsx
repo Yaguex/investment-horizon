@@ -118,7 +118,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">Actions</TableHead>
-                <TableHead>Ticker</TableHead>
+                <TableHead className="min-w-[200px]">Ticker</TableHead>
                 <TableHead className="min-w-[140px]">Vehicle</TableHead>
                 <TableHead className="min-w-[140px]">Order</TableHead>
                 <TableHead>QTY</TableHead>
