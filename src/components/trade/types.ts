@@ -29,6 +29,7 @@ export interface TradeData {
   delta?: number
   iv?: number
   iv_percentile?: number
+  subRows?: TradeData[]
 }
 
 export interface FormValues {

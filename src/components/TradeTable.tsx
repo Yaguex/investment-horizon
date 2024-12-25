@@ -13,6 +13,7 @@ import { TradeData } from "./trade/types"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 interface TradeTableProps {
   tradeStatus: "open" | "closed"
@@ -119,68 +120,70 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
   }
 
   return (
-    <Card className="mt-6">
-      <CardContent className="p-0">
-        <div className="relative overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-white">
-                <TableHead className="sticky left-0 z-20 w-[100px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
-                <TableHead className="sticky left-[100px] z-20 min-w-[200px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Ticker</TableHead>
-                <TableHead className="min-w-[140px]">Vehicle</TableHead>
-                <TableHead className="min-w-[140px]">Order</TableHead>
-                <TableHead>QTY</TableHead>
-                <TableHead className="min-w-[140px]">Date Entry</TableHead>
-                <TableHead className="min-w-[140px]">Date Expiration</TableHead>
-                <TableHead className="min-w-[140px]">Date Exit</TableHead>
-                <TableHead className="min-w-[140px]">Days in Trade</TableHead>
-                <TableHead>Strike Start</TableHead>
-                <TableHead>Strike End</TableHead>
-                <TableHead>Premium</TableHead>
-                <TableHead>Stock Price</TableHead>
-                <TableHead className="min-w-[100px]">Risk %</TableHead>
-                <TableHead className="min-w-[100px]">Risk $</TableHead>
-                <TableHead>Commission</TableHead>
-                <TableHead>PnL</TableHead>
-                <TableHead>ROI</TableHead>
-                <TableHead>Yearly ROI</TableHead>
-                <TableHead>ROI Portfolio</TableHead>
-                <TableHead className="min-w-[120px]">B/E 0</TableHead>
-                <TableHead className="min-w-[120px]">B/E 1</TableHead>
-                <TableHead className="min-w-[120px]">B/E 2</TableHead>
-                <TableHead>Delta</TableHead>
-                <TableHead>IV</TableHead>
-                <TableHead>IV Percentile</TableHead>
-                <TableHead className="min-w-[7000px]">Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {trades.map((trade) => (
-                <>
-                  <TradeTableRow 
-                    key={trade.id}
-                    row={trade}
-                    isExpanded={expandedRows[trade.id]}
-                    onToggle={() => toggleRow(trade.id.toString())}
-                    tradeStatus={tradeStatus}
-                  />
-                  {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
+    <TooltipProvider>
+      <Card className="mt-6">
+        <CardContent className="p-0">
+          <div className="relative overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-white">
+                  <TableHead className="sticky left-0 z-20 w-[100px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
+                  <TableHead className="sticky left-[100px] z-20 min-w-[200px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Ticker</TableHead>
+                  <TableHead className="min-w-[140px]">Vehicle</TableHead>
+                  <TableHead className="min-w-[140px]">Order</TableHead>
+                  <TableHead>QTY</TableHead>
+                  <TableHead className="min-w-[140px]">Date Entry</TableHead>
+                  <TableHead className="min-w-[140px]">Date Expiration</TableHead>
+                  <TableHead className="min-w-[140px]">Date Exit</TableHead>
+                  <TableHead className="min-w-[140px]">Days in Trade</TableHead>
+                  <TableHead>Strike Start</TableHead>
+                  <TableHead>Strike End</TableHead>
+                  <TableHead>Premium</TableHead>
+                  <TableHead>Stock Price</TableHead>
+                  <TableHead className="min-w-[100px]">Risk %</TableHead>
+                  <TableHead className="min-w-[100px]">Risk $</TableHead>
+                  <TableHead>Commission</TableHead>
+                  <TableHead>PnL</TableHead>
+                  <TableHead>ROI</TableHead>
+                  <TableHead>Yearly ROI</TableHead>
+                  <TableHead>ROI Portfolio</TableHead>
+                  <TableHead className="min-w-[120px]">B/E 0</TableHead>
+                  <TableHead className="min-w-[120px]">B/E 1</TableHead>
+                  <TableHead className="min-w-[120px]">B/E 2</TableHead>
+                  <TableHead>Delta</TableHead>
+                  <TableHead>IV</TableHead>
+                  <TableHead>IV Percentile</TableHead>
+                  <TableHead className="min-w-[7000px]">Notes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {trades.map((trade) => (
+                  <>
                     <TradeTableRow 
-                      key={subRow.id}
-                      row={subRow}
-                      isExpanded={false}
-                      isSubRow={true}
-                      onToggle={() => {}}
+                      key={trade.id}
+                      row={trade}
+                      isExpanded={expandedRows[trade.id]}
+                      onToggle={() => toggleRow(trade.id.toString())}
                       tradeStatus={tradeStatus}
                     />
-                  ))}
-                </>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                    {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
+                      <TradeTableRow 
+                        key={subRow.id}
+                        row={subRow}
+                        isExpanded={false}
+                        isSubRow={true}
+                        onToggle={() => {}}
+                        tradeStatus={tradeStatus}
+                      />
+                    ))}
+                  </>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   )
 }
 

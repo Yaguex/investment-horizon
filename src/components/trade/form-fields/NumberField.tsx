@@ -21,8 +21,11 @@ export function NumberField({ control, name, label }: NumberFieldProps) {
             <Input 
               type="number" 
               {...field} 
-              value={field.value || ''} 
-              onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} 
+              value={field.value === null ? '' : field.value} 
+              onChange={e => {
+                const value = e.target.value ? Number(e.target.value) : null;
+                field.onChange(value);
+              }}
             />
           </FormControl>
         </FormItem>
