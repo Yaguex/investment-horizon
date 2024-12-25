@@ -1,5 +1,6 @@
 export interface TradeData {
   id: number
+  profile_id?: string
   ticker: string
   date_entry: string | null
   date_exit: string | null

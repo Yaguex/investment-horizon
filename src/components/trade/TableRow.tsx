@@ -1,21 +1,14 @@
 import { useState } from "react"
-import { ArrowDown, ArrowUp, Edit, Plus, X } from "lucide-react"
 import {
   TableCell,
   TableRow as TableRowBase,
 } from "@/components/ui/table"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { TradeData } from "./types"
-import { format } from "date-fns"
 import { EditTradeSheet } from "./EditTradeSheet"
-import { supabase } from "@/integrations/supabase/client"
-import { useQueryClient } from "@tanstack/react-query"
+import { formatDate, formatNumber } from "./utils/formatters"
+import { getRowBackground, getStickyBackground } from "./utils/styles"
+import { TradeActions } from "./actions/TradeActions"
 
 interface TableRowProps {
   row: TradeData
@@ -27,156 +20,25 @@ interface TableRowProps {
 
 export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeStatus }: TableRowProps) => {
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
-  const queryClient = useQueryClient()
-  
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return ""
-    return format(new Date(dateString), "dd MMM yyyy")
-  }
-
-  const formatNumber = (value: number | undefined | null, decimals: number = 0) => {
-    if (value === undefined || value === null) return ""
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }).format(value)
-  }
-
-  const getRowBackground = () => {
-    if (isSubRow) {
-      return row.trade_status === "closed" ? "bg-gray-50 hover:bg-gray-100" : "bg-white hover:bg-gray-50"
-    }
-    
-    if (tradeStatus === "open") return "bg-yellow-50 hover:bg-yellow-100"
-    
-    if (row.pnl === undefined || row.pnl === null) return "bg-yellow-50 hover:bg-yellow-100"
-    if (row.pnl > 0) return "bg-green-50 hover:bg-green-100"
-    if (row.pnl < 0) return "bg-red-50 hover:bg-red-100"
-    return "bg-yellow-50 hover:bg-yellow-100"
-  }
-
-  const getStickyBackground = () => {
-    if (isSubRow) {
-      return row.trade_status === "closed" ? "bg-gray-50 group-hover:bg-gray-100" : "bg-white group-hover:bg-gray-50"
-    }
-    
-    if (tradeStatus === "open") return "bg-yellow-50 group-hover:bg-yellow-100"
-    
-    if (row.pnl === undefined || row.pnl === null) return "bg-yellow-50 group-hover:bg-yellow-100"
-    if (row.pnl > 0) return "bg-green-50 group-hover:bg-green-100"
-    if (row.pnl < 0) return "bg-red-50 group-hover:bg-red-100"
-    return "bg-yellow-50 group-hover:bg-yellow-100"
-  }
-
-  const handleAddTrade = async () => {
-    if (!row.trade_id) {
-      console.error('No trade_id found for parent row')
-      return
-    }
-
-    const today = new Date()
-    const { data, error } = await supabase
-      .from('trade_log')
-      .insert([
-        {
-          profile_id: row.profile_id,
-          trade_id: row.trade_id,
-          row_type: 'child',
-          trade_status: 'open',
-          ticker: row.ticker,
-          date_entry: format(today, 'yyyy-MM-dd')
-        }
-      ])
-      .select()
-
-    if (error) {
-      console.error('Error adding trade:', error)
-      return
-    }
-
-    console.log('New trade added:', data)
-    queryClient.invalidateQueries({ queryKey: ['trades'] })
-  }
-
-  const handleDeleteTrade = async () => {
-    if (!row.id) {
-      console.error('No id found for child row')
-      return
-    }
-
-    const { error } = await supabase
-      .from('trade_log')
-      .delete()
-      .eq('id', row.id)
-
-    if (error) {
-      console.error('Error deleting trade:', error)
-      return
-    }
-
-    console.log('Trade deleted:', row.id)
-    queryClient.invalidateQueries({ queryKey: ['trades'] })
-  }
 
   return (
     <>
       <TableRowBase 
-        className={cn("group", getRowBackground())}
+        className={cn("group", getRowBackground(isSubRow, row.trade_status, row.pnl))}
       >
-        <TableCell className={cn("sticky left-0 z-10 w-[100px]", getStickyBackground())}>
-          <div className="flex items-center gap-2">
-            {!isSubRow && (
-              <>
-                <div 
-                  onClick={onToggle}
-                  className="cursor-pointer"
-                >
-                  {isExpanded ? (
-                    <ArrowUp className="h-4 w-4" />
-                  ) : (
-                    <ArrowDown className="h-4 w-4" />
-                  )}
-                </div>
-                
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add Trade</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </>
-            )}
-            
-            {isSubRow ? (
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <X className="h-4 w-4 cursor-pointer" onClick={handleDeleteTrade} />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Delete Trade</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : null}
-            
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Edit className="h-4 w-4 cursor-pointer" onClick={() => setIsEditSheetOpen(true)} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit Trade</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+        <TableCell className={cn("sticky left-0 z-10 w-[100px]", getStickyBackground(isSubRow, row.trade_status, row.pnl))}>
+          <TradeActions 
+            isSubRow={isSubRow}
+            isExpanded={isExpanded}
+            onToggle={onToggle}
+            onEdit={() => setIsEditSheetOpen(true)}
+            tradeId={row.trade_id}
+            id={row.id}
+            profileId={row.profile_id}
+            ticker={row.ticker}
+          />
         </TableCell>
-        <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px] font-bold", getStickyBackground())}>{row.ticker}</TableCell>
+        <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px] font-bold", getStickyBackground(isSubRow, row.trade_status, row.pnl))}>{row.ticker}</TableCell>
         <TableCell className="min-w-[180px]">{row.vehicle}</TableCell>
         <TableCell className="min-w-[180px]">{row.order}</TableCell>
         <TableCell>{formatNumber(row.qty)}</TableCell>
