@@ -24,7 +24,6 @@ interface FormValues {
   ticker: string
   date_entry: Date | null
   date_exit: Date | null
-  days_in_trade: number | null
   commission: number | null
   pnl: number | null
   roi: number | null
@@ -45,7 +44,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       ticker: trade.ticker || "",
       date_entry: trade.date_entry ? new Date(trade.date_entry) : null,
       date_exit: trade.date_exit ? new Date(trade.date_exit) : null,
-      days_in_trade: trade.days_in_trade || null,
       commission: trade.commission || null,
       pnl: trade.pnl || null,
       roi: trade.roi || null,
@@ -59,17 +57,27 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     }
   })
 
+  const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null) => {
+    if (!dateEntry || !dateExit) return null
+    const diffTime = Math.abs(dateExit.getTime() - dateEntry.getTime())
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  }
+
   const onSubmit = async (values: FormValues) => {
     console.log('Submitting trade update with values:', values)
     
     try {
-      const { error } = await supabase
+      // Calculate days in trade
+      const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
+      
+      // Update parent row
+      const { error: parentError } = await supabase
         .from('trade_log')
         .update({
           ticker: values.ticker,
           date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
           date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
-          days_in_trade: values.days_in_trade,
+          days_in_trade: daysInTrade,
           commission: values.commission,
           pnl: values.pnl,
           roi: values.roi,
@@ -83,9 +91,25 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         })
         .eq('id', trade.id)
       
-      if (error) {
-        console.error('Error updating trade:', error)
-        throw error
+      if (parentError) {
+        console.error('Error updating parent trade:', parentError)
+        throw parentError
+      }
+      
+      // If trade status changed and this is a parent row, update all child rows with same trade_id
+      if (values.trade_status !== trade.trade_status && trade.row_type === 'parent' && trade.trade_id) {
+        const { error: childError } = await supabase
+          .from('trade_log')
+          .update({
+            trade_status: values.trade_status
+          })
+          .eq('trade_id', trade.trade_id)
+          .eq('row_type', 'child')
+        
+        if (childError) {
+          console.error('Error updating child trades:', childError)
+          throw childError
+        }
       }
       
       console.log('Trade updated successfully')
@@ -138,7 +162,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                           {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value || undefined}
@@ -172,7 +196,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                           {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value || undefined}
@@ -181,19 +205,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                         />
                       </PopoverContent>
                     </Popover>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="days_in_trade"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Days in Trade</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
                   </FormControl>
                 </FormItem>
               )}
@@ -322,7 +333,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Trade Status</FormLabel>
+                    <FormLabel className="text-base">Closed Trade</FormLabel>
                   </div>
                   <FormControl>
                     <Switch
