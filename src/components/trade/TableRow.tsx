@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowDown, ArrowUp, Edit, Plus } from "lucide-react"
+import { ArrowDown, ArrowUp, Edit, Plus, X } from "lucide-react"
 import {
   TableCell,
   TableRow as TableRowBase,
@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils"
 import { TradeData } from "./types"
 import { format } from "date-fns"
 import { EditTradeSheet } from "./EditTradeSheet"
+import { supabase } from "@/integrations/supabase/client"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface TableRowProps {
   row: TradeData
@@ -25,6 +27,7 @@ interface TableRowProps {
 
 export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeStatus }: TableRowProps) => {
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
+  const queryClient = useQueryClient()
   
   const formatDate = (dateString?: string) => {
     if (!dateString) return ""
@@ -65,6 +68,56 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
     return "bg-yellow-50 group-hover:bg-yellow-100"
   }
 
+  const handleAddTrade = async () => {
+    if (!row.trade_id) {
+      console.error('No trade_id found for parent row')
+      return
+    }
+
+    const today = new Date()
+    const { data, error } = await supabase
+      .from('trade_log')
+      .insert([
+        {
+          profile_id: row.profile_id,
+          trade_id: row.trade_id,
+          row_type: 'child',
+          trade_status: 'open',
+          ticker: row.ticker,
+          date_entry: format(today, 'yyyy-MM-dd')
+        }
+      ])
+      .select()
+
+    if (error) {
+      console.error('Error adding trade:', error)
+      return
+    }
+
+    console.log('New trade added:', data)
+    queryClient.invalidateQueries({ queryKey: ['trades'] })
+  }
+
+  const handleDeleteTrade = async () => {
+    if (!row.id) {
+      console.error('No id found for child row')
+      return
+    }
+
+    const { error } = await supabase
+      .from('trade_log')
+      .delete()
+      .eq('id', row.id)
+
+    if (error) {
+      console.error('Error deleting trade:', error)
+      return
+    }
+
+    console.log('Trade deleted:', row.id)
+    queryClient.invalidateQueries({ queryKey: ['trades'] })
+  }
+
   return (
     <>
       <TableRowBase 
@@ -73,54 +126,54 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
         <TableCell className={cn("sticky left-0 z-10 w-[100px]", getStickyBackground())}>
           <div className="flex items-center gap-2">
             {!isSubRow && (
-              <div 
-                onClick={onToggle}
-                className="cursor-pointer"
-              >
-                {isExpanded ? (
-                  <ArrowUp className="h-4 w-4" />
-                ) : (
-                  <ArrowDown className="h-4 w-4" />
-                )}
-              </div>
-            )}
-            
-            {isSubRow ? (
               <>
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Plus className="h-4 w-4 cursor-pointer" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add trade</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <div 
+                  onClick={onToggle}
+                  className="cursor-pointer"
+                >
+                  {isExpanded ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : (
+                    <ArrowDown className="h-4 w-4" />
+                  )}
+                </div>
                 
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Edit className="h-4 w-4 cursor-pointer" onClick={() => setIsEditSheetOpen(true)} />
+                      <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Edit trade</p>
+                      <p>Add Trade</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </>
-            ) : (
+            )}
+            
+            {isSubRow ? (
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Edit className="h-4 w-4 cursor-pointer" onClick={() => setIsEditSheetOpen(true)} />
+                    <X className="h-4 w-4 cursor-pointer" onClick={handleDeleteTrade} />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Edit trade</p>
+                    <p>Delete Trade</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            )}
+            ) : null}
+            
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Edit className="h-4 w-4 cursor-pointer" onClick={() => setIsEditSheetOpen(true)} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit Trade</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </TableCell>
         <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px] font-bold", getStickyBackground())}>{row.ticker}</TableCell>
