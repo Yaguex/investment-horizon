@@ -10,8 +10,9 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { TableActions } from "./allocations/TableActions"
-import { getRowBackground } from "./allocations/styles"
 import { AllocationRow, generateDummyData } from "./allocations/data"
+import { cn } from "@/lib/utils"
+import { getRowBackground, getStickyBackground } from "./allocations/styles"
 
 const AllocationsTable = () => {
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>(() => {
@@ -56,12 +57,12 @@ const AllocationsTable = () => {
 
   return (
     <TooltipProvider>
-      <Card>
+      <Card className="mt-6">
         <CardContent className="p-0">
           <div className="relative overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-white">
                   <TableHead className="sticky left-0 z-20 w-[100px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
                   <TableHead className="min-w-[200px]">Bucket</TableHead>
                   <TableHead>Ticker</TableHead>
@@ -84,11 +85,18 @@ const AllocationsTable = () => {
 
                     return (
                       <>
-                        <TableRow key={row.id} className={getRowBackground(false)}>
-                          <TableCell className="sticky left-0 z-10 w-[100px] bg-yellow-50">
+                        <TableRow 
+                          key={row.id} 
+                          className={cn("group", getRowBackground(false))}
+                        >
+                          <TableCell className={cn(
+                            "sticky left-0 z-10 w-[100px]",
+                            getStickyBackground(false)
+                          )}>
                             <TableActions 
                               isExpanded={isExpanded}
                               onToggle={() => toggleRow(row.id)}
+                              isSubRow={false}
                             />
                           </TableCell>
                           <TableCell className="font-medium">{row.bucket}</TableCell>
@@ -104,9 +112,15 @@ const AllocationsTable = () => {
                           <TableCell>{formatCurrency(row.dividendAmount)}</TableCell>
                         </TableRow>
                         {isExpanded && childRows.map((childRow) => (
-                          <TableRow key={childRow.id} className={getRowBackground(true)}>
-                            <TableCell className="sticky left-0 z-10 w-[100px] bg-white">
-                              <TableActions isChild />
+                          <TableRow 
+                            key={childRow.id} 
+                            className={cn("group", getRowBackground(true))}
+                          >
+                            <TableCell className={cn(
+                              "sticky left-0 z-10 w-[100px]",
+                              getStickyBackground(true)
+                            )}>
+                              <TableActions isSubRow={true} />
                             </TableCell>
                             <TableCell>{childRow.bucket}</TableCell>
                             <TableCell className="font-medium">{childRow.ticker}</TableCell>
