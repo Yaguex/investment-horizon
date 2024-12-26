@@ -21,9 +21,9 @@ export interface TradeData {
   trade_id?: number
   order?: string
   qty?: number
-  date_entry?: Date | null
-  date_expiration?: Date | null
-  date_exit?: Date | null
+  date_entry?: string | null
+  date_expiration?: string | null
+  date_exit?: string | null
   days_in_trade?: number
   strike_start?: number
   strike_end?: number
