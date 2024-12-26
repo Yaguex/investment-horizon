@@ -1,5 +1,4 @@
 import Header from "@/components/Header"
-import AllocationsTable from "@/components/AllocationsTable"
 import { Button } from "@/components/ui/button"
 
 const Allocations = () => {
@@ -12,8 +11,6 @@ const Allocations = () => {
           <h1 className="text-3xl font-bold">Allocations</h1>
           <Button>Add Bucket</Button>
         </div>
-        
-        <AllocationsTable />
       </main>
     </div>
   )
