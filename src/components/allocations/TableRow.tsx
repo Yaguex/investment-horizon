@@ -23,12 +23,6 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
     return ""
   }
 
-  const getDeltaDisplay = (delta: number | undefined | null) => {
-    if (delta === undefined || delta === null) return ""
-    if (delta >= -10 && delta <= 10) return ""
-    return `${formatNumber(delta, 2)}%`
-  }
-
   return (
     <TableRowBase 
       className={cn("group", getRowBackground(isSubRow, "open", 0))}
@@ -51,7 +45,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
       <TableCell className="min-w-[140px]">${formatNumber(row.value_target, 0)}</TableCell>
       <TableCell className="min-w-[140px]">{formatNumber(row.weight_actual, 2)}%</TableCell>
       <TableCell className="min-w-[140px]">${formatNumber(row.value_actual, 0)}</TableCell>
-      <TableCell className={cn("min-w-[140px] font-bold", getDeltaColor(row.delta))}>{getDeltaDisplay(row.delta)}</TableCell>
+      <TableCell className={cn("min-w-[140px] font-bold", getDeltaColor(row.delta))}>{formatNumber(row.delta, 2)}%</TableCell>
       <TableCell>{row.risk_profile}</TableCell>
       <TableCell>{formatNumber(row["dividend_%"], 2)}%</TableCell>
       <TableCell className="min-w-[160px]">${formatNumber(row["dividend_$"], 0)}</TableCell>
