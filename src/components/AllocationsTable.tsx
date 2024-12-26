@@ -153,49 +153,22 @@ const AllocationsTable = () => {
               <TableBody>
                 {dummyData.map((trade) => (
                   <>
-                    <TableRow 
+                    <TradeTableRow 
                       key={trade.id}
-                      className="group"
-                    >
-                      <TableCell className="sticky left-0 z-10 w-[100px]">
-                        Actions
-                      </TableCell>
-                      <TableCell className="sticky left-[100px] z-10 min-w-[200px] font-bold">
-                        {trade.ticker}
-                      </TableCell>
-                      <TableCell>{trade.vehicle}</TableCell>
-                      <TableCell>{trade.order}</TableCell>
-                      <TableCell>{trade.qty}</TableCell>
-                      <TableCell>{trade.date_entry}</TableCell>
-                      <TableCell>{trade.date_expiration}</TableCell>
-                      <TableCell>{trade.date_exit}</TableCell>
-                      <TableCell>{trade.days_in_trade}</TableCell>
-                      <TableCell>{trade.strike_start}</TableCell>
-                      <TableCell>{trade.strike_end}</TableCell>
-                      <TableCell>{trade.premium}</TableCell>
-                    </TableRow>
+                      row={trade}
+                      isExpanded={expandedRows[trade.id]}
+                      onToggle={() => toggleRow(trade.id.toString())}
+                      tradeStatus="open"
+                    />
                     {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
-                      <TableRow 
+                      <TradeTableRow 
                         key={subRow.id}
-                        className="group bg-muted/50"
-                      >
-                        <TableCell className="sticky left-0 z-10 w-[100px]">
-                          Actions
-                        </TableCell>
-                        <TableCell className="sticky left-[100px] z-10 min-w-[200px] font-bold">
-                          {subRow.ticker}
-                        </TableCell>
-                        <TableCell>{subRow.vehicle}</TableCell>
-                        <TableCell>{subRow.order}</TableCell>
-                        <TableCell>{subRow.qty}</TableCell>
-                        <TableCell>{subRow.date_entry}</TableCell>
-                        <TableCell>{subRow.date_expiration}</TableCell>
-                        <TableCell>{subRow.date_exit}</TableCell>
-                        <TableCell>{subRow.days_in_trade}</TableCell>
-                        <TableCell>{subRow.strike_start}</TableCell>
-                        <TableCell>{subRow.strike_end}</TableCell>
-                        <TableCell>{subRow.premium}</TableCell>
-                      </TableRow>
+                        row={subRow}
+                        isExpanded={false}
+                        isSubRow={true}
+                        onToggle={() => {}}
+                        tradeStatus="open"
+                      />
                     ))}
                   </>
                 ))}
