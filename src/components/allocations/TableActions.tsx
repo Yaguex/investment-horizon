@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/tooltip"
 
 interface TableActionsProps {
-  isChild?: boolean
+  isSubRow?: boolean
   isExpanded?: boolean
   onToggle?: () => void
 }
 
-export const TableActions = ({ isChild, isExpanded, onToggle }: TableActionsProps) => {
-  if (isChild) {
+export const TableActions = ({ isSubRow, isExpanded, onToggle }: TableActionsProps) => {
+  if (isSubRow) {
     return (
       <div className="flex items-center gap-2 ml-8">
         <Tooltip>
