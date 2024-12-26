@@ -45,10 +45,10 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
       )}>{row.bucket}</TableCell>
       <TableCell className="min-w-[160px]">{row.ticker}</TableCell>
       <TableCell className="min-w-[120px]">{row.vehicle}</TableCell>
-      <TableCell className="min-w-[140px]">{formatNumber(row.weight_target, 2)}%</TableCell>
       <TableCell className="min-w-[140px]">${formatNumber(row.value_target, 0)}</TableCell>
-      <TableCell className="min-w-[140px]">{formatNumber(row.weight_actual, 2)}%</TableCell>
       <TableCell className="min-w-[140px]">${formatNumber(row.value_actual, 0)}</TableCell>
+      <TableCell className="min-w-[140px]">{formatNumber(row.weight_target, 2)}%</TableCell>
+      <TableCell className="min-w-[140px]">{formatNumber(row.weight_actual, 2)}%</TableCell>
       <TableCell className={cn("min-w-[100px] font-bold", getDeltaColor(row.delta))}>{formatNumber(row.delta, 0)}%</TableCell>
       <TableCell className="min-w-[160px]">{row.risk_profile}</TableCell>
       <TableCell className="min-w-[140px]">{formatNumber(row["dividend_%"], 2)}{!isSubRow ? '' : '%'}</TableCell>
