@@ -9,11 +9,53 @@ import {
 } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
 import { TableRow as TradeTableRow } from "./trade/TableRow"
-import { TradeData } from "./trade/types"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
+import { Allocation } from "@/types/allocations"
+import { useToast } from "@/components/ui/use-toast"
 
 const AllocationsTable = () => {
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
+  const { toast } = useToast()
+
+  const { data: allocations, isLoading } = useQuery({
+    queryKey: ['allocations'],
+    queryFn: async () => {
+      console.log('Fetching allocations...')
+      const { data, error } = await supabase
+        .from('allocations')
+        .select('*')
+        .order('bucket', { ascending: true })
+        .order('row_type', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching allocations:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load allocations",
+          variant: "destructive",
+        })
+        throw error
+      }
+
+      // Process data to create parent-child relationships
+      const processedData = data.reduce((acc: Allocation[], curr: Allocation) => {
+        if (curr.row_type === 'parent') {
+          curr.subRows = data.filter(
+            (row: Allocation) => 
+              row.row_type === 'child' && 
+              row.bucket === curr.bucket
+          )
+          acc.push(curr)
+        }
+        return acc
+      }, [])
+
+      console.log('Processed allocations:', processedData)
+      return processedData
+    }
+  })
 
   const toggleRow = (id: string) => {
     setExpandedRows(prev => ({
@@ -22,42 +64,9 @@ const AllocationsTable = () => {
     }))
   }
 
-  // Local dummy data
-  const dummyData: TradeData[] = [
-    {
-      id: 1,
-      profile_id: "1",
-      ticker: "VTI",
-      vehicle: "ETF",
-      bucket: "US Equities",
-      trade_status: "open",
-      row_type: "parent",
-      notes: "US Total Market ETF",
-      subRows: [
-        {
-          id: 2,
-          profile_id: "1",
-          ticker: "VTI",
-          vehicle: "ETF",
-          bucket: "US Equities",
-          trade_status: "open",
-          row_type: "child",
-          notes: "Additional VTI purchase"
-        }
-      ]
-    },
-    {
-      id: 3,
-      profile_id: "1",
-      ticker: "VXUS",
-      vehicle: "ETF",
-      bucket: "International Equities",
-      trade_status: "open",
-      row_type: "parent",
-      notes: "International ETF",
-      subRows: []
-    }
-  ]
+  if (isLoading) {
+    return <div className="mt-6 p-4">Loading allocations...</div>
+  }
 
   return (
     <TooltipProvider>
@@ -82,19 +91,44 @@ const AllocationsTable = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {dummyData.map((trade) => (
+                {allocations?.map((allocation) => (
                   <>
                     <TradeTableRow 
-                      key={trade.id}
-                      row={trade}
-                      isExpanded={expandedRows[trade.id]}
-                      onToggle={() => toggleRow(trade.id.toString())}
+                      key={allocation.id}
+                      row={{
+                        id: allocation.id,
+                        ticker: allocation.ticker || '',
+                        vehicle: allocation.vehicle || '',
+                        bucket: allocation.bucket || '',
+                        trade_status: 'open',
+                        row_type: allocation.row_type || 'parent',
+                        notes: '',
+                        subRows: allocation.subRows?.map(subRow => ({
+                          id: subRow.id,
+                          ticker: subRow.ticker || '',
+                          vehicle: subRow.vehicle || '',
+                          bucket: subRow.bucket || '',
+                          trade_status: 'open',
+                          row_type: 'child',
+                          notes: ''
+                        }))
+                      }}
+                      isExpanded={expandedRows[allocation.id]}
+                      onToggle={() => toggleRow(allocation.id.toString())}
                       tradeStatus="open"
                     />
-                    {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
+                    {expandedRows[allocation.id] && allocation.subRows?.map((subRow) => (
                       <TradeTableRow 
                         key={subRow.id}
-                        row={subRow}
+                        row={{
+                          id: subRow.id,
+                          ticker: subRow.ticker || '',
+                          vehicle: subRow.vehicle || '',
+                          bucket: subRow.bucket || '',
+                          trade_status: 'open',
+                          row_type: 'child',
+                          notes: ''
+                        }}
                         isExpanded={false}
                         isSubRow={true}
                         onToggle={() => {}}
