@@ -167,13 +167,25 @@ const AllocationsTable = () => {
               </TableHeader>
               <TableBody>
                 {dummyData.map((trade) => (
-                  <TradeTableRow 
-                    key={trade.id}
-                    row={trade}
-                    isExpanded={!!expandedRows[trade.id]}
-                    onToggle={() => toggleRow(trade.id.toString())}
-                    tradeStatus="open"
-                  />
+                  <>
+                    <TradeTableRow 
+                      key={trade.id}
+                      row={trade}
+                      isExpanded={expandedRows[trade.id]}
+                      onToggle={() => toggleRow(trade.id.toString())}
+                      tradeStatus="open"
+                    />
+                    {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
+                      <TradeTableRow 
+                        key={subRow.id}
+                        row={subRow}
+                        isExpanded={false}
+                        isSubRow={true}
+                        onToggle={() => {}}
+                        tradeStatus="open"
+                      />
+                    ))}
+                  </>
                 ))}
               </TableBody>
             </Table>
