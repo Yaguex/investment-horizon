@@ -8,81 +8,23 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowUp, Plus, Edit, X } from "lucide-react"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-
-interface AllocationRow {
-  id: number
-  type: 'parent' | 'child'
-  bucket: string
-  ticker: string
-  vehicle: string
-  weightTarget: number
-  valueTarget: number
-  weightActual: number
-  valueActual: number
-  delta: number
-  riskProfile: string
-  dividendPercentage: number
-  dividendAmount: number
-  parentId?: number
-}
-
-const generateDummyData = (): AllocationRow[] => {
-  const data: AllocationRow[] = []
-  let id = 1
-
-  // Generate 8 parent rows
-  for (let i = 1; i <= 8; i++) {
-    // Add parent row
-    data.push({
-      id: id++,
-      type: 'parent',
-      bucket: `Bucket ${i}`,
-      ticker: '',
-      vehicle: '',
-      weightTarget: Math.round(Math.random() * 100),
-      valueTarget: Math.round(Math.random() * 10000),
-      weightActual: Math.round(Math.random() * 100),
-      valueActual: Math.round(Math.random() * 10000),
-      delta: Math.round((Math.random() - 0.5) * 1000),
-      riskProfile: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
-      dividendPercentage: Math.round(Math.random() * 10 * 100) / 100,
-      dividendAmount: Math.round(Math.random() * 1000),
-    })
-
-    // Add 3 child rows for each parent
-    for (let j = 1; j <= 3; j++) {
-      data.push({
-        id: id++,
-        type: 'child',
-        parentId: id - j - 2,
-        bucket: `Bucket ${i}`,
-        ticker: `TICKER${i}${j}`,
-        vehicle: ['Stock', 'ETF', 'Option'][Math.floor(Math.random() * 3)],
-        weightTarget: Math.round(Math.random() * 100),
-        valueTarget: Math.round(Math.random() * 10000),
-        weightActual: Math.round(Math.random() * 100),
-        valueActual: Math.round(Math.random() * 10000),
-        delta: Math.round((Math.random() - 0.5) * 1000),
-        riskProfile: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
-        dividendPercentage: Math.round(Math.random() * 10 * 100) / 100,
-        dividendAmount: Math.round(Math.random() * 1000),
-      })
-    }
-  }
-
-  return data
-}
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { TableActions } from "./allocations/TableActions"
+import { getRowBackground } from "./allocations/styles"
+import { AllocationRow, generateDummyData } from "./allocations/data"
 
 const AllocationsTable = () => {
-  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
+  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>(() => {
+    // Initialize all rows as expanded
+    const expanded: Record<number, boolean> = {}
+    generateDummyData().forEach(row => {
+      if (row.type === 'parent') {
+        expanded[row.id] = true
+      }
+    })
+    return expanded
+  })
+  
   const [data] = useState<AllocationRow[]>(generateDummyData())
 
   const toggleRow = (id: number) => {
@@ -120,10 +62,10 @@ const AllocationsTable = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                  <TableHead>Bucket</TableHead>
+                  <TableHead className="w-[80px]">Actions</TableHead>
+                  <TableHead className="min-w-[200px]">Bucket</TableHead>
                   <TableHead>Ticker</TableHead>
-                  <TableHead>Vehicle</TableHead>
+                  <TableHead className="min-w-[180px]">Vehicle</TableHead>
                   <TableHead>Weight target</TableHead>
                   <TableHead>Value target</TableHead>
                   <TableHead>Weight actual</TableHead>
@@ -142,33 +84,12 @@ const AllocationsTable = () => {
 
                     return (
                       <>
-                        <TableRow key={row.id}>
+                        <TableRow key={row.id} className={getRowBackground(false)}>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => toggleRow(row.id)}
-                              >
-                                <ArrowUp className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                              </Button>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <Plus className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Add ticker</TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Edit bucket</TooltipContent>
-                              </Tooltip>
-                            </div>
+                            <TableActions 
+                              isExpanded={isExpanded}
+                              onToggle={() => toggleRow(row.id)}
+                            />
                           </TableCell>
                           <TableCell className="font-medium">{row.bucket}</TableCell>
                           <TableCell>{row.ticker}</TableCell>
@@ -183,26 +104,9 @@ const AllocationsTable = () => {
                           <TableCell>{formatCurrency(row.dividendAmount)}</TableCell>
                         </TableRow>
                         {isExpanded && childRows.map((childRow) => (
-                          <TableRow key={childRow.id}>
+                          <TableRow key={childRow.id} className={getRowBackground(true)}>
                             <TableCell>
-                              <div className="flex items-center gap-2 ml-8">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Delete ticker</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Edit ticker</TooltipContent>
-                                </Tooltip>
-                              </div>
+                              <TableActions isChild />
                             </TableCell>
                             <TableCell>{childRow.bucket}</TableCell>
                             <TableCell className="font-medium">{childRow.ticker}</TableCell>
