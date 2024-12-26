@@ -31,7 +31,7 @@ const AllocationsTable = () => {
       const { data, error } = await supabase
         .from('allocations')
         .select('*')
-        .order('bucket', { ascending: true })
+        .order('bucket_id', { ascending: true })
         .order('row_type', { ascending: true })
 
       if (error) {
@@ -44,14 +44,14 @@ const AllocationsTable = () => {
         throw error
       }
 
-      // Process data to create parent-child relationships
+      // Process data to create parent-child relationships using bucket_id
       const processedData = data.reduce((acc: Allocation[], curr) => {
         if (curr.row_type === 'parent') {
           const allocation: Allocation = {
             ...curr,
             row_type: curr.row_type as "parent" | "child",
             subRows: data
-              .filter(row => row.row_type === 'child' && row.bucket === curr.bucket)
+              .filter(row => row.row_type === 'child' && row.bucket_id === curr.bucket_id)
               .map(row => ({
                 ...row,
                 row_type: row.row_type as "parent" | "child"

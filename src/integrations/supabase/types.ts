@@ -12,6 +12,7 @@ export type Database = {
       allocations: {
         Row: {
           bucket: string | null
+          bucket_id: number | null
           delta: number | null
           "dividend_%": number | null
           dividend_$: number | null
@@ -29,6 +30,7 @@ export type Database = {
         }
         Insert: {
           bucket?: string | null
+          bucket_id?: number | null
           delta?: number | null
           "dividend_%"?: number | null
           dividend_$?: number | null
@@ -46,6 +48,7 @@ export type Database = {
         }
         Update: {
           bucket?: string | null
+          bucket_id?: number | null
           delta?: number | null
           "dividend_%"?: number | null
           dividend_$?: number | null
