@@ -18,6 +18,10 @@ const Header = () => {
       onClick: () => navigate("/trade-log")
     },
     {
+      label: "Allocations",
+      onClick: () => navigate("/allocations")
+    },
+    {
       label: "Settings",
       onClick: () => navigate("/settings")
     },
