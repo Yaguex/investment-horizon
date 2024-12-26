@@ -12,7 +12,7 @@ export interface Allocation {
   delta?: number
   risk_profile?: string
   "dividend_%"?: number
-  dividend_$?: number
-  row_type?: string
+  "dividend_$"?: number
+  row_type?: "parent" | "child"
   subRows?: Allocation[]
 }
