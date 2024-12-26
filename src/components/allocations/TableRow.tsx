@@ -35,7 +35,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
           onEdit={() => {}}
           id={row.id}
           profileId={row.profile_id}
-          ticker={row.ticker || ''}
+          ticker=""
         />
       </TableCell>
       <TableCell className={cn(
@@ -43,7 +43,6 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
         getStickyBackground(isSubRow, "open", 0),
         !isSubRow && "font-bold"
       )}>{row.bucket}</TableCell>
-      <TableCell className="min-w-[160px]">{row.ticker}</TableCell>
       <TableCell className="min-w-[120px]">{row.vehicle}</TableCell>
       <TableCell className="min-w-[140px]">${formatNumber(row.value_target, 0)}</TableCell>
       <TableCell className="min-w-[140px]">${formatNumber(row.value_actual, 0)}</TableCell>

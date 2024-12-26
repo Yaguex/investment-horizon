@@ -4,7 +4,6 @@ export interface Allocation {
   portfolio_id?: number
   bucket?: string
   bucket_id?: number
-  ticker?: string
   vehicle?: string
   weight_target?: number
   value_target?: number

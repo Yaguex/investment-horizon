@@ -21,7 +21,6 @@ export type Database = {
           profile_id: string | null
           risk_profile: string | null
           row_type: string | null
-          ticker: string | null
           value_actual: number | null
           value_target: number | null
           vehicle: string | null
@@ -39,7 +38,6 @@ export type Database = {
           profile_id?: string | null
           risk_profile?: string | null
           row_type?: string | null
-          ticker?: string | null
           value_actual?: number | null
           value_target?: number | null
           vehicle?: string | null
@@ -57,7 +55,6 @@ export type Database = {
           profile_id?: string | null
           risk_profile?: string | null
           row_type?: string | null
-          ticker?: string | null
           value_actual?: number | null
           value_target?: number | null
           vehicle?: string | null

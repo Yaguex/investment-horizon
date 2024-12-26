@@ -93,7 +93,6 @@ const AllocationsTable = () => {
                 <TableRow className="bg-white">
                   <TableHead className="sticky left-0 z-20 w-[100px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
                   <TableHead className="sticky left-[100px] z-20 min-w-[200px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Bucket</TableHead>
-                  <TableHead className="min-w-[160px]">Ticker</TableHead>
                   <TableHead className="min-w-[120px]">Vehicle</TableHead>
                   <TableHead className="min-w-[140px]">Value target</TableHead>
                   <TableHead className="min-w-[140px]">Value actual</TableHead>
