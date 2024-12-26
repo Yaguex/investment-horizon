@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      allocations: {
+        Row: {
+          bucket: string | null
+          delta: number | null
+          "dividend_%": number | null
+          dividend_$: number | null
+          id: number
+          portfolio_id: number | null
+          profile_id: string | null
+          risk_profile: string | null
+          ticker: string | null
+          value_actual: number | null
+          value_target: number | null
+          vehicle: string | null
+          weight_actual: number | null
+          weight_target: number | null
+        }
+        Insert: {
+          bucket?: string | null
+          delta?: number | null
+          "dividend_%"?: number | null
+          dividend_$?: number | null
+          id: number
+          portfolio_id?: number | null
+          profile_id?: string | null
+          risk_profile?: string | null
+          ticker?: string | null
+          value_actual?: number | null
+          value_target?: number | null
+          vehicle?: string | null
+          weight_actual?: number | null
+          weight_target?: number | null
+        }
+        Update: {
+          bucket?: string | null
+          delta?: number | null
+          "dividend_%"?: number | null
+          dividend_$?: number | null
+          id?: number
+          portfolio_id?: number | null
+          profile_id?: string | null
+          risk_profile?: string | null
+          ticker?: string | null
+          value_actual?: number | null
+          value_target?: number | null
+          vehicle?: string | null
+          weight_actual?: number | null
+          weight_target?: number | null
+        }
+        Relationships: []
+      }
       portfolio_data: {
         Row: {
           balance: number | null

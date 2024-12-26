@@ -10,6 +10,7 @@ import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import ResetPassword from "./pages/ResetPassword"
 import TradeLog from "./pages/TradeLog"
+import Allocations from "./pages/Allocations"
 
 const queryClient = new QueryClient()
 
@@ -37,6 +38,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <TradeLog />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/allocations"
+              element={
+                <ProtectedRoute>
+                  <Allocations />
                 </ProtectedRoute>
               }
             />
