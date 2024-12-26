@@ -19,6 +19,7 @@ export type Database = {
           portfolio_id: number | null
           profile_id: string | null
           risk_profile: string | null
+          row_type: string | null
           ticker: string | null
           value_actual: number | null
           value_target: number | null
@@ -35,6 +36,7 @@ export type Database = {
           portfolio_id?: number | null
           profile_id?: string | null
           risk_profile?: string | null
+          row_type?: string | null
           ticker?: string | null
           value_actual?: number | null
           value_target?: number | null
@@ -51,6 +53,7 @@ export type Database = {
           portfolio_id?: number | null
           profile_id?: string | null
           risk_profile?: string | null
+          row_type?: string | null
           ticker?: string | null
           value_actual?: number | null
           value_target?: number | null
