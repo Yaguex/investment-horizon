@@ -16,7 +16,12 @@ import { Allocation } from "@/types/allocations"
 import { useToast } from "@/components/ui/use-toast"
 
 const AllocationsTable = () => {
-  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
+  // Initialize all rows as expanded by default
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>(() => {
+    const initialState: Record<string, boolean> = {}
+    // We'll populate this in the useQuery's onSuccess callback
+    return initialState
+  })
   const { toast } = useToast()
 
   const { data: allocations, isLoading } = useQuery({
@@ -53,6 +58,11 @@ const AllocationsTable = () => {
               }))
           }
           acc.push(allocation)
+          // Set this row as expanded by default
+          setExpandedRows(prev => ({
+            ...prev,
+            [allocation.id]: true
+          }))
         }
         return acc
       }, [])
@@ -83,16 +93,16 @@ const AllocationsTable = () => {
                 <TableRow className="bg-white">
                   <TableHead className="sticky left-0 z-20 w-[100px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
                   <TableHead className="sticky left-[100px] z-20 min-w-[200px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Bucket</TableHead>
-                  <TableHead className="min-w-[140px]">Ticker</TableHead>
-                  <TableHead className="min-w-[140px]">Vehicle</TableHead>
-                  <TableHead>Weight target</TableHead>
+                  <TableHead className="min-w-[200px]">Ticker</TableHead>
+                  <TableHead className="min-w-[120px]">Vehicle</TableHead>
+                  <TableHead className="min-w-[140px]">Weight target</TableHead>
                   <TableHead className="min-w-[140px]">Value target</TableHead>
                   <TableHead className="min-w-[140px]">Weight actual</TableHead>
                   <TableHead className="min-w-[140px]">Value actual</TableHead>
-                  <TableHead className="min-w-[140px]">Delta</TableHead>
+                  <TableHead className="min-w-[100px]">Delta</TableHead>
                   <TableHead>Risk profile</TableHead>
-                  <TableHead>Dividend %</TableHead>
-                  <TableHead>Dividend $</TableHead>
+                  <TableHead className="min-w-[140px]">Dividend %</TableHead>
+                  <TableHead className="min-w-[160px]">Dividend $</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

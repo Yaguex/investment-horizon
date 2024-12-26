@@ -38,16 +38,20 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
           ticker={row.ticker || ''}
         />
       </TableCell>
-      <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px] font-bold", getStickyBackground(isSubRow, "open", 0))}>{row.bucket}</TableCell>
+      <TableCell className={cn(
+        "sticky left-[100px] z-10 min-w-[200px]",
+        getStickyBackground(isSubRow, "open", 0),
+        !isSubRow && "font-bold"
+      )}>{row.bucket}</TableCell>
       <TableCell className="min-w-[200px]">{row.ticker}</TableCell>
-      <TableCell className="min-w-[140px]">{row.vehicle}</TableCell>
-      <TableCell>{formatNumber(row.weight_target, 2)}%</TableCell>
+      <TableCell className="min-w-[120px]">{row.vehicle}</TableCell>
+      <TableCell className="min-w-[140px]">{formatNumber(row.weight_target, 2)}%</TableCell>
       <TableCell className="min-w-[140px]">${formatNumber(row.value_target, 0)}</TableCell>
       <TableCell className="min-w-[140px]">{formatNumber(row.weight_actual, 2)}%</TableCell>
       <TableCell className="min-w-[140px]">${formatNumber(row.value_actual, 0)}</TableCell>
-      <TableCell className={cn("min-w-[140px] font-bold", getDeltaColor(row.delta))}>{formatNumber(row.delta, 2)}%</TableCell>
+      <TableCell className={cn("min-w-[100px] font-bold", getDeltaColor(row.delta))}>{formatNumber(row.delta, 0)}%</TableCell>
       <TableCell>{row.risk_profile}</TableCell>
-      <TableCell>{formatNumber(row["dividend_%"], 2)}%</TableCell>
+      <TableCell className="min-w-[140px]">{formatNumber(row["dividend_%"], 2)}{!isSubRow ? '' : '%'}</TableCell>
       <TableCell className="min-w-[160px]">${formatNumber(row["dividend_$"], 0)}</TableCell>
     </TableRowBase>
   )
