@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
-import { TableRow as TradeTableRow } from "./trade/TableRow"
+import { TableRow as AllocationTableRow } from "./allocations/TableRow"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
@@ -98,70 +98,19 @@ const AllocationsTable = () => {
               <TableBody>
                 {allocations?.map((allocation) => (
                   <>
-                    <TradeTableRow 
+                    <AllocationTableRow 
                       key={allocation.id}
-                      row={{
-                        id: allocation.id,
-                        ticker: allocation.ticker || '',
-                        vehicle: allocation.vehicle || '',
-                        bucket: allocation.bucket || '',
-                        weight_target: allocation.weight_target,
-                        value_target: allocation.value_target,
-                        weight_actual: allocation.weight_actual,
-                        value_actual: allocation.value_actual,
-                        delta: allocation.delta,
-                        risk_profile: allocation.risk_profile,
-                        dividend_percentage: allocation["dividend_%"],
-                        dividend_amount: allocation["dividend_$"],
-                        trade_status: 'open',
-                        row_type: allocation.row_type || 'parent',
-                        notes: '',
-                        subRows: allocation.subRows?.map(subRow => ({
-                          id: subRow.id,
-                          ticker: subRow.ticker || '',
-                          vehicle: subRow.vehicle || '',
-                          bucket: subRow.bucket || '',
-                          weight_target: subRow.weight_target,
-                          value_target: subRow.value_target,
-                          weight_actual: subRow.weight_actual,
-                          value_actual: subRow.value_actual,
-                          delta: subRow.delta,
-                          risk_profile: subRow.risk_profile,
-                          dividend_percentage: subRow["dividend_%"],
-                          dividend_amount: subRow["dividend_$"],
-                          trade_status: 'open',
-                          row_type: 'child',
-                          notes: ''
-                        }))
-                      }}
+                      row={allocation}
                       isExpanded={expandedRows[allocation.id]}
                       onToggle={() => toggleRow(allocation.id.toString())}
-                      tradeStatus="open"
                     />
                     {expandedRows[allocation.id] && allocation.subRows?.map((subRow) => (
-                      <TradeTableRow 
+                      <AllocationTableRow 
                         key={subRow.id}
-                        row={{
-                          id: subRow.id,
-                          ticker: subRow.ticker || '',
-                          vehicle: subRow.vehicle || '',
-                          bucket: subRow.bucket || '',
-                          weight_target: subRow.weight_target,
-                          value_target: subRow.value_target,
-                          weight_actual: subRow.weight_actual,
-                          value_actual: subRow.value_actual,
-                          delta: subRow.delta,
-                          risk_profile: subRow.risk_profile,
-                          dividend_percentage: subRow["dividend_%"],
-                          dividend_amount: subRow["dividend_$"],
-                          trade_status: 'open',
-                          row_type: 'child',
-                          notes: ''
-                        }}
+                        row={subRow}
                         isExpanded={false}
                         isSubRow={true}
                         onToggle={() => {}}
-                        tradeStatus="open"
                       />
                     ))}
                   </>
