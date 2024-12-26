@@ -40,14 +40,19 @@ const AllocationsTable = () => {
       }
 
       // Process data to create parent-child relationships
-      const processedData = data.reduce((acc: Allocation[], curr: Allocation) => {
+      const processedData = data.reduce((acc: Allocation[], curr) => {
         if (curr.row_type === 'parent') {
-          curr.subRows = data.filter(
-            (row: Allocation) => 
-              row.row_type === 'child' && 
-              row.bucket === curr.bucket
-          )
-          acc.push(curr)
+          const allocation: Allocation = {
+            ...curr,
+            row_type: curr.row_type as "parent" | "child",
+            subRows: data
+              .filter(row => row.row_type === 'child' && row.bucket === curr.bucket)
+              .map(row => ({
+                ...row,
+                row_type: row.row_type as "parent" | "child"
+              }))
+          }
+          acc.push(allocation)
         }
         return acc
       }, [])

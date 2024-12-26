@@ -8,6 +8,39 @@ export interface TradeData {
   row_type: "parent" | "child"
   notes: string | null
   subRows?: TradeData[]
+  // Adding allocation-specific fields
+  weight_target?: number
+  value_target?: number
+  weight_actual?: number
+  value_actual?: number
+  delta?: number
+  risk_profile?: string
+  dividend_percentage?: number
+  dividend_amount?: number
+  // Adding trade-specific fields
+  trade_id?: number
+  order?: string
+  qty?: number
+  date_entry?: Date | null
+  date_expiration?: Date | null
+  date_exit?: Date | null
+  days_in_trade?: number
+  strike_start?: number
+  strike_end?: number
+  premium?: number
+  stock_price?: number
+  "risk_%"?: number
+  "risk_$"?: number
+  commission?: number
+  pnl?: number
+  roi?: number
+  roi_yearly?: number
+  roi_portfolio?: number
+  be_0?: number
+  be_1?: number
+  be_2?: number
+  iv?: number
+  iv_percentile?: number
 }
 
 export interface FormValues {
