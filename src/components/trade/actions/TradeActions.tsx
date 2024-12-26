@@ -136,7 +136,7 @@ export const TradeActions = ({
             <Edit className="h-4 w-4 cursor-pointer" onClick={onEdit} />
           </TooltipTrigger>
           <TooltipContent>
-            <p>Edit Trade</p>
+            <p>{isSubRow ? "Edit Trade" : "Edit bucket"}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
