@@ -62,7 +62,7 @@ const AllocationsTable = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">Actions</TableHead>
+                  <TableHead className="sticky left-0 z-20 w-[100px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
                   <TableHead className="min-w-[200px]">Bucket</TableHead>
                   <TableHead>Ticker</TableHead>
                   <TableHead className="min-w-[180px]">Vehicle</TableHead>
@@ -85,7 +85,7 @@ const AllocationsTable = () => {
                     return (
                       <>
                         <TableRow key={row.id} className={getRowBackground(false)}>
-                          <TableCell>
+                          <TableCell className="sticky left-0 z-10 w-[100px] bg-yellow-50">
                             <TableActions 
                               isExpanded={isExpanded}
                               onToggle={() => toggleRow(row.id)}
@@ -105,7 +105,7 @@ const AllocationsTable = () => {
                         </TableRow>
                         {isExpanded && childRows.map((childRow) => (
                           <TableRow key={childRow.id} className={getRowBackground(true)}>
-                            <TableCell>
+                            <TableCell className="sticky left-0 z-10 w-[100px] bg-white">
                               <TableActions isChild />
                             </TableCell>
                             <TableCell>{childRow.bucket}</TableCell>

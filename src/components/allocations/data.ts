@@ -21,9 +21,11 @@ export const generateDummyData = (): AllocationRow[] => {
 
   // Generate 8 parent rows
   for (let i = 1; i <= 8; i++) {
+    const parentId = id
+    
     // Add parent row
     data.push({
-      id: id++,
+      id: parentId,
       type: 'parent',
       bucket: `Bucket ${i}`,
       ticker: '',
@@ -37,13 +39,14 @@ export const generateDummyData = (): AllocationRow[] => {
       dividendPercentage: Math.round(Math.random() * 10 * 100) / 100,
       dividendAmount: Math.round(Math.random() * 1000),
     })
+    id++
 
-    // Add 3 child rows for each parent
+    // Add exactly 3 child rows for each parent
     for (let j = 1; j <= 3; j++) {
       data.push({
         id: id++,
         type: 'child',
-        parentId: id - j - 2,
+        parentId: parentId,
         bucket: `Bucket ${i}`,
         ticker: `TICKER${i}${j}`,
         vehicle: ['Stock', 'ETF', 'Option'][Math.floor(Math.random() * 3)],
