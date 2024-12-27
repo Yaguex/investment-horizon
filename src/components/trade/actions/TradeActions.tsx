@@ -10,16 +10,16 @@ import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/components/ui/use-toast"
 import { EditBucketSheet } from "@/components/allocations/EditBucketSheet"
+import { EditAllocationSheet } from "@/components/allocations/EditAllocationSheet"
+import { Allocation } from "@/types/allocations"
 
 interface TradeActionsProps {
   isSubRow: boolean
   isExpanded: boolean
   onToggle: () => void
-  onEdit: () => void
-  tradeId?: number
+  row?: Allocation
   id?: number
   profileId?: string
-  ticker?: string
   bucket?: string
   bucketId?: number
 }
@@ -27,16 +27,15 @@ interface TradeActionsProps {
 export const TradeActions = ({ 
   isSubRow, 
   isExpanded, 
-  onToggle, 
-  onEdit,
-  tradeId,
+  onToggle,
+  row,
   id,
   profileId,
-  ticker,
   bucket,
   bucketId
 }: TradeActionsProps) => {
   const [isEditBucketOpen, setIsEditBucketOpen] = useState(false)
+  const [isEditAllocationOpen, setIsEditAllocationOpen] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -197,7 +196,7 @@ export const TradeActions = ({
             <TooltipTrigger asChild>
               <Edit 
                 className="h-4 w-4 cursor-pointer" 
-                onClick={() => isSubRow ? onEdit() : setIsEditBucketOpen(true)} 
+                onClick={() => isSubRow ? setIsEditAllocationOpen(true) : setIsEditBucketOpen(true)} 
               />
             </TooltipTrigger>
             <TooltipContent>
@@ -213,6 +212,14 @@ export const TradeActions = ({
           onClose={() => setIsEditBucketOpen(false)}
           bucket={bucket}
           id={id}
+        />
+      )}
+
+      {isSubRow && row && (
+        <EditAllocationSheet
+          isOpen={isEditAllocationOpen}
+          onClose={() => setIsEditAllocationOpen(false)}
+          allocation={row}
         />
       )}
     </>
