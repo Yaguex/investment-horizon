@@ -8,6 +8,7 @@ import {
 import { format } from "date-fns"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
+import { useToast } from "@/components/ui/use-toast"
 
 interface TradeActionsProps {
   isSubRow: boolean
@@ -18,6 +19,8 @@ interface TradeActionsProps {
   id?: number
   profileId?: string
   ticker?: string
+  bucket?: string
+  bucketId?: number
 }
 
 export const TradeActions = ({ 
@@ -28,46 +31,82 @@ export const TradeActions = ({
   tradeId,
   id,
   profileId,
-  ticker
+  ticker,
+  bucket,
+  bucketId
 }: TradeActionsProps) => {
   const queryClient = useQueryClient()
+  const { toast } = useToast()
 
   const handleAddTrade = async () => {
-    if (!tradeId || !profileId || !ticker) {
-      console.error('Missing required fields for adding trade')
-      return
-    }
-
-    const today = new Date()
-    
-    // First get the max id from the trade_log table
-    const { data: maxIdResult } = await supabase
-      .from('trade_log')
-      .select('id')
-      .order('id', { ascending: false })
-      .limit(1)
-      .single()
-
-    const newId = (maxIdResult?.id || 0) + 1
-
-    const { error } = await supabase
-      .from('trade_log')
-      .insert({
-        id: newId,
-        profile_id: profileId,
-        trade_id: tradeId,
-        row_type: 'child',
-        trade_status: 'open',
-        ticker: ticker,
-        date_entry: format(today, 'yyyy-MM-dd')
+    if (!profileId || !bucketId) {
+      console.error('Missing required fields for adding allocation')
+      toast({
+        title: "Error",
+        description: "Missing required fields for adding allocation",
+        variant: "destructive"
       })
-
-    if (error) {
-      console.error('Error adding trade:', error)
       return
     }
 
-    queryClient.invalidateQueries({ queryKey: ['trades'] })
+    try {
+      console.log('Starting new allocation creation for bucket:', bucketId)
+      
+      // First get the max id from the allocations table
+      const { data: maxIdResult } = await supabase
+        .from('allocations')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single()
+
+      const newId = (maxIdResult?.id || 0) + 1
+      console.log('Generated new id:', newId)
+
+      const { error } = await supabase
+        .from('allocations')
+        .insert({
+          id: newId,
+          profile_id: profileId,
+          bucket_id: bucketId,
+          bucket: bucket,
+          row_type: 'child',
+          vehicle: 'stock',
+          value_target: 0,
+          value_actual: 0,
+          weight_target: 0,
+          weight_actual: 0,
+          delta: 0,
+          risk_profile: 'Medium',
+          "dividend_%": 0,
+          "dividend_$": 0
+        })
+
+      if (error) {
+        console.error('Error adding allocation:', error)
+        toast({
+          title: "Error",
+          description: "Failed to add allocation",
+          variant: "destructive"
+        })
+        return
+      }
+
+      console.log('Successfully added allocation')
+      queryClient.invalidateQueries({ queryKey: ['allocations'] })
+      
+      toast({
+        title: "Success",
+        description: "New allocation added successfully"
+      })
+    } catch (error) {
+      console.error('Error in handleAddTrade:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleDeleteTrade = async () => {
@@ -77,16 +116,26 @@ export const TradeActions = ({
     }
 
     const { error } = await supabase
-      .from('trade_log')
+      .from('allocations')
       .delete()
       .eq('id', id)
 
     if (error) {
-      console.error('Error deleting trade:', error)
+      console.error('Error deleting allocation:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete allocation",
+        variant: "destructive"
+      })
       return
     }
 
-    queryClient.invalidateQueries({ queryKey: ['trades'] })
+    queryClient.invalidateQueries({ queryKey: ['allocations'] })
+    
+    toast({
+      title: "Success",
+      description: "Allocation deleted successfully"
+    })
   }
 
   return (

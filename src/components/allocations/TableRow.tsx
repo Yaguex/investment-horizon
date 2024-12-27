@@ -35,7 +35,8 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
           onEdit={() => {}}
           id={row.id}
           profileId={row.profile_id}
-          ticker=""
+          bucket={row.bucket}
+          bucketId={row.bucket_id}
         />
       </TableCell>
       <TableCell className={cn(
