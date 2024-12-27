@@ -1,16 +1,20 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Control } from "react-hook-form"
-import { AllocationTradeFormValues } from "@/types/forms"
 
-interface TextFieldProps {
-  control: Control<AllocationTradeFormValues>
-  name: keyof AllocationTradeFormValues
+interface TextFieldProps<T extends Record<string, any>> {
+  control: Control<T>
+  name: keyof T
   label: string
   type?: "text" | "number"
 }
 
-export function TextField({ control, name, label, type = "text" }: TextFieldProps) {
+export function TextField<T extends Record<string, any>>({ 
+  control, 
+  name, 
+  label, 
+  type = "text" 
+}: TextFieldProps<T>) {
   return (
     <FormField
       control={control}
