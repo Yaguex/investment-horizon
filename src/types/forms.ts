@@ -10,3 +10,5 @@ export interface AllocationTradeFormValues {
   risk_profile: string
   "dividend_%": number
 }
+
+export type FormValues = BucketFormValues | AllocationTradeFormValues

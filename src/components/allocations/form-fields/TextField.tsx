@@ -1,11 +1,11 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Control } from "react-hook-form"
-import { AllocationTradeFormValues } from "@/types/forms"
+import { FormValues } from "@/types/forms"
 
 interface TextFieldProps {
-  control: Control<AllocationTradeFormValues>
-  name: keyof AllocationTradeFormValues
+  control: Control<FormValues>
+  name: keyof FormValues
   label: string
   type?: "text" | "number"
 }
