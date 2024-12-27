@@ -5,7 +5,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { format } from "date-fns"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/components/ui/use-toast"
@@ -115,27 +114,38 @@ export const TradeActions = ({
       return
     }
 
-    const { error } = await supabase
-      .from('allocations')
-      .delete()
-      .eq('id', id)
+    try {
+      console.log('Deleting allocation with id:', id)
+      const { error } = await supabase
+        .from('allocations')
+        .delete()
+        .eq('id', id)
 
-    if (error) {
-      console.error('Error deleting allocation:', error)
+      if (error) {
+        console.error('Error deleting allocation:', error)
+        toast({
+          title: "Error",
+          description: "Failed to delete allocation",
+          variant: "destructive"
+        })
+        return
+      }
+
+      console.log('Successfully deleted allocation')
+      queryClient.invalidateQueries({ queryKey: ['allocations'] })
+      
+      toast({
+        title: "Success",
+        description: "Allocation deleted successfully"
+      })
+    } catch (error) {
+      console.error('Error in handleDeleteTrade:', error)
       toast({
         title: "Error",
-        description: "Failed to delete allocation",
+        description: "An unexpected error occurred",
         variant: "destructive"
       })
-      return
     }
-
-    queryClient.invalidateQueries({ queryKey: ['allocations'] })
-    
-    toast({
-      title: "Success",
-      description: "Allocation deleted successfully"
-    })
   }
 
   return (
