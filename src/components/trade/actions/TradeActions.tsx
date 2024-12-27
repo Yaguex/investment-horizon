@@ -17,6 +17,7 @@ interface TradeActionsProps {
   isSubRow: boolean
   isExpanded: boolean
   onToggle: () => void
+  onEdit: () => void
   row?: Allocation
   id?: number
   profileId?: string
@@ -28,6 +29,7 @@ export const TradeActions = ({
   isSubRow, 
   isExpanded, 
   onToggle,
+  onEdit,
   row,
   id,
   profileId,
