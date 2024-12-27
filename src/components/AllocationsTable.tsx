@@ -86,9 +86,9 @@ const AllocationsTable = () => {
 
   return (
     <TooltipProvider>
-      {/* Add the chart above the table */}
+      {/* Chart card with reduced padding */}
       <Card className="mt-6 mb-6">
-        <CardContent className="pt-6">
+        <CardContent className="p-0">
           <AllocationWeightsChart allocations={allocations || []} />
         </CardContent>
       </Card>
