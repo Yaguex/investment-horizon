@@ -49,7 +49,8 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
     console.log('Submitting allocation update with values:', values)
     
     try {
-      const { error } = await supabase
+      // First update the allocation
+      const { error: updateError } = await supabase
         .from('allocations')
         .update({
           bucket: values.bucket,
@@ -61,18 +62,39 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
         })
         .eq('id', allocation.id)
       
-      if (error) {
-        console.error('Error updating allocation:', error)
+      if (updateError) {
+        console.error('Error updating allocation:', updateError)
         toast({
           title: "Error",
           description: "Failed to update allocation",
           variant: "destructive",
         })
-        throw error
+        throw updateError
       }
       
-      console.log('Allocation updated successfully')
+      console.log('Allocation updated successfully, now recalculating values...')
+
+      // Then call the recalculate_allocations function
+      const { error: recalculateError } = await supabase
+        .rpc('recalculate_allocations', {
+          profile_id_param: allocation.profile_id
+        })
+
+      if (recalculateError) {
+        console.error('Error recalculating allocations:', recalculateError)
+        toast({
+          title: "Error",
+          description: "Failed to recalculate allocations",
+          variant: "destructive",
+        })
+        throw recalculateError
+      }
+
+      console.log('Allocations recalculated successfully')
+      
+      // Finally, refresh the data
       await queryClient.invalidateQueries({ queryKey: ['allocations'] })
+      
       toast({
         title: "Success",
         description: "Allocation updated successfully",

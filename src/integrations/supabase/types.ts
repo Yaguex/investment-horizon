@@ -268,6 +268,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      recalculate_allocations: {
+        Args: {
+          profile_id_param: string
+        }
+        Returns: undefined
+      }
       recalculate_portfolio_data: {
         Args: {
           edited_month: string
