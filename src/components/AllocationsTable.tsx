@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { Allocation } from "@/types/allocations"
 import { useToast } from "@/components/ui/use-toast"
+import AllocationWeightsChart from "./allocations/AllocationWeightsChart"
 
 const AllocationsTable = () => {
   // Initialize all rows as expanded by default
@@ -85,6 +86,13 @@ const AllocationsTable = () => {
 
   return (
     <TooltipProvider>
+      {/* Add the chart above the table */}
+      <Card className="mt-6 mb-6">
+        <CardContent className="pt-6">
+          <AllocationWeightsChart allocations={allocations || []} />
+        </CardContent>
+      </Card>
+
       <Card className="mt-6">
         <CardContent className="p-0">
           <div className="relative overflow-x-auto">
