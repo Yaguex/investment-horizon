@@ -18,7 +18,7 @@ export function SelectField({ control, name, label, options }: SelectFieldProps)
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select an option" />
