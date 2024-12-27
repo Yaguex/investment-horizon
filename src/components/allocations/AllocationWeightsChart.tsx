@@ -112,7 +112,7 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
                     y={0}
                     width={100 / chartData.length}
                     height="100%"
-                    index={index}
+                    index={Math.floor(index / 2)}
                   />
                 ))}
               </g>
