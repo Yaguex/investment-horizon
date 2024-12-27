@@ -4,8 +4,9 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
-import { TextField } from "../trade/form-fields/TextField"
+import { TextField } from "./form-fields/TextField"
 import { useToast } from "@/components/ui/use-toast"
+import { BucketFormValues } from "@/types/forms"
 
 interface EditBucketSheetProps {
   isOpen: boolean
@@ -14,21 +15,17 @@ interface EditBucketSheetProps {
   id: number
 }
 
-interface FormValues {
-  bucket: string
-}
-
 export function EditBucketSheet({ isOpen, onClose, bucket, id }: EditBucketSheetProps) {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   
-  const form = useForm<FormValues>({
+  const form = useForm<BucketFormValues>({
     defaultValues: {
       bucket: bucket || "",
     }
   })
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: BucketFormValues) => {
     console.log('Submitting bucket update with values:', values)
     
     try {
