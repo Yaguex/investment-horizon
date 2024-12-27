@@ -41,8 +41,11 @@ interface AllocationWeightsChartProps {
 }
 
 const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
-  // Process data to get only child rows and add parent bucket info
-  const chartData = data.reduce((acc: any[], parent) => {
+  // Process data to get only parent rows
+  const parentChartData = data.filter(row => row.row_type === 'parent');
+
+  // Process data to get only child rows
+  const childChartData = data.reduce((acc: any[], parent) => {
     if (parent.subRows) {
       const childRows = parent.subRows.map((child) => ({
         ...child,
@@ -53,13 +56,13 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return acc;
   }, []);
 
-  // Calculate reference lines positions for parent bucket separators
+  // Calculate reference lines positions for parent bucket separators in child chart
   const referenceLines = data.reduce((acc: string[], parent, index) => {
     if (index === 0) return acc;
     const previousParentLastChildIndex = data
       .slice(0, index)
       .reduce((sum, p) => sum + (p.subRows?.length || 0), 0);
-    const childBucket = chartData[previousParentLastChildIndex]?.bucket;
+    const childBucket = childChartData[previousParentLastChildIndex]?.bucket;
     if (childBucket) acc.push(childBucket);
     return acc;
   }, []);
@@ -71,64 +74,69 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return "#94a3b8"; // Grey for values between -25% and +25%
   };
 
-  console.log('Chart data:', chartData);
-  console.log('Reference lines at:', referenceLines);
+  const renderChart = (chartData: any[], showReferenceLines: boolean = false) => (
+    <div className="h-[400px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          barCategoryGap="20%"
+          barGap={0}
+        >
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="bucket"
+            tick={{ fontSize: 12 }}
+            interval={0}
+            angle={-45}
+            textAnchor="end"
+            height={100}
+          />
+          <YAxis
+            tickFormatter={(value) => `${value}%`}
+            domain={[0, 'auto']}
+            tick={{ fontSize: 12 }}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          {showReferenceLines && referenceLines.map((bucket) => (
+            <ReferenceLine
+              key={bucket}
+              x={bucket}
+              stroke="#94a3b8"
+              strokeDasharray="3 3"
+            />
+          ))}
+          <Bar
+            dataKey="weight_target"
+            fill="#2563eb"
+            minPointSize={5}
+            name="Target Weight"
+          />
+          <Bar
+            dataKey="weight_actual"
+            minPointSize={5}
+            name="Actual Weight"
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={getBarColor(entry.delta)} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
+  console.log('Parent chart data:', parentChartData);
+  console.log('Child chart data:', childChartData);
 
   return (
     <Card className="animate-fade-in mb-6">
       <CardHeader>
         <CardTitle>Weight Distribution</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[400px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              barCategoryGap="20%"
-              barGap={0}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="bucket"
-                tick={{ fontSize: 12 }}
-                interval={0}
-                angle={-45}
-                textAnchor="end"
-                height={100}
-              />
-              <YAxis
-                tickFormatter={(value) => `${value}%`}
-                domain={[0, 'auto']}
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              {referenceLines.map((bucket) => (
-                <ReferenceLine
-                  key={bucket}
-                  x={bucket}
-                  stroke="#94a3b8"
-                  strokeDasharray="3 3"
-                />
-              ))}
-              <Bar
-                dataKey="weight_target"
-                fill="#2563eb"
-                minPointSize={5}
-                name="Target Weight"
-              />
-              <Bar
-                dataKey="weight_actual"
-                minPointSize={5}
-                name="Actual Weight"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={getBarColor(entry.delta)} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <CardContent className="space-y-6">
+        {renderChart(parentChartData)}
+        {renderChart(childChartData, true)}
       </CardContent>
     </Card>
   );
