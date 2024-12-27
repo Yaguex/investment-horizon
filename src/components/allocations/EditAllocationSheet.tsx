@@ -4,31 +4,16 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
-import { TextField } from "./form-fields/TextField"
-import { SelectField } from "./form-fields/SelectField"
 import { AllocationTradeFormValues } from "@/types/forms"
 import { useToast } from "@/components/ui/use-toast"
 import { Allocation } from "@/types/allocations"
+import { AllocationFormFields } from "./form-fields/AllocationFormFields"
 
 interface EditAllocationSheetProps {
   isOpen: boolean
   onClose: () => void
   allocation: Allocation
 }
-
-const vehicleOptions = [
-  { label: "Stock", value: "Stock" },
-  { label: "Note", value: "Note" },
-  { label: "Fund", value: "Fund" },
-  { label: "Bond", value: "Bond" },
-  { label: "Options", value: "Options" },
-]
-
-const riskProfileOptions = [
-  { label: "High", value: "High" },
-  { label: "Medium", value: "Medium" },
-  { label: "Low", value: "Low" },
-]
 
 export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocationSheetProps) {
   const queryClient = useQueryClient()
@@ -49,7 +34,6 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
     console.log('Submitting allocation update with values:', values)
     
     try {
-      // First update the allocation
       const { error: updateError } = await supabase
         .from('allocations')
         .update({
@@ -74,7 +58,6 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
       
       console.log('Allocation updated successfully, now recalculating values...')
 
-      // Then call the recalculate_allocations function
       const { error: recalculateError } = await supabase
         .rpc('recalculate_allocations', {
           profile_id_param: allocation.profile_id
@@ -92,7 +75,6 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
 
       console.log('Allocations recalculated successfully')
       
-      // Finally, refresh the data
       await queryClient.invalidateQueries({ queryKey: ['allocations'] })
       
       toast({
@@ -114,46 +96,7 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <TextField 
-              control={form.control} 
-              name="bucket" 
-              label="Bucket" 
-            />
-            
-            <SelectField
-              control={form.control}
-              name="vehicle"
-              label="Vehicle"
-              options={vehicleOptions}
-            />
-            
-            <TextField 
-              control={form.control} 
-              name="value_actual" 
-              label="Value Actual"
-              type="number"
-            />
-            
-            <TextField 
-              control={form.control} 
-              name="weight_target" 
-              label="Weight Target"
-              type="number"
-            />
-            
-            <SelectField
-              control={form.control}
-              name="risk_profile"
-              label="Risk Profile"
-              options={riskProfileOptions}
-            />
-            
-            <TextField 
-              control={form.control} 
-              name="dividend_%" 
-              label="Dividend %"
-              type="number"
-            />
+            <AllocationFormFields control={form.control} />
             
             <div className="flex justify-end space-x-4 pt-4">
               <Button variant="outline" type="button" onClick={onClose}>

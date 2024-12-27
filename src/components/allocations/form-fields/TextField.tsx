@@ -1,15 +1,15 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Control } from "react-hook-form"
+import { Control, FieldValues, Path } from "react-hook-form"
 
-interface TextFieldProps<T extends Record<string, any>> {
+interface TextFieldProps<T extends FieldValues> {
   control: Control<T>
-  name: keyof T
+  name: Path<T>
   label: string
   type?: "text" | "number"
 }
 
-export function TextField<T extends Record<string, any>>({ 
+export function TextField<T extends FieldValues>({ 
   control, 
   name, 
   label, 
