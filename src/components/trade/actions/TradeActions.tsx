@@ -20,6 +20,8 @@ interface TradeActionsProps {
   profileId?: string
   bucket?: string
   bucketId?: number
+  tradeId?: number  // Made optional with ?
+  ticker?: string   // Made optional since it's only used in trade context
 }
 
 export const TradeActions = ({ 
@@ -30,7 +32,9 @@ export const TradeActions = ({
   id,
   profileId,
   bucket,
-  bucketId
+  bucketId,
+  tradeId,
+  ticker
 }: TradeActionsProps) => {
   const [isEditBucketOpen, setIsEditBucketOpen] = useState(false)
   const queryClient = useQueryClient()
