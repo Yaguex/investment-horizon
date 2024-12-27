@@ -7,6 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  Rectangle,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Allocation } from "@/types/allocations";
@@ -35,6 +36,25 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   );
 };
 
+// Custom background component for alternating colors
+const CustomBackground = ({ x, y, width, height, index }: { 
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  index: number;
+}) => {
+  return (
+    <Rectangle
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      fill={index % 2 === 0 ? "#ffffff" : "#f8f9fa"}
+    />
+  );
+};
+
 interface AllocationWeightsChartProps {
   data: Allocation[];
 }
@@ -52,19 +72,16 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return acc;
   }, []);
 
-  // Calculate reference lines positions for parent bucket separators
-  const referenceLines = data.reduce((acc: string[], parent, index) => {
-    if (index === 0) return acc;
-    const previousParentLastChildIndex = data
-      .slice(0, index)
-      .reduce((sum, p) => sum + (p.subRows?.length || 0), 0);
-    const childBucket = chartData[previousParentLastChildIndex]?.bucket;
-    if (childBucket) acc.push(childBucket);
+  // Group data by bucket to determine background sections
+  const bucketGroups = chartData.reduce((acc: { [key: string]: number }, item, index) => {
+    if (!acc[item.bucket]) {
+      acc[item.bucket] = index;
+    }
     return acc;
-  }, []);
+  }, {});
 
   console.log('Chart data:', chartData);
-  console.log('Reference lines at:', referenceLines);
+  console.log('Bucket groups:', bucketGroups);
 
   return (
     <Card className="animate-fade-in mb-6">
@@ -80,6 +97,29 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
               barCategoryGap="20%"
               barGap={0}
             >
+              {/* Add background rectangles for each bucket */}
+              {Object.entries(bucketGroups).map(([bucket, startIndex], index) => {
+                const bucketItems = chartData.filter(item => item.bucket === bucket);
+                const width = (100 / Object.keys(bucketGroups).length) + '%';
+                return (
+                  <defs key={`bg-${bucket}`}>
+                    <pattern
+                      id={`bucket-pattern-${index}`}
+                      x={`${(index * 100) / Object.keys(bucketGroups).length}%`}
+                      width={width}
+                      height="100%"
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <rect
+                        width="100%"
+                        height="100%"
+                        fill={index % 2 === 0 ? "#ffffff" : "#f8f9fa"}
+                      />
+                    </pattern>
+                  </defs>
+                );
+              })}
+              <rect width="100%" height="100%" fill="url(#bucket-pattern-0)" />
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="bucket"
@@ -95,14 +135,6 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
                 tick={{ fontSize: 12 }}
               />
               <Tooltip content={<CustomTooltip />} />
-              {referenceLines.map((bucket) => (
-                <ReferenceLine
-                  key={bucket}
-                  x={bucket}
-                  stroke="#94a3b8"
-                  strokeDasharray="3 3"
-                />
-              ))}
               <Bar
                 dataKey="weight_target"
                 fill="#2563eb"
