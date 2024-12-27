@@ -100,8 +100,9 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
               {/* Render background rectangles for each bucket */}
               {Object.entries(bucketGroups).map(([bucket, startIndex], index) => {
                 const bucketItems = chartData.filter(item => item.bucket === bucket);
-                const bucketWidth = (bucketItems.length / chartData.length) * 100;
-                const bucketX = (startIndex / chartData.length) * 100;
+                // Ensure we're working with numbers by using Number() constructor
+                const bucketWidth = Number((bucketItems.length / chartData.length) * 100);
+                const bucketX = Number((startIndex / chartData.length) * 100);
                 
                 return (
                   <CustomBackground
