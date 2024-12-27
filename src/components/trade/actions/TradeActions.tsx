@@ -16,10 +16,8 @@ interface TradeActionsProps {
   isExpanded: boolean
   onToggle: () => void
   onEdit: () => void
-  tradeId?: number
   id?: number
   profileId?: string
-  ticker?: string
   bucket?: string
   bucketId?: number
 }
@@ -29,10 +27,8 @@ export const TradeActions = ({
   isExpanded, 
   onToggle, 
   onEdit,
-  tradeId,
   id,
   profileId,
-  ticker,
   bucket,
   bucketId
 }: TradeActionsProps) => {
@@ -166,7 +162,7 @@ export const TradeActions = ({
               )}
             </div>
             
-            <TooltipProvider delayDuration={0}>
+            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
@@ -180,7 +176,7 @@ export const TradeActions = ({
         )}
         
         {isSubRow ? (
-          <TooltipProvider delayDuration={0}>
+          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <X className="h-4 w-4 cursor-pointer" onClick={handleDeleteTrade} />
@@ -192,7 +188,7 @@ export const TradeActions = ({
           </TooltipProvider>
         ) : null}
         
-        <TooltipProvider delayDuration={0}>
+        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Edit 
