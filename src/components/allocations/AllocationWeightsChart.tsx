@@ -7,6 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  Cell,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Allocation } from "@/types/allocations";
@@ -63,6 +64,14 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return acc;
   }, []);
 
+  // Function to determine bar color based on delta
+  const getBarColor = (delta: number | null | undefined) => {
+    if (!delta) return "#8E9196"; // Default grey for no delta
+    if (delta > 10) return "#22c55e"; // Green for delta > 10%
+    if (delta < -10) return "#ef4444"; // Red for delta < -10%
+    return "#8E9196"; // Grey for delta between -10% and +10%
+  };
+
   console.log('Chart data:', chartData);
   console.log('Reference lines at:', referenceLines);
 
@@ -111,10 +120,13 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
               />
               <Bar
                 dataKey="weight_actual"
-                fill="#eab308"
                 minPointSize={5}
                 name="Actual Weight"
-              />
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getBarColor(entry.delta)} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
