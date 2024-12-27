@@ -77,7 +77,7 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
             <BarChart
               data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              barCategoryGap="15%"
+              barCategoryGap="20%"
               barGap={0}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -101,9 +101,6 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
                   x={bucket}
                   stroke="#94a3b8"
                   strokeDasharray="3 3"
-                  strokeWidth={1}
-                  style={{ marginLeft: '25px', marginRight: '25px' }}
-                  isFront={true}
                 />
               ))}
               <Bar
