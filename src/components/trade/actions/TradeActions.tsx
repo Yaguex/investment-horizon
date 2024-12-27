@@ -23,6 +23,8 @@ interface TradeActionsProps {
   profileId?: string
   bucket?: string
   bucketId?: number
+  tradeId?: number
+  ticker?: string
 }
 
 export const TradeActions = ({ 
@@ -34,7 +36,9 @@ export const TradeActions = ({
   id,
   profileId,
   bucket,
-  bucketId
+  bucketId,
+  tradeId,
+  ticker
 }: TradeActionsProps) => {
   const [isEditBucketOpen, setIsEditBucketOpen] = useState(false)
   const [isEditAllocationOpen, setIsEditAllocationOpen] = useState(false)
