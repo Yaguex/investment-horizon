@@ -6,7 +6,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
   Rectangle,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,6 +50,7 @@ const CustomBackground = ({ x, y, width, height, index }: {
       width={width}
       height={height}
       fill={index % 2 === 0 ? "#ffffff" : "#f8f9fa"}
+      className="opacity-50"
     />
   );
 };
@@ -73,9 +73,9 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
   }, []);
 
   // Group data by bucket to determine background sections
-  const bucketGroups = chartData.reduce((acc: { [key: string]: number }, item, index) => {
+  const bucketGroups = chartData.reduce((acc: { [key: string]: number }, item) => {
     if (!acc[item.bucket]) {
-      acc[item.bucket] = index;
+      acc[item.bucket] = chartData.findIndex(d => d.bucket === item.bucket);
     }
     return acc;
   }, {});
@@ -97,29 +97,23 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
               barCategoryGap="20%"
               barGap={0}
             >
-              {/* Add background rectangles for each bucket */}
+              {/* Render background rectangles for each bucket */}
               {Object.entries(bucketGroups).map(([bucket, startIndex], index) => {
                 const bucketItems = chartData.filter(item => item.bucket === bucket);
-                const width = (100 / Object.keys(bucketGroups).length) + '%';
+                const bucketWidth = (bucketItems.length * 100) / chartData.length;
+                const bucketX = (startIndex * 100) / chartData.length;
+                
                 return (
-                  <defs key={`bg-${bucket}`}>
-                    <pattern
-                      id={`bucket-pattern-${index}`}
-                      x={`${(index * 100) / Object.keys(bucketGroups).length}%`}
-                      width={width}
-                      height="100%"
-                      patternUnits="userSpaceOnUse"
-                    >
-                      <rect
-                        width="100%"
-                        height="100%"
-                        fill={index % 2 === 0 ? "#ffffff" : "#f8f9fa"}
-                      />
-                    </pattern>
-                  </defs>
+                  <CustomBackground
+                    key={bucket}
+                    x={`${bucketX}%`}
+                    y={0}
+                    width={`${bucketWidth}%`}
+                    height="100%"
+                    index={index}
+                  />
                 );
               })}
-              <rect width="100%" height="100%" fill="url(#bucket-pattern-0)" />
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="bucket"
