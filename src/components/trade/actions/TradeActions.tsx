@@ -8,6 +8,8 @@ import {
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/components/ui/use-toast"
+import { useState } from "react"
+import { EditBucketDrawer } from "@/components/allocations/EditBucketDrawer"
 
 interface TradeActionsProps {
   isSubRow: boolean
@@ -34,6 +36,7 @@ export const TradeActions = ({
   bucket,
   bucketId
 }: TradeActionsProps) => {
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -68,7 +71,7 @@ export const TradeActions = ({
           id: newId,
           profile_id: profileId,
           bucket_id: bucketId,
-          bucket: "XXX", // Changed from bucket to "XXX"
+          bucket: "XXX",
           row_type: 'child',
           vehicle: 'stock',
           value_target: 0,
@@ -149,56 +152,70 @@ export const TradeActions = ({
   }
 
   return (
-    <div className="flex items-center gap-2">
-      {!isSubRow && (
-        <>
-          <div 
-            onClick={onToggle}
-            className="cursor-pointer"
-          >
-            {isExpanded ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : (
-              <ArrowDown className="h-4 w-4" />
-            )}
-          </div>
-          
+    <>
+      <div className="flex items-center gap-2">
+        {!isSubRow && (
+          <>
+            <div 
+              onClick={onToggle}
+              className="cursor-pointer"
+            >
+              {isExpanded ? (
+                <ArrowUp className="h-4 w-4" />
+              ) : (
+                <ArrowDown className="h-4 w-4" />
+              )}
+            </div>
+            
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add Trade</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </>
+        )}
+        
+        {isSubRow ? (
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
+                <X className="h-4 w-4 cursor-pointer" onClick={handleDeleteTrade} />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Add Trade</p>
+                <p>Delete Trade</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        </>
-      )}
-      
-      {isSubRow ? (
+        ) : null}
+        
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <X className="h-4 w-4 cursor-pointer" onClick={handleDeleteTrade} />
+              <Edit 
+                className="h-4 w-4 cursor-pointer" 
+                onClick={() => !isSubRow ? setIsEditDrawerOpen(true) : onEdit()} 
+              />
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Trade</p>
+              <p>{isSubRow ? "Edit Trade" : "Edit bucket"}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      ) : null}
-      
-      <TooltipProvider delayDuration={0}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Edit className="h-4 w-4 cursor-pointer" onClick={onEdit} />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isSubRow ? "Edit Trade" : "Edit bucket"}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
+      </div>
+
+      {!isSubRow && bucket && id && (
+        <EditBucketDrawer
+          isOpen={isEditDrawerOpen}
+          onClose={() => setIsEditDrawerOpen(false)}
+          bucket={bucket}
+          id={id}
+        />
+      )}
+    </>
   )
 }
