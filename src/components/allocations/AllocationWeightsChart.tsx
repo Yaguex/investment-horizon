@@ -53,28 +53,14 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return acc;
   }, []);
 
-  // Calculate reference lines positions between buckets
+  // Calculate reference lines positions for parent bucket separators
   const referenceLines = data.reduce((acc: string[], parent, index) => {
     if (index === 0) return acc;
-    
-    // Get the last child of the previous bucket
     const previousParentLastChildIndex = data
       .slice(0, index)
-      .reduce((sum, p) => sum + (p.subRows?.length || 0), 0) - 1;
-    
-    // Get the first child of the current bucket
-    const currentParentFirstChildIndex = previousParentLastChildIndex + 1;
-    
-    // If we have both a previous bucket's last child and current bucket's first child
-    if (previousParentLastChildIndex >= 0 && currentParentFirstChildIndex < chartData.length) {
-      // Place the line between them
-      const lastChildBucket = chartData[previousParentLastChildIndex]?.bucket;
-      const firstChildBucket = chartData[currentParentFirstChildIndex]?.bucket;
-      if (lastChildBucket && firstChildBucket) {
-        // Use a special marker to indicate this is a midpoint position
-        acc.push(`${lastChildBucket}|${firstChildBucket}`);
-      }
-    }
+      .reduce((sum, p) => sum + (p.subRows?.length || 0), 0);
+    const childBucket = chartData[previousParentLastChildIndex]?.bucket;
+    if (childBucket) acc.push(childBucket);
     return acc;
   }, []);
 
@@ -117,20 +103,14 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
                 tick={{ fontSize: 12 }}
               />
               <Tooltip content={<CustomTooltip />} />
-              {referenceLines.map((bucketPair) => {
-                const [prevBucket, nextBucket] = bucketPair.split('|');
-                // Position the line between the two buckets
-                const xPosition = `${prevBucket}|${nextBucket}`;
-                return (
-                  <ReferenceLine
-                    key={xPosition}
-                    x={prevBucket}
-                    stroke="#94a3b8"
-                    strokeDasharray="3 3"
-                    xAxisId={0}
-                  />
-                );
-              })}
+              {referenceLines.map((bucket) => (
+                <ReferenceLine
+                  key={bucket}
+                  x={bucket}
+                  stroke="#94a3b8"
+                  strokeDasharray="3 3"
+                />
+              ))}
               <Bar
                 dataKey="weight_target"
                 fill="#2563eb"
