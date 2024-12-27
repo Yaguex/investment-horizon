@@ -1,16 +1,15 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Control } from "react-hook-form"
-import { AllocationTradeFormValues } from "@/types/forms"
+import { BucketFormValues } from "@/types/forms"
 
 interface TextFieldProps {
-  control: Control<AllocationTradeFormValues>
-  name: keyof AllocationTradeFormValues
+  control: Control<BucketFormValues>
+  name: keyof BucketFormValues
   label: string
-  type?: "text" | "number"
 }
 
-export function TextField({ control, name, label, type = "text" }: TextFieldProps) {
+export function TextField({ control, name, label }: TextFieldProps) {
   return (
     <FormField
       control={control}
@@ -19,17 +18,7 @@ export function TextField({ control, name, label, type = "text" }: TextFieldProp
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Input 
-              type={type}
-              {...field}
-              value={field.value || ''}
-              onChange={e => {
-                const value = type === "number" ? 
-                  e.target.value ? Number(e.target.value) : null 
-                  : e.target.value;
-                field.onChange(value);
-              }}
-            />
+            <Input {...field} value={field.value || ''} />
           </FormControl>
         </FormItem>
       )}
