@@ -66,7 +66,7 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
 
   // Function to determine bar color based on delta
   const getBarColor = (delta: number | null | undefined) => {
-    if (!delta) return "#8E9196"; // Default grey for no delta
+    if (delta === undefined || delta === null) return "#8E9196"; // Default grey for no delta
     if (delta > 10) return "#22c55e"; // Green for delta > 10%
     if (delta < -10) return "#ef4444"; // Red for delta < -10%
     return "#8E9196"; // Grey for delta between -10% and +10%
