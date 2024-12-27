@@ -16,10 +16,8 @@ interface TradeActionsProps {
   isExpanded: boolean
   onToggle: () => void
   onEdit: () => void
-  tradeId?: number
   id?: number
   profileId?: string
-  ticker?: string
   bucket?: string
   bucketId?: number
 }
@@ -29,10 +27,8 @@ export const TradeActions = ({
   isExpanded, 
   onToggle, 
   onEdit,
-  tradeId,
   id,
   profileId,
-  ticker,
   bucket,
   bucketId
 }: TradeActionsProps) => {
