@@ -18,8 +18,8 @@ interface TableRowProps {
 export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableRowProps) => {
   const getDeltaColor = (delta: number | undefined | null) => {
     if (delta === undefined || delta === null) return ""
-    if (delta < -10) return "text-red-500"
-    if (delta > 10) return "text-green-500"
+    if (delta < -25) return "text-red-500"
+    if (delta > 25) return "text-green-500"
     return ""
   }
 

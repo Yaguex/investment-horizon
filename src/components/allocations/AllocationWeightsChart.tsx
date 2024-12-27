@@ -66,9 +66,9 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
 
   const getBarColor = (delta: number | undefined | null) => {
     if (delta === undefined || delta === null) return "#94a3b8"; // Default grey
-    if (delta > 10) return "#22c55e"; // Green for > +10%
-    if (delta < -10) return "#ef4444"; // Red for < -10%
-    return "#94a3b8"; // Grey for values between -10% and +10%
+    if (delta > 25) return "#22c55e"; // Green for > +25%
+    if (delta < -25) return "#ef4444"; // Red for < -25%
+    return "#94a3b8"; // Grey for values between -25% and +25%
   };
 
   console.log('Chart data:', chartData);
