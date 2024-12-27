@@ -69,7 +69,7 @@ export const TradeActions = ({
           id: newId,
           profile_id: profileId,
           bucket_id: bucketId,
-          bucket: bucket,
+          bucket: "XXX", // Changed from bucket to "XXX"
           row_type: 'child',
           vehicle: 'stock',
           value_target: 0,
