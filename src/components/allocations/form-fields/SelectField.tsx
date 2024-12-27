@@ -1,11 +1,11 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Control } from "react-hook-form"
-import { FormValues } from "@/types/forms"
+import { AllocationTradeFormValues } from "@/types/forms"
 
 interface SelectFieldProps {
-  control: Control<FormValues>
-  name: keyof FormValues
+  control: Control<AllocationTradeFormValues>
+  name: keyof AllocationTradeFormValues
   label: string
   options: { label: string; value: string }[]
 }
@@ -18,7 +18,7 @@ export function SelectField({ control, name, label, options }: SelectFieldProps)
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select an option" />

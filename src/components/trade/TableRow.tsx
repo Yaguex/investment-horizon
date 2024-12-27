@@ -32,7 +32,6 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
             isExpanded={isExpanded}
             onToggle={onToggle}
             onEdit={() => setIsEditSheetOpen(true)}
-            tradeId={row.trade_id}
             id={row.id}
             profileId={row.profile_id}
             ticker={row.ticker}
