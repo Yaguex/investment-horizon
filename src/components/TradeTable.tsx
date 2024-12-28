@@ -160,7 +160,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
               </TableHeader>
               <TableBody>
                 {trades.map((trade) => (
-                  <React.Fragment key={trade.id}>
+                  <React.Fragment key={`trade-${trade.id}`}>
                     <TradeTableRow 
                       row={trade}
                       isExpanded={expandedRows[trade.id]}
@@ -169,7 +169,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
                     />
                     {expandedRows[trade.id] && trade.subRows?.map((subRow) => (
                       <TradeTableRow 
-                        key={subRow.id}
+                        key={`subrow-${subRow.id}`}
                         row={subRow}
                         isExpanded={false}
                         isSubRow={true}
