@@ -20,8 +20,8 @@ interface TradeActionsProps {
   profileId?: string
   bucket?: string
   bucketId?: number
-  tradeId?: number  // Made optional with ?
-  ticker?: string   // Made optional since it's only used in trade context
+  tradeId?: number
+  ticker?: string
 }
 
 export const TradeActions = ({ 
@@ -41,8 +41,10 @@ export const TradeActions = ({
   const { toast } = useToast()
 
   const handleAddTrade = async () => {
+    console.log('Starting handleAddTrade with props:', { profileId, bucketId, id, tradeId })
+    
     if (!profileId || !bucketId) {
-      console.error('Missing required fields for adding allocation')
+      console.error('Missing required fields:', { profileId, bucketId })
       toast({
         title: "Error",
         description: "Missing required fields for adding allocation",
