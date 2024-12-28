@@ -3,14 +3,11 @@ import { format } from "date-fns"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { TradeData, FormValues } from "./types"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
-import { TextField } from "./form-fields/TextField"
-import { DateField } from "./form-fields/DateField"
-import { NumberField } from "./form-fields/NumberField"
-import { Textarea } from "@/components/ui/textarea"
+import { ParentTradeFields } from "./form-fields/ParentTradeFields"
+import { ChildTradeFields } from "./form-fields/ChildTradeFields"
 
 interface EditTradeSheetProps {
   isOpen: boolean
@@ -30,7 +27,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       date_entry: trade.date_entry ? new Date(trade.date_entry) : null,
       date_expiration: trade.date_expiration ? new Date(trade.date_expiration) : null,
       date_exit: trade.date_exit ? new Date(trade.date_exit) : null,
-      days_in_trade: trade.days_in_trade || null,
       strike_start: trade.strike_start || null,
       strike_end: trade.strike_end || null,
       premium: trade.premium || null,
@@ -147,72 +143,21 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Edit {trade.row_type === 'parent' ? 'Parent' : 'Child'} Trade</SheetTitle>
+          <SheetTitle>{trade.row_type === 'parent' ? 'Edit Position' : 'Edit Trade'}</SheetTitle>
         </SheetHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             {trade.row_type === 'parent' ? (
-              // Parent row fields
-              <>
-                <TextField control={form.control} name="ticker" label="Ticker" />
-                <DateField control={form.control} name="date_entry" label="Date Entry" />
-                <DateField control={form.control} name="date_exit" label="Date Exit" />
-                <NumberField control={form.control} name="commission" label="Commission" />
-                <NumberField control={form.control} name="pnl" label="PnL" />
-                <NumberField control={form.control} name="roi" label="ROI" />
-                <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
-                <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
-                <NumberField control={form.control} name="be_0" label="B/E 0" />
-                <NumberField control={form.control} name="be_1" label="B/E 1" />
-                <NumberField control={form.control} name="be_2" label="B/E 2" />
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Notes</label>
-                  <Textarea {...form.register("notes")} />
-                </div>
-              </>
-            ) : (
-              // Child row fields
-              <>
-                <TextField control={form.control} name="vehicle" label="Vehicle" />
-                <TextField control={form.control} name="order" label="Order" />
-                <NumberField control={form.control} name="qty" label="QTY" />
-                <DateField control={form.control} name="date_entry" label="Date Entry" />
-                <DateField control={form.control} name="date_expiration" label="Date Expiration" />
-                <DateField control={form.control} name="date_exit" label="Date Exit" />
-                <NumberField control={form.control} name="strike_start" label="Strike Start" />
-                <NumberField control={form.control} name="strike_end" label="Strike End" />
-                <NumberField control={form.control} name="premium" label="Premium" />
-                <NumberField control={form.control} name="stock_price" label="Stock Price" />
-                <NumberField control={form.control} name="risk_%" label="Risk %" />
-                <NumberField control={form.control} name="risk_$" label="Risk $" />
-                <NumberField control={form.control} name="commission" label="Commission" />
-                <NumberField control={form.control} name="pnl" label="PnL" />
-                <NumberField control={form.control} name="roi" label="ROI" />
-                <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
-                <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
-                <NumberField control={form.control} name="be_0" label="B/E 0" />
-                <NumberField control={form.control} name="be_1" label="B/E 1" />
-                <NumberField control={form.control} name="be_2" label="B/E 2" />
-                <NumberField control={form.control} name="delta" label="Delta" />
-                <NumberField control={form.control} name="iv" label="IV" />
-                <NumberField control={form.control} name="iv_percentile" label="IV Percentile" />
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Notes</label>
-                  <Textarea {...form.register("notes")} />
-                </div>
-              </>
-            )}
-            
-            <div className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <div className="text-base">Closed Trade</div>
-              </div>
-              <Switch
-                checked={form.watch("trade_status") === "closed"}
-                onCheckedChange={(checked) => form.setValue("trade_status", checked ? "closed" : "open")}
+              <ParentTradeFields 
+                control={form.control}
+                register={form.register}
+                watch={form.watch}
+                setValue={form.setValue}
               />
-            </div>
+            ) : (
+              <ChildTradeFields control={form.control} register={form.register} />
+            )}
             
             <div className="flex justify-end space-x-4 pt-4">
               <Button variant="outline" type="button" onClick={onClose}>
