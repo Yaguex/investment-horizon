@@ -74,6 +74,11 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return "#94a3b8"; // Grey for values between -25% and +25%
   };
 
+  const getBackgroundColor = (bucket_id: number | undefined | null) => {
+    if (bucket_id === undefined || bucket_id === null) return "#FFFFFF";
+    return bucket_id % 2 === 0 ? "#FBFBFB" : "#FFFFFF";
+  };
+
   const renderChart = (chartData: any[], showReferenceLines: boolean = false) => (
     <div className="h-[400px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -97,7 +102,15 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
             domain={[0, 'auto']}
             tick={{ fontSize: 12 }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip 
+            content={<CustomTooltip />}
+            cursor={{ 
+              fill: (props: any) => {
+                const bucket_id = props?.payload?.[0]?.payload?.bucket_id;
+                return getBackgroundColor(bucket_id);
+              }
+            }}
+          />
           {showReferenceLines && referenceLines.map((bucket) => (
             <ReferenceLine
               key={bucket}
