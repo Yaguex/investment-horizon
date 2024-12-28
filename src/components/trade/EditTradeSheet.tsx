@@ -49,7 +49,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       iv: trade.iv || null,
       iv_percentile: trade.iv_percentile || null,
       notes: trade.notes || "",
-      trade_status: trade.trade_status as "open" | "closed" || "open"
+      trade_status: trade.trade_status as "open" | "closed" || "open",
+      bucket: trade.bucket || "" // Adding bucket field
     }
   })
 
@@ -109,7 +110,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             iv: values.iv,
             iv_percentile: values.iv_percentile,
             notes: values.notes,
-            trade_status: values.trade_status
+            trade_status: values.trade_status,
+            bucket: values.bucket // Adding bucket field to update
           })
         })
         .eq('id', trade.id)
@@ -176,6 +178,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
               <>
                 <TextField control={form.control} name="vehicle" label="Vehicle" />
                 <TextField control={form.control} name="order" label="Order" />
+                <TextField control={form.control} name="bucket" label="Bucket" />
                 <NumberField control={form.control} name="qty" label="QTY" />
                 <DateField control={form.control} name="date_entry" label="Date Entry" />
                 <DateField control={form.control} name="date_expiration" label="Date Expiration" />
