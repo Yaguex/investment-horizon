@@ -51,13 +51,8 @@ export const TradeActions = ({
       type: isSubRow ? 'child row' : 'parent row'
     })
     
-    if (isSubRow) {
-      console.log('Calling onEdit for child row')
-      onEdit()
-    } else {
-      console.log('Opening bucket sheet for parent row (incorrect behavior)')
-      setIsEditBucketOpen(true)
-    }
+    // Always call onEdit() regardless of row type
+    onEdit()
   }
 
   const handleAddTrade = async () => {
