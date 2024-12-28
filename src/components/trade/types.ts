@@ -72,3 +72,19 @@ export interface FormValues {
   notes: string
   trade_status: "open" | "closed"
 }
+
+export interface PositionFormValues {
+  ticker: string
+  date_entry: Date | null
+  date_exit: Date | null
+  commission: number | null
+  pnl: number | null
+  roi: number | null
+  roi_yearly: number | null
+  roi_portfolio: number | null
+  be_0: number | null
+  be_1: number | null
+  be_2: number | null
+  notes: string
+  trade_status: "open" | "closed"
+}

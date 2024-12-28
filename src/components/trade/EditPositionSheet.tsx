@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { TradeData } from "./types"
+import { TradeData, PositionFormValues } from "./types"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { TextField } from "./form-fields/TextField"
@@ -18,26 +18,10 @@ interface EditPositionSheetProps {
   trade: TradeData
 }
 
-interface FormValues {
-  ticker: string
-  date_entry: Date | null
-  date_exit: Date | null
-  commission: number | null
-  pnl: number | null
-  roi: number | null
-  roi_yearly: number | null
-  roi_portfolio: number | null
-  be_0: number | null
-  be_1: number | null
-  be_2: number | null
-  notes: string
-  trade_status: "open" | "closed"
-}
-
 export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetProps) {
   const queryClient = useQueryClient()
   
-  const form = useForm<FormValues>({
+  const form = useForm<PositionFormValues>({
     defaultValues: {
       ticker: trade.ticker || "",
       date_entry: trade.date_entry ? new Date(trade.date_entry) : null,
@@ -62,7 +46,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: PositionFormValues) => {
     console.log('Submitting position update with values:', values)
     
     try {
