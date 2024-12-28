@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   Cell,
+  Rectangle,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Allocation } from "@/types/allocations";
@@ -88,7 +89,11 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
           barCategoryGap="20%"
           barGap={0}
         >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            vertical={false}
+            fill="#FFFFFF"
+          />
           <XAxis
             dataKey="bucket"
             tick={{ fontSize: 12 }}
@@ -115,6 +120,16 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
               x={bucket}
               stroke="#94a3b8"
               strokeDasharray="3 3"
+            />
+          ))}
+          {chartData.map((entry, index) => (
+            <Rectangle
+              key={`bg-${index}`}
+              x={(100 / chartData.length) * index + "%"}
+              y="0"
+              width={`${100 / chartData.length}%`}
+              height="100%"
+              fill={index % 2 === 0 ? "#FBFBFB" : "#FFFFFF"}
             />
           ))}
           <Bar
