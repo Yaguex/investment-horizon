@@ -8,7 +8,6 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   Cell,
-  Rectangle,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Allocation } from "@/types/allocations";
@@ -75,11 +74,6 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return "#94a3b8"; // Grey for values between -25% and +25%
   };
 
-  const getBackgroundColor = (bucket_id: number | undefined | null) => {
-    if (bucket_id === undefined || bucket_id === null) return "#FFFFFF";
-    return bucket_id % 2 === 0 ? "#FBFBFB" : "#FFFFFF";
-  };
-
   const renderChart = (chartData: any[], showReferenceLines: boolean = false) => (
     <div className="h-[400px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -89,10 +83,7 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
           barCategoryGap="20%"
           barGap={0}
         >
-          <CartesianGrid 
-            strokeDasharray="3 3" 
-            vertical={false}
-          />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="bucket"
             tick={{ fontSize: 12 }}
@@ -106,25 +97,13 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
             domain={[0, 'auto']}
             tick={{ fontSize: 12 }}
           />
-          <Tooltip 
-            content={<CustomTooltip />}
-          />
+          <Tooltip content={<CustomTooltip />} />
           {showReferenceLines && referenceLines.map((bucket) => (
             <ReferenceLine
               key={bucket}
               x={bucket}
               stroke="#94a3b8"
               strokeDasharray="3 3"
-            />
-          ))}
-          {chartData.map((entry, index) => (
-            <Rectangle
-              key={`bg-${index}`}
-              x={index * (100 / chartData.length)}
-              y={0}
-              width={100 / chartData.length}
-              height={100}
-              fill={getBackgroundColor(entry.bucket_id)}
             />
           ))}
           <Bar
