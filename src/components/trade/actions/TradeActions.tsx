@@ -20,8 +20,8 @@ interface TradeActionsProps {
   profileId?: string
   bucket?: string
   bucketId?: number
-  tradeId?: number  // Made optional with ?
-  ticker?: string   // Made optional since it's only used in trade context
+  tradeId?: number
+  ticker?: string
 }
 
 export const TradeActions = ({ 
@@ -201,7 +201,7 @@ export const TradeActions = ({
               />
             </TooltipTrigger>
             <TooltipContent>
-              <p>{isSubRow ? "Edit Trade" : "Edit bucket"}</p>
+              <p>{isSubRow ? "Edit Trade" : "Edit Position"}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
