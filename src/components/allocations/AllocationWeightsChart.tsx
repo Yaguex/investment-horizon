@@ -97,7 +97,10 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
             domain={[0, 'auto']}
             tick={{ fontSize: 12 }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip 
+            content={<CustomTooltip />}
+            cursor={{ fill: '#ff0000', opacity: 0.1 }} // Changed the hover background color to red
+          />
           {showReferenceLines && referenceLines.map((bucket) => (
             <ReferenceLine
               key={bucket}
