@@ -18,6 +18,9 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        "2xl": "1.4rem",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
