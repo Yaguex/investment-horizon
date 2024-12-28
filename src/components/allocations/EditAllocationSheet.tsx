@@ -75,7 +75,16 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
 
       console.log('Allocations recalculated successfully')
       
-      await queryClient.invalidateQueries({ queryKey: ['allocations'] })
+      // Invalidate both queries to ensure all components update
+      await queryClient.invalidateQueries({ 
+        queryKey: ['allocations']
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['portfolioLatestData']
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['allocationsMetrics']
+      })
       
       toast({
         title: "Success",
