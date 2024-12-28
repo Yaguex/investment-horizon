@@ -36,9 +36,29 @@ export const TradeActions = ({
   tradeId,
   ticker
 }: TradeActionsProps) => {
+  console.log('TradeActions rendered with:', { isSubRow, id, tradeId, ticker })
+  
   const [isEditBucketOpen, setIsEditBucketOpen] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
+
+  const handleEditClick = () => {
+    console.log('Edit clicked for:', {
+      isSubRow,
+      id,
+      tradeId,
+      ticker,
+      type: isSubRow ? 'child row' : 'parent row'
+    })
+    
+    if (isSubRow) {
+      console.log('Calling onEdit for child row')
+      onEdit()
+    } else {
+      console.log('Opening bucket sheet for parent row (incorrect behavior)')
+      setIsEditBucketOpen(true)
+    }
+  }
 
   const handleAddTrade = async () => {
     if (!profileId || !bucketId) {
@@ -197,7 +217,7 @@ export const TradeActions = ({
             <TooltipTrigger asChild>
               <Edit 
                 className="h-4 w-4 cursor-pointer" 
-                onClick={() => isSubRow ? onEdit() : setIsEditBucketOpen(true)} 
+                onClick={handleEditClick}
               />
             </TooltipTrigger>
             <TooltipContent>
