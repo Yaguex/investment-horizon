@@ -1,6 +1,6 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Control, FieldValues, Path } from "react-hook-form"
-import { DatePicker } from "@/components/ui/datepicker"
+import { DatePicker } from "@/components/ui/date-picker"
 
 interface DateFieldProps<T extends FieldValues> {
   control: Control<T>
@@ -19,7 +19,9 @@ export function DateField<T extends FieldValues>({ control, name, label }: DateF
           <FormControl>
             <DatePicker
               value={field.value}
-              onChange={field.onChange}
+              onChange={(date) => {
+                field.onChange(date)
+              }}
             />
           </FormControl>
         </FormItem>
