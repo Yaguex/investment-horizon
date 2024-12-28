@@ -99,3 +99,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Remove border from date picker wrapper */
+.react-date-picker__wrapper {
+  border: none !important;
+}
