@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Header from "@/components/Header"
 import TradeTable from "@/components/TradeTable"
 import { NewTradeDialog } from "@/components/trade/NewTradeDialog"
+import TradeMetrics from "@/components/trade/TradeMetrics"
 
 const TradeLog = () => {
   return (
@@ -23,10 +24,14 @@ const TradeLog = () => {
               <NewTradeDialog />
             </TabsContent>
           </div>
+          
           <TabsContent value="open" className="animate-fade-in mt-6">
+            <TradeMetrics tradeStatus="open" />
             <TradeTable tradeStatus="open" />
           </TabsContent>
+          
           <TabsContent value="closed" className="animate-fade-in mt-6">
+            <TradeMetrics tradeStatus="closed" />
             <TradeTable tradeStatus="closed" />
           </TabsContent>
         </Tabs>
