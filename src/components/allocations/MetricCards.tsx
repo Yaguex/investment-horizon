@@ -80,7 +80,7 @@ const MetricCards = () => {
   if (!metrics) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
       <MetricCard
         title="Cash Available"
         value={`$${metrics.cashAvailable.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
