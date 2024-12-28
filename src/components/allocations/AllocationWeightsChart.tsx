@@ -105,10 +105,8 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
           <Tooltip 
             content={<CustomTooltip />}
             cursor={{ 
-              fill: (props: any) => {
-                const bucket_id = props?.payload?.[0]?.payload?.bucket_id;
-                return getBackgroundColor(bucket_id);
-              }
+              fill: getBackgroundColor(chartData[0]?.bucket_id),
+              opacity: 1
             }}
           />
           {showReferenceLines && referenceLines.map((bucket) => (
