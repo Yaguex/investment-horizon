@@ -55,9 +55,10 @@ const MetricCards = () => {
       .filter(row => (row.delta || 0) < -25)
       .reduce((sum, row) => sum + ((row.value_actual || 0) - (row.value_target || 0)), 0);
 
+    // Updated formula for Overinvested
     const toTrim = allocations
       .filter(row => (row.delta || 0) > 25)
-      .reduce((sum, row) => sum + ((row.value_target || 0) - (row.value_actual || 0)), 0);
+      .reduce((sum, row) => sum + ((row.value_actual || 0) - (row.value_target || 0)), 0);
 
     const totalDividendDollars = allocations.reduce((sum, row) => sum + (row["dividend_$"] || 0), 0);
     
