@@ -86,12 +86,12 @@ const MetricCards = () => {
         value={`$${metrics.cashAvailable.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
       />
       <MetricCard
-        title="To Add"
+        title="Underinvested"
         value={`$${Math.abs(metrics.toAdd).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
         isNumeric={true}
       />
       <MetricCard
-        title="To Trim"
+        title="Overinvested"
         value={`$${metrics.toTrim.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
         isNumeric={true}
       />
