@@ -11,8 +11,9 @@ interface MetricCardProps {
 
 const MetricCard = ({ title, value, className, trend, isNumeric = false }: MetricCardProps) => {
   const getValueColor = (value: string, title: string) => {
-    // Portfolio Value should always be black
-    if (title === "Portfolio Value") return "text-black";
+    // To Add should be red, To Trim should be green
+    if (title === "To Add") return "text-red-600";
+    if (title === "To Trim") return "text-green-600";
     
     // For other metrics, keep the existing color logic
     if (!isNumeric) return "text-foreground";

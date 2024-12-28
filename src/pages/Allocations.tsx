@@ -1,6 +1,7 @@
 import Header from "@/components/Header"
 import AllocationsTable from "@/components/AllocationsTable"
 import { NewBucketButton } from "@/components/allocations/NewBucketButton"
+import MetricCards from "@/components/allocations/MetricCards"
 
 const Allocations = () => {
   return (
@@ -12,6 +13,8 @@ const Allocations = () => {
           <h1 className="text-3xl font-bold">Allocations</h1>
           <NewBucketButton />
         </div>
+        
+        <MetricCards />
         
         <AllocationsTable />
       </main>
