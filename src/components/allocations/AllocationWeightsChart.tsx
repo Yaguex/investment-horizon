@@ -92,7 +92,6 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
           <CartesianGrid 
             strokeDasharray="3 3" 
             vertical={false}
-            fill="#FFFFFF"
           />
           <XAxis
             dataKey="bucket"
@@ -109,10 +108,6 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
           />
           <Tooltip 
             content={<CustomTooltip />}
-            cursor={{ 
-              fill: getBackgroundColor(chartData[0]?.bucket_id),
-              opacity: 1
-            }}
           />
           {showReferenceLines && referenceLines.map((bucket) => (
             <ReferenceLine
@@ -125,11 +120,11 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
           {chartData.map((entry, index) => (
             <Rectangle
               key={`bg-${index}`}
-              x={(100 / chartData.length) * index + "%"}
-              y="0"
-              width={`${100 / chartData.length}%`}
-              height="100%"
-              fill={index % 2 === 0 ? "#FBFBFB" : "#FFFFFF"}
+              x={index * (100 / chartData.length)}
+              y={0}
+              width={100 / chartData.length}
+              height={100}
+              fill={getBackgroundColor(entry.bucket_id)}
             />
           ))}
           <Bar
