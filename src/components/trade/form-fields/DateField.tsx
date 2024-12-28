@@ -1,6 +1,5 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
-import { Control } from "react-hook-form"
-import { FormValues } from "../types"
+import { Control, FieldValues, Path } from "react-hook-form"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -12,17 +11,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-interface DateFieldProps {
-  control: Control<FormValues>
-  name: keyof Pick<FormValues, 
-    "date_entry" | 
-    "date_exit" | 
-    "date_expiration"
-  >
+interface DateFieldProps<T extends FieldValues> {
+  control: Control<T>
+  name: Path<T>
   label: string
 }
 
-export function DateField({ control, name, label }: DateFieldProps) {
+export function DateField<T extends FieldValues>({ control, name, label }: DateFieldProps<T>) {
   return (
     <FormField
       control={control}

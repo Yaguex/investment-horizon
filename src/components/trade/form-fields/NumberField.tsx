@@ -1,15 +1,14 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Control } from "react-hook-form"
-import { FormValues } from "../types"
+import { Control, FieldValues, Path } from "react-hook-form"
 
-interface NumberFieldProps {
-  control: Control<FormValues>
-  name: keyof FormValues
+interface NumberFieldProps<T extends FieldValues> {
+  control: Control<T>
+  name: Path<T>
   label: string
 }
 
-export function NumberField({ control, name, label }: NumberFieldProps) {
+export function NumberField<T extends FieldValues>({ control, name, label }: NumberFieldProps<T>) {
   return (
     <FormField
       control={control}

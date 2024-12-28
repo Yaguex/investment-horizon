@@ -1,21 +1,14 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Control } from "react-hook-form"
-import { FormValues } from "../types"
+import { Control, FieldValues, Path } from "react-hook-form"
 
-interface TextFieldProps {
-  control: Control<FormValues>
-  name: keyof Pick<FormValues, 
-    "ticker" | 
-    "notes" | 
-    "vehicle" | 
-    "order"
-  >
+interface TextFieldProps<T extends FieldValues> {
+  control: Control<T>
+  name: Path<T>
   label: string
-  type?: "text" | "textarea"
 }
 
-export function TextField({ control, name, label, type = "text" }: TextFieldProps) {
+export function TextField<T extends FieldValues>({ control, name, label }: TextFieldProps<T>) {
   return (
     <FormField
       control={control}
