@@ -6,6 +6,7 @@ import {
 import { cn } from "@/lib/utils"
 import { TradeData } from "./types"
 import { EditTradeSheet } from "./EditTradeSheet"
+import { EditPositionSheet } from "./EditPositionSheet"
 import { formatDate, formatNumber } from "./utils/formatters"
 import { getRowBackground, getStickyBackground } from "./utils/styles"
 import { TradeActions } from "./actions/TradeActions"
@@ -67,11 +68,19 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
       </TableRowBase>
       
       {isEditSheetOpen && (
-        <EditTradeSheet
-          isOpen={isEditSheetOpen}
-          onClose={() => setIsEditSheetOpen(false)}
-          trade={row}
-        />
+        row.row_type === 'parent' ? (
+          <EditPositionSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            trade={row}
+          />
+        ) : (
+          <EditTradeSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            trade={row}
+          />
+        )
       )}
     </>
   )
