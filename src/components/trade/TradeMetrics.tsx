@@ -40,9 +40,7 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
           winLossRatio: 0,
           averageWinner: 0,
           averageLoser: 0,
-          averageDays: 0,
-          averageWinnerRoi: 0,
-          averageLoserRoi: 0
+          averageDays: 0
         };
       }
 
@@ -50,45 +48,28 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
       const losers = trades.filter(trade => (trade.pnl || 0) < 0);
 
       const winLossRatio = trades.length > 0 
-        ? Number((winners.length / trades.length * 100).toFixed(2))
+        ? Math.round((winners.length / trades.length) * 100)
         : 0;
 
       const averageWinner = winners.length > 0
-        ? Number((winners.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / winners.length).toFixed(2))
+        ? Math.round(winners.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / winners.length)
         : 0;
 
       const averageLoser = losers.length > 0
-        ? Number((losers.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / losers.length).toFixed(2))
+        ? Math.round(losers.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / losers.length)
         : 0;
 
       const averageDays = trades.length > 0
-        ? Number((trades.reduce((sum, trade) => sum + (trade.days_in_trade || 0), 0) / trades.length).toFixed(2))
+        ? Math.round(trades.reduce((sum, trade) => sum + (trade.days_in_trade || 0), 0) / trades.length)
         : 0;
 
-      const averageWinnerRoi = winners.length > 0
-        ? Number((winners.reduce((sum, trade) => sum + (trade.roi_portfolio || 0), 0) / winners.length).toFixed(2))
-        : 0;
-
-      const averageLoserRoi = losers.length > 0
-        ? Number((losers.reduce((sum, trade) => sum + (trade.roi_portfolio || 0), 0) / losers.length).toFixed(2))
-        : 0;
-
-      console.log('Calculated metrics:', { 
-        winLossRatio, 
-        averageWinner, 
-        averageLoser, 
-        averageDays,
-        averageWinnerRoi,
-        averageLoserRoi
-      });
+      console.log('Calculated metrics:', { winLossRatio, averageWinner, averageLoser, averageDays });
 
       return {
         winLossRatio,
         averageWinner,
         averageLoser,
-        averageDays,
-        averageWinnerRoi,
-        averageLoserRoi
+        averageDays
       };
     },
     enabled: !!user && tradeStatus === "closed"
@@ -100,24 +81,22 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <MetricCard
         title="Win/Loss Ratio"
-        value={`${metrics?.winLossRatio.toFixed(2) || '0.00'}%`}
+        value={`${metrics?.winLossRatio || 0}%`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Winner"
-        value={`$${(metrics?.averageWinner || 0).toFixed(2)}`}
-        secondaryValue={`${(metrics?.averageWinnerRoi || 0).toFixed(2)}%`}
+        value={`$${(metrics?.averageWinner || 0).toLocaleString()}`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Loser"
-        value={`$${(metrics?.averageLoser || 0).toFixed(2)}`}
-        secondaryValue={`${(metrics?.averageLoserRoi || 0).toFixed(2)}%`}
+        value={`$${(metrics?.averageLoser || 0).toLocaleString()}`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Days"
-        value={(metrics?.averageDays || 0).toFixed(2)}
+        value={metrics?.averageDays?.toString() || "0"}
       />
     </div>
   );
