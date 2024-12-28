@@ -7,10 +7,8 @@ import { Switch } from "@/components/ui/switch"
 import { TradeData, FormValues } from "./types"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
-import { TextField } from "./form-fields/TextField"
-import { DateField } from "./form-fields/DateField"
-import { NumberField } from "./form-fields/NumberField"
-import { Textarea } from "@/components/ui/textarea"
+import { TradeFormFields } from "./form/TradeFormFields"
+import { recalculateParentCommissions } from "./utils/commissionCalculations"
 
 interface EditTradeSheetProps {
   isOpen: boolean
@@ -23,14 +21,12 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
   
   const form = useForm<FormValues>({
     defaultValues: {
-      ticker: trade.ticker || "",
       vehicle: trade.vehicle || "",
       order: trade.order || "",
       qty: trade.qty || null,
       date_entry: trade.date_entry ? new Date(trade.date_entry) : null,
       date_expiration: trade.date_expiration ? new Date(trade.date_expiration) : null,
       date_exit: trade.date_exit ? new Date(trade.date_exit) : null,
-      days_in_trade: trade.days_in_trade || null,
       strike_start: trade.strike_start || null,
       strike_end: trade.strike_end || null,
       premium: trade.premium || null,
@@ -68,49 +64,32 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       const { error: updateError } = await supabase
         .from('trade_log')
         .update({
-          ...(trade.row_type === 'parent' ? {
-            ticker: values.ticker,
-            date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
-            date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
-            days_in_trade: daysInTrade,
-            commission: values.commission,
-            pnl: values.pnl,
-            roi: values.roi,
-            roi_yearly: values.roi_yearly,
-            roi_portfolio: values.roi_portfolio,
-            be_0: values.be_0,
-            be_1: values.be_1,
-            be_2: values.be_2,
-            notes: values.notes,
-            trade_status: values.trade_status
-          } : {
-            vehicle: values.vehicle,
-            order: values.order,
-            qty: values.qty,
-            date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
-            date_expiration: values.date_expiration ? format(values.date_expiration, 'yyyy-MM-dd') : null,
-            date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
-            days_in_trade: daysInTrade,
-            strike_start: values.strike_start,
-            strike_end: values.strike_end,
-            premium: values.premium,
-            stock_price: values.stock_price,
-            "risk_%": values["risk_%"],
-            "risk_$": values["risk_$"],
-            commission: values.commission,
-            pnl: values.pnl,
-            roi: values.roi,
-            roi_yearly: values.roi_yearly,
-            roi_portfolio: values.roi_portfolio,
-            be_0: values.be_0,
-            be_1: values.be_1,
-            be_2: values.be_2,
-            delta: values.delta,
-            iv: values.iv,
-            iv_percentile: values.iv_percentile,
-            notes: values.notes,
-            trade_status: values.trade_status
-          })
+          vehicle: values.vehicle,
+          order: values.order,
+          qty: values.qty,
+          date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
+          date_expiration: values.date_expiration ? format(values.date_expiration, 'yyyy-MM-dd') : null,
+          date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
+          days_in_trade: daysInTrade,
+          strike_start: values.strike_start,
+          strike_end: values.strike_end,
+          premium: values.premium,
+          stock_price: values.stock_price,
+          "risk_%": values["risk_%"],
+          "risk_$": values["risk_$"],
+          commission: values.commission,
+          pnl: values.pnl,
+          roi: values.roi,
+          roi_yearly: values.roi_yearly,
+          roi_portfolio: values.roi_portfolio,
+          be_0: values.be_0,
+          be_1: values.be_1,
+          be_2: values.be_2,
+          delta: values.delta,
+          iv: values.iv,
+          iv_percentile: values.iv_percentile,
+          notes: values.notes,
+          trade_status: values.trade_status
         })
         .eq('id', trade.id)
       
@@ -119,21 +98,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         throw updateError
       }
       
-      // For parent rows only, update all child rows' trade_status
-      if (trade.row_type === 'parent' && values.trade_status !== trade.trade_status && trade.trade_id) {
-        const { error: childError } = await supabase
-          .from('trade_log')
-          .update({
-            trade_status: values.trade_status
-          })
-          .eq('trade_id', trade.trade_id)
-          .eq('row_type', 'child')
-        
-        if (childError) {
-          console.error('Error updating child trades:', childError)
-          throw childError
-        }
-      }
+      // Recalculate all parent commissions
+      await recalculateParentCommissions()
       
       console.log('Trade updated successfully')
       await queryClient.invalidateQueries({ queryKey: ['trades'] })
@@ -147,62 +113,12 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Edit {trade.row_type === 'parent' ? 'Parent' : 'Child'} Trade</SheetTitle>
+          <SheetTitle>Edit Trade</SheetTitle>
         </SheetHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            {trade.row_type === 'parent' ? (
-              // Parent row fields
-              <>
-                <TextField control={form.control} name="ticker" label="Ticker" />
-                <DateField control={form.control} name="date_entry" label="Date Entry" />
-                <DateField control={form.control} name="date_exit" label="Date Exit" />
-                <NumberField control={form.control} name="commission" label="Commission" />
-                <NumberField control={form.control} name="pnl" label="PnL" />
-                <NumberField control={form.control} name="roi" label="ROI" />
-                <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
-                <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
-                <NumberField control={form.control} name="be_0" label="B/E 0" />
-                <NumberField control={form.control} name="be_1" label="B/E 1" />
-                <NumberField control={form.control} name="be_2" label="B/E 2" />
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Notes</label>
-                  <Textarea {...form.register("notes")} />
-                </div>
-              </>
-            ) : (
-              // Child row fields
-              <>
-                <TextField control={form.control} name="vehicle" label="Vehicle" />
-                <TextField control={form.control} name="order" label="Order" />
-                <NumberField control={form.control} name="qty" label="QTY" />
-                <DateField control={form.control} name="date_entry" label="Date Entry" />
-                <DateField control={form.control} name="date_expiration" label="Date Expiration" />
-                <DateField control={form.control} name="date_exit" label="Date Exit" />
-                <NumberField control={form.control} name="strike_start" label="Strike Start" />
-                <NumberField control={form.control} name="strike_end" label="Strike End" />
-                <NumberField control={form.control} name="premium" label="Premium" />
-                <NumberField control={form.control} name="stock_price" label="Stock Price" />
-                <NumberField control={form.control} name="risk_%" label="Risk %" />
-                <NumberField control={form.control} name="risk_$" label="Risk $" />
-                <NumberField control={form.control} name="commission" label="Commission" />
-                <NumberField control={form.control} name="pnl" label="PnL" />
-                <NumberField control={form.control} name="roi" label="ROI" />
-                <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
-                <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
-                <NumberField control={form.control} name="be_0" label="B/E 0" />
-                <NumberField control={form.control} name="be_1" label="B/E 1" />
-                <NumberField control={form.control} name="be_2" label="B/E 2" />
-                <NumberField control={form.control} name="delta" label="Delta" />
-                <NumberField control={form.control} name="iv" label="IV" />
-                <NumberField control={form.control} name="iv_percentile" label="IV Percentile" />
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Notes</label>
-                  <Textarea {...form.register("notes")} />
-                </div>
-              </>
-            )}
+            <TradeFormFields control={form.control} register={form.register} />
             
             <div className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
