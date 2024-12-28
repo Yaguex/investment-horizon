@@ -57,8 +57,7 @@ export function NewTradeDialog() {
           row_type: 'parent',
           trade_status: 'open',
           ticker: 'New trade',
-          date_entry: format(today, 'yyyy-MM-dd'),
-          bucket: null // Adding the bucket field with null default value
+          date_entry: format(today, 'yyyy-MM-dd')
         })
 
       if (error) {

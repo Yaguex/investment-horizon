@@ -71,5 +71,4 @@ export interface FormValues {
   iv_percentile: number | null
   notes: string
   trade_status: "open" | "closed"
-  bucket?: string
 }

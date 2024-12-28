@@ -157,7 +157,6 @@ export type Database = {
           be_0: number | null
           be_1: number | null
           be_2: number | null
-          bucket: string | null
           commission: number | null
           date_entry: string | null
           date_exit: string | null
@@ -192,7 +191,6 @@ export type Database = {
           be_0?: number | null
           be_1?: number | null
           be_2?: number | null
-          bucket?: string | null
           commission?: number | null
           date_entry?: string | null
           date_exit?: string | null
@@ -227,7 +225,6 @@ export type Database = {
           be_0?: number | null
           be_1?: number | null
           be_2?: number | null
-          bucket?: string | null
           commission?: number | null
           date_entry?: string | null
           date_exit?: string | null

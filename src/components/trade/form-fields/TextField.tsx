@@ -9,8 +9,7 @@ interface TextFieldProps {
     "ticker" | 
     "notes" | 
     "vehicle" | 
-    "order" |
-    "bucket"
+    "order"
   >
   label: string
   type?: "text" | "textarea"
