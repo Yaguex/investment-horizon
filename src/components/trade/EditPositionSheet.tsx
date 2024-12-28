@@ -11,7 +11,6 @@ import { TextField } from "./form-fields/TextField"
 import { DateField } from "./form-fields/DateField"
 import { NumberField } from "./form-fields/NumberField"
 import { Textarea } from "@/components/ui/textarea"
-import { recalculateParentCommissions } from "./utils/commissionCalculations"
 
 interface EditPositionSheetProps {
   isOpen: boolean
@@ -27,6 +26,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
       ticker: trade.ticker || "",
       date_entry: trade.date_entry ? new Date(trade.date_entry) : null,
       date_exit: trade.date_exit ? new Date(trade.date_exit) : null,
+      commission: trade.commission || null,
       pnl: trade.pnl || null,
       roi: trade.roi || null,
       roi_yearly: trade.roi_yearly || null,
@@ -60,6 +60,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
           date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
           date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
           days_in_trade: daysInTrade,
+          commission: values.commission,
           pnl: values.pnl,
           roi: values.roi,
           roi_yearly: values.roi_yearly,
@@ -93,9 +94,6 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
         }
       }
       
-      // Recalculate all parent commissions
-      await recalculateParentCommissions()
-      
       console.log('Position updated successfully')
       await queryClient.invalidateQueries({ queryKey: ['trades'] })
       onClose()
@@ -116,6 +114,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
             <TextField control={form.control} name="ticker" label="Ticker" />
             <DateField control={form.control} name="date_entry" label="Date Entry" />
             <DateField control={form.control} name="date_exit" label="Date Exit" />
+            <NumberField control={form.control} name="commission" label="Commission" />
             <NumberField control={form.control} name="pnl" label="PnL" />
             <NumberField control={form.control} name="roi" label="ROI" />
             <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
