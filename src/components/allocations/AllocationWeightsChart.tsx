@@ -74,13 +74,6 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
     return "#94a3b8"; // Grey for values between -25% and +25%
   };
 
-  const getHoverBackgroundColor = (delta: number | undefined | null) => {
-    if (delta === undefined || delta === null) return "#94a3b8"; // Default grey
-    if (delta > 25) return "#22c55e"; // Green for > +25%
-    if (delta < -25) return "#ef4444"; // Red for < -25%
-    return "#94a3b8"; // Grey for values between -25% and +25%
-  };
-
   const renderChart = (chartData: any[], showReferenceLines: boolean = false) => (
     <div className="h-[400px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -104,24 +97,7 @@ const AllocationWeightsChart = ({ data }: AllocationWeightsChartProps) => {
             domain={[0, 'auto']}
             tick={{ fontSize: 12 }}
           />
-          <Tooltip 
-            content={<CustomTooltip />}
-            cursor={(props) => {
-              const { x, y, width, height, payload } = props;
-              if (!payload || !payload[0]) return null;
-              const delta = payload[0].payload.delta;
-              return (
-                <rect
-                  x={x}
-                  y={y}
-                  width={width}
-                  height={height}
-                  fill={getHoverBackgroundColor(delta)}
-                  fillOpacity={0.1}
-                />
-              );
-            }}
-          />
+          <Tooltip content={<CustomTooltip />} />
           {showReferenceLines && referenceLines.map((bucket) => (
             <ReferenceLine
               key={bucket}
