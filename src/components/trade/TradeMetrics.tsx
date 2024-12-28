@@ -50,19 +50,19 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
       const losers = trades.filter(trade => (trade.pnl || 0) < 0);
 
       const winLossRatio = trades.length > 0 
-        ? Math.round((winners.length / trades.length) * 100)
+        ? Number((winners.length / trades.length * 100).toFixed(2))
         : 0;
 
       const averageWinner = winners.length > 0
-        ? Math.round(winners.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / winners.length)
+        ? Number((winners.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / winners.length).toFixed(2))
         : 0;
 
       const averageLoser = losers.length > 0
-        ? Math.round(losers.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / losers.length)
+        ? Number((losers.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / losers.length).toFixed(2))
         : 0;
 
       const averageDays = trades.length > 0
-        ? Math.round(trades.reduce((sum, trade) => sum + (trade.days_in_trade || 0), 0) / trades.length)
+        ? Number((trades.reduce((sum, trade) => sum + (trade.days_in_trade || 0), 0) / trades.length).toFixed(2))
         : 0;
 
       const averageWinnerRoi = winners.length > 0
@@ -100,24 +100,24 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <MetricCard
         title="Win/Loss Ratio"
-        value={`${metrics?.winLossRatio || 0}%`}
+        value={`${metrics?.winLossRatio.toFixed(2) || '0.00'}%`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Winner"
-        value={`$${(metrics?.averageWinner || 0).toLocaleString()}`}
-        secondaryValue={`${metrics?.averageWinnerRoi || 0}%`}
+        value={`$${(metrics?.averageWinner || 0).toFixed(2)}`}
+        secondaryValue={`${(metrics?.averageWinnerRoi || 0).toFixed(2)}%`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Loser"
-        value={`$${(metrics?.averageLoser || 0).toLocaleString()}`}
-        secondaryValue={`${metrics?.averageLoserRoi || 0}%`}
+        value={`$${(metrics?.averageLoser || 0).toFixed(2)}`}
+        secondaryValue={`${(metrics?.averageLoserRoi || 0).toFixed(2)}%`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Days"
-        value={metrics?.averageDays?.toString() || "0"}
+        value={(metrics?.averageDays || 0).toFixed(2)}
       />
     </div>
   );
