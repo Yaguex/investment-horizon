@@ -11,7 +11,6 @@ interface TradeActionsProps {
   id?: number
   profileId?: string
   bucket?: string
-  bucketId?: number
   tradeId?: number
   ticker?: string
 }
@@ -24,7 +23,6 @@ export const TradeActions = ({
   id,
   profileId,
   bucket,
-  bucketId,
   tradeId,
   ticker
 }: TradeActionsProps) => {
@@ -54,7 +52,6 @@ export const TradeActions = ({
           onClose={() => setIsEditBucketOpen(false)}
           bucket={bucket}
           id={id}
-          bucketId={bucketId}
         />
       )}
     </>
