@@ -63,6 +63,60 @@ export type Database = {
         }
         Relationships: []
       }
+      macro_data: {
+        Row: {
+          date: string | null
+          id: number
+          last_update: string | null
+          series_id: string | null
+          series_id_description: string | null
+          value: number | null
+        }
+        Insert: {
+          date?: string | null
+          id?: number
+          last_update?: string | null
+          series_id?: string | null
+          series_id_description?: string | null
+          value?: number | null
+        }
+        Update: {
+          date?: string | null
+          id?: number
+          last_update?: string | null
+          series_id?: string | null
+          series_id_description?: string | null
+          value?: number | null
+        }
+        Relationships: []
+      }
+      macro_data_logs: {
+        Row: {
+          created_at: string
+          id: number
+          message: string | null
+          series_id: string
+          status: string
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          message?: string | null
+          series_id: string
+          status: string
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          message?: string | null
+          series_id?: string
+          status?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       portfolio_data: {
         Row: {
           balance: number | null
