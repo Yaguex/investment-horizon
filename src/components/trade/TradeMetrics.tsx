@@ -62,7 +62,7 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
         : 0;
 
       const averageDays = trades.length > 0
-        ? Number((trades.reduce((sum, trade) => sum + (trade.days_in_trade || 0), 0) / trades.length).toFixed(2))
+        ? Math.ceil(trades.reduce((sum, trade) => sum + (trade.days_in_trade || 0), 0) / trades.length)
         : 0;
 
       const averageWinnerRoi = winners.length > 0
@@ -105,19 +105,17 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
       />
       <MetricCard
         title="Average Winner"
-        value={`$${(metrics?.averageWinner || 0).toFixed(2)}`}
-        secondaryValue={`${(metrics?.averageWinnerRoi || 0).toFixed(2)}%`}
+        value={`$${(metrics?.averageWinner || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Loser"
-        value={`$${(metrics?.averageLoser || 0).toFixed(2)}`}
-        secondaryValue={`${(metrics?.averageLoserRoi || 0).toFixed(2)}%`}
+        value={`$${(metrics?.averageLoser || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Days"
-        value={(metrics?.averageDays || 0).toFixed(2)}
+        value={`${metrics?.averageDays || 0}`}
       />
     </div>
   );

@@ -10,7 +10,7 @@ interface MetricCardProps {
   secondaryValue?: string;
 }
 
-const MetricCard = ({ title, value, className, trend, isNumeric = false, secondaryValue }: MetricCardProps) => {
+const MetricCard = ({ title, value, className, trend, isNumeric = false }: MetricCardProps) => {
   const getValueColor = (value: string, title: string) => {
     // Underinvested should be red, Overinvested should be green
     if (title === "Underinvested") return "text-red-600";
@@ -34,11 +34,6 @@ const MetricCard = ({ title, value, className, trend, isNumeric = false, seconda
           <div className={cn("text-2xl font-bold", getValueColor(value, title))}>
             {value}
           </div>
-          {secondaryValue && (
-            <div className={cn("text-sm", getValueColor(secondaryValue, ""))}>
-              {secondaryValue}
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
