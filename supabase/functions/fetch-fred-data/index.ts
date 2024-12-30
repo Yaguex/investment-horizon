@@ -97,13 +97,13 @@ Deno.serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!supabaseUrl || !supabaseKey) {
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error('Supabase credentials are not set');
     }
 
-    console.log('Initializing Supabase client');
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Initializing Supabase client with service role');
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     console.log('Clearing existing macro data');
     await clearMacroData(supabase);
