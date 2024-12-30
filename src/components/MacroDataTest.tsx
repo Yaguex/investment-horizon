@@ -53,9 +53,11 @@ export const MacroDataTest = () => {
   const handleFetchData = async () => {
     try {
       setIsLoading(true);
-      console.log('Invoking fetch-fred-data function');
+      console.log('Starting FRED data fetch process');
       
-      const { data, error } = await supabase.functions.invoke('fetch-fred-data');
+      const { data, error } = await supabase.functions.invoke('fetch-fred-data', {
+        body: { action: 'fetch' }
+      });
       
       if (error) {
         console.error('Error invoking function:', error);
@@ -64,18 +66,23 @@ export const MacroDataTest = () => {
 
       console.log('Function response:', data);
       
+      // Wait a moment for the data to be processed
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       // Refetch the data to show updated results
+      console.log('Refetching data and logs');
       await Promise.all([refetch(), refetchLogs()]);
       
       toast({
         title: "Success",
-        description: "FRED data fetch completed successfully",
+        description: `FRED data fetch completed. ${data?.successCount || 0} series updated successfully.`,
       });
     } catch (error) {
       console.error('Error in handleFetchData:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: "Error",
-        description: "Failed to fetch FRED data. Check console for details.",
+        description: `Failed to fetch FRED data: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
@@ -93,6 +100,7 @@ export const MacroDataTest = () => {
           <Button 
             onClick={handleFetchData} 
             disabled={isLoading}
+            className="w-full sm:w-auto"
           >
             {isLoading ? "Fetching..." : "Fetch FRED Data"}
           </Button>
@@ -106,6 +114,9 @@ export const MacroDataTest = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
+            {logs?.length === 0 && (
+              <p className="text-muted-foreground">No logs available</p>
+            )}
             {logs?.map((log) => (
               <div 
                 key={log.id}
@@ -128,6 +139,9 @@ export const MacroDataTest = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
+            {macroData?.length === 0 && (
+              <p className="text-muted-foreground">No macro data available</p>
+            )}
             {macroData?.map((item) => (
               <div 
                 key={item.id}
