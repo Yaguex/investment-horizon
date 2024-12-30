@@ -2,6 +2,9 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
+-- Drop existing schedule if it exists
+SELECT cron.unschedule('fetch-fred-data-daily');
+
 -- Schedule job to run at 5:20 AM daily
 SELECT cron.schedule(
   'fetch-fred-data-daily',
