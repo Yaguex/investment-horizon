@@ -1,12 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import MetricCard from "@/components/MetricCard";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 
 const MetricCards = () => {
-  const { toast } = useToast();
-
   // Fetch latest portfolio data for balance
   const { data: portfolioData } = useQuery({
     queryKey: ['portfolioLatestData'],
@@ -79,58 +75,12 @@ const MetricCards = () => {
     };
   };
 
-  const fetchMacroData = async () => {
-    try {
-      console.log('Starting fetchMacroData function...');
-      console.log('Attempting to invoke fetch_macro_data edge function...');
-      
-      const { data, error } = await supabase.functions.invoke('fetch_macro_data', {
-        method: 'POST',
-        body: {},
-      });
-      
-      if (error) {
-        console.error('Error details:', error);
-        console.error('Error stack trace:', error.stack);
-        toast({
-          title: "Error",
-          description: `Failed to fetch macro data: ${error.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('Edge function response:', data);
-      toast({
-        title: "Success",
-        description: "Macro data fetch initiated successfully",
-      });
-    } catch (error) {
-      console.error('Detailed error in fetchMacroData:', error);
-      console.error('Error stack trace:', error.stack);
-      toast({
-        title: "Error",
-        description: `An unexpected error occurred: ${error.message}`,
-        variant: "destructive",
-      });
-    }
-  };
-
   const metrics = calculateMetrics();
 
   if (!metrics) return null;
 
   return (
     <div className="space-y-4 mb-8">
-      <div className="flex justify-end">
-        <Button 
-          onClick={fetchMacroData}
-          variant="outline"
-          size="sm"
-        >
-          Fetch Macro Data
-        </Button>
-      </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <MetricCard
           title="Cash Available"
