@@ -4,47 +4,9 @@ import PortfolioChart from "@/components/PortfolioChart";
 import AccumulatedReturnChart from "@/components/AccumulatedReturnChart";
 import PortfolioTable from "@/components/PortfolioTable";
 import { usePortfolioData } from "@/utils/portfolioData";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const { data, latestData } = usePortfolioData();
-  const { toast } = useToast();
-  
-  useEffect(() => {
-    const fetchMacroData = async () => {
-      try {
-        console.log('Invoking fetch_macro_data function...');
-        const { data, error } = await supabase.functions.invoke('fetch_macro_data');
-        
-        if (error) {
-          console.error('Error fetching macro data:', error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch macro data",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        console.log('Macro data fetch completed:', data);
-        toast({
-          title: "Success",
-          description: "Macro data updated successfully",
-        });
-      } catch (error) {
-        console.error('Error in fetchMacroData:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch macro data",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchMacroData();
-  }, []); // Run once when component mounts
   
   return (
     <div className="min-h-screen bg-gray-50">
