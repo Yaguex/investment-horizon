@@ -40,7 +40,7 @@ async function fetchSeriesData(
         return null;
       }
       
-      await sleep(20000);
+      await sleep(2000); // Reduced retry delay to 2 seconds
     }
   }
   return null;
@@ -73,32 +73,47 @@ Deno.serve(async (req) => {
     await supabase.from('macro_data').delete().neq('id', 0);
     await logEvent(supabase, 'ALL', 'info', 'Cleaned up existing data');
 
-    for (let i = 0; i < SERIES_DATA.length; i++) {
-      const series = SERIES_DATA[i];
-      console.log(`[${new Date().toISOString()}] Processing series ${i + 1}/${SERIES_DATA.length}: ${series.id}`);
+    const maxExecutionTime = 25 * 1000; // 25 seconds max execution time
+    const batchSize = 5; // Process 5 series at a time
+
+    for (let i = 0; i < SERIES_DATA.length; i += batchSize) {
+      const currentTime = Date.now();
+      const elapsedTime = currentTime - requestStartTime;
       
-      const data = await fetchSeriesData(supabase, series.id, fredApiKey);
-      
-      if (data) {
-        const validRecords = processObservations(data, series.id, series.description);
+      if (elapsedTime > maxExecutionTime) {
+        console.log(`[${new Date().toISOString()}] Approaching timeout limit. Processed ${i} series out of ${SERIES_DATA.length}`);
+        throw new Error(`Execution time limit reached after processing ${i} series`);
+      }
+
+      const batch = SERIES_DATA.slice(i, i + batchSize);
+      console.log(`[${new Date().toISOString()}] Processing batch ${Math.floor(i/batchSize) + 1}, series ${i + 1}-${Math.min(i + batchSize, SERIES_DATA.length)}`);
+
+      const batchPromises = batch.map(series => fetchSeriesData(supabase, series.id, fredApiKey));
+      const batchResults = await Promise.all(batchPromises);
+
+      for (let j = 0; j < batch.length; j++) {
+        const series = batch[j];
+        const data = batchResults[j];
         
-        if (validRecords.length > 0) {
-          const { error: insertError } = await supabase.from('macro_data').insert(validRecords);
-          if (insertError) {
-            console.error(`[${new Date().toISOString()}] Error inserting data for ${series.id}:`, insertError);
-            await logEvent(supabase, series.id, 'error', `Insert failed: ${insertError.message}`);
+        if (data) {
+          const validRecords = processObservations(data, series.id, series.description);
+          
+          if (validRecords.length > 0) {
+            const { error: insertError } = await supabase.from('macro_data').insert(validRecords);
+            if (insertError) {
+              console.error(`[${new Date().toISOString()}] Error inserting data for ${series.id}:`, insertError);
+              await logEvent(supabase, series.id, 'error', `Insert failed: ${insertError.message}`);
+            } else {
+              console.log(`[${new Date().toISOString()}] Successfully inserted ${validRecords.length} records for ${series.id}`);
+              await logEvent(supabase, series.id, 'success', `Successfully fetched and inserted ${validRecords.length} records`);
+            }
           } else {
-            console.log(`[${new Date().toISOString()}] Successfully inserted ${validRecords.length} records for ${series.id}`);
-            await logEvent(supabase, series.id, 'success', `Successfully fetched and inserted ${validRecords.length} records`);
+            await logEvent(supabase, series.id, 'warning', 'No valid data points found (all values were ".")');
           }
-        } else {
-          await logEvent(supabase, series.id, 'warning', 'No valid data points found (all values were ".")');
         }
       }
       
-      if (i < SERIES_DATA.length - 1) {
-        await sleep(5000);
-      }
+      await sleep(2000); // Reduced delay between batches to 2 seconds
     }
 
     const totalTime = Date.now() - requestStartTime;
