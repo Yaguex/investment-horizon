@@ -9,7 +9,6 @@ const corsHeaders = {
 // Helper function to sleep
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper function to log events
 const logEvent = async (supabase: any, series_id: string, status: string, message: string) => {
   console.log(`Logging event: ${status} - ${message}`);
   await supabase
@@ -126,7 +125,7 @@ Deno.serve(async (req) => {
     await logEvent(supabase, 'ALL', 'info', 'Cleaned up existing data');
     console.log('Existing data cleaned up');
 
-    // Process series in smaller batches of 5 instead of 10
+    // Process series in smaller batches of 5
     for (let i = 0; i < SERIES_DATA.length; i += 5) {
       const batch = SERIES_DATA.slice(i, i + 5);
       console.log(`Processing batch ${Math.floor(i/5) + 1}/${Math.ceil(SERIES_DATA.length/5)}`);
@@ -161,8 +160,8 @@ Deno.serve(async (req) => {
       console.log(`Batch ${Math.floor(i/5) + 1} completed`);
       
       if (i + 5 < SERIES_DATA.length) {
-        console.log('Waiting 1 second before next batch...');
-        await sleep(1000); // Shorter wait between batches
+        console.log('Waiting 5 seconds before next batch...');
+        await sleep(5000); // Increased from 1 second to 5 seconds
       }
     }
 
