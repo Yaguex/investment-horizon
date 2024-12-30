@@ -70,7 +70,7 @@ async function fetchSeriesData(
 ): Promise<any> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&file_type=json`;
+      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&observation_start=2022-11-01&file_type=json`;
       console.log(`Attempting to fetch ${series_id} (attempt ${attempt}/${retries})`);
       
       const response = await fetch(url);
@@ -93,7 +93,7 @@ async function fetchSeriesData(
         return null;
       }
       
-      await sleep(20000); // Increased from 1000 to 20000 milliseconds (20 seconds)
+      await sleep(20000); // 20 seconds between retries
     }
   }
 }
