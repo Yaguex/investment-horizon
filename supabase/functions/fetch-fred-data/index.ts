@@ -38,7 +38,7 @@ async function processSeries(
     
     await rateLimiter.checkLimit();
     
-    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series.id}&api_key=${fredApiKey}&file_type=json&limit=25&sort_order=desc`;
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series.id}&api_key=${fredApiKey}&file_type=json`;
     
     console.log(`Fetching data for series ${series.id}`);
     const response = await fetchWithRetry(url);
@@ -50,12 +50,14 @@ async function processSeries(
       throw new Error('No observations found');
     }
 
-    console.log(`Got ${data.observations.length} observations for ${series.id}`);
+    // Get the last 25 observations (they come in ascending order)
+    const lastObservations = data.observations.slice(-25);
+    console.log(`Processing last 25 observations for ${series.id}`);
 
-    const observations = data.observations.map(obs => ({
+    const observations = lastObservations.map(obs => ({
       series_id: series.id,
       series_id_description: series.description,
-      realtime_end: obs.realtime_end,
+      date: obs.date,
       value: parseFloat(obs.value),
       last_update: new Date().toISOString()
     }));
