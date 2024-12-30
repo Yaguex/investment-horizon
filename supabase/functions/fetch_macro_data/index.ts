@@ -93,7 +93,7 @@ async function fetchSeriesData(
         return null;
       }
       
-      await sleep(1000); // Shorter wait between retries
+      await sleep(20000); // Increased from 1000 to 20000 milliseconds (20 seconds)
     }
   }
 }
