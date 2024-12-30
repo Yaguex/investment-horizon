@@ -70,7 +70,6 @@ export type Database = {
           realtime_end: string | null
           series_id: string | null
           series_id_description: string | null
-          user_id: string | null
           value: number | null
         }
         Insert: {
@@ -79,7 +78,6 @@ export type Database = {
           realtime_end?: string | null
           series_id?: string | null
           series_id_description?: string | null
-          user_id?: string | null
           value?: number | null
         }
         Update: {
@@ -88,7 +86,6 @@ export type Database = {
           realtime_end?: string | null
           series_id?: string | null
           series_id_description?: string | null
-          user_id?: string | null
           value?: number | null
         }
         Relationships: []
