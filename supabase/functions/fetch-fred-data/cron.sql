@@ -7,10 +7,10 @@ SELECT cron.unschedule(job_name)
 FROM cron.job 
 WHERE jobname LIKE 'fetch-fred-data%';
 
--- Schedule job to run at 5:20 AM daily
+-- Schedule job to run at 7:10 AM daily
 SELECT cron.schedule(
   'fetch-fred-data-daily',
-  '20 5 * * *',  -- Run at 5:20 AM every day
+  '10 7 * * *',  -- Run at 7:10 AM every day
   $$
   SELECT net.http_post(
     url:='https://zdqoxjyicrczlzazgyae.supabase.co/functions/v1/fetch-fred-data',
