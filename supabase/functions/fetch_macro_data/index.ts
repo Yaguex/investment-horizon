@@ -4,6 +4,24 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// Helper function to sleep
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper function to log events
+const logEvent = async (supabase: any, series_id: string, status: string, message: string) => {
+  console.log(`Logging event: ${status} - ${message}`);
+  await supabase
+    .from('macro_data_logs')
+    .insert([
+      {
+        series_id,
+        status,
+        message,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
 };
 
 // Series IDs and their descriptions
@@ -44,24 +62,6 @@ const SERIES_DATA = [
   { id: 'MSPUS', description: 'Median home price' },
 ];
 
-// Helper function to sleep
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Helper function to log events
-const logEvent = async (supabase: any, series_id: string, status: string, message: string) => {
-  console.log(`Logging event: ${status} - ${message}`);
-  await supabase
-    .from('macro_data_logs')
-    .insert([
-      {
-        series_id,
-        status,
-        message,
-        timestamp: new Date().toISOString(),
-      },
-    ]);
-};
-
 // Helper function to fetch data for a single series with retries
 async function fetchSeriesData(
   supabase: any,
@@ -73,7 +73,6 @@ async function fetchSeriesData(
     try {
       const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&file_type=json`;
       console.log(`Attempting to fetch ${series_id} (attempt ${attempt}/${retries})`);
-      console.log(`URL being called: ${url}`);
       
       const response = await fetch(url);
       console.log(`Response status for ${series_id}: ${response.status}`);
@@ -88,18 +87,14 @@ async function fetchSeriesData(
       console.log(`Successfully fetched data for ${series_id}`);
       return data;
     } catch (error) {
-      console.error(`Detailed error for ${series_id} (attempt ${attempt}):`, error);
-      console.error(`Error stack trace:`, error.stack);
+      console.error(`Error fetching ${series_id} (attempt ${attempt}):`, error);
       
       if (attempt === retries) {
-        const errorMessage = `Failed to fetch ${series_id} after ${retries} attempts. Last error: ${error.message}`;
-        console.error(errorMessage);
-        await logEvent(supabase, series_id, 'error', errorMessage);
+        await logEvent(supabase, series_id, 'error', `Failed after ${retries} attempts: ${error.message}`);
         return null;
       }
       
-      console.log(`Waiting 60 seconds before retry ${attempt + 1}...`);
-      await sleep(60000); // Wait 60 seconds before retry
+      await sleep(1000); // Shorter wait between retries
     }
   }
 }
@@ -118,8 +113,11 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const fredApiKey = Deno.env.get('FRED_API_KEY')!;
     
+    if (!supabaseUrl || !supabaseKey || !fredApiKey) {
+      throw new Error('Missing required environment variables');
+    }
+    
     console.log('Environment variables retrieved successfully');
-    console.log('FRED API Key length:', fredApiKey.length);
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -128,23 +126,18 @@ Deno.serve(async (req) => {
     await logEvent(supabase, 'ALL', 'info', 'Cleaned up existing data');
     console.log('Existing data cleaned up');
 
-    // Process series in batches of 10
-    for (let i = 0; i < SERIES_DATA.length; i += 10) {
-      const batch = SERIES_DATA.slice(i, i + 10);
-      console.log(`Processing batch ${Math.floor(i/10) + 1}/${Math.ceil(SERIES_DATA.length/10)}`);
+    // Process series in smaller batches of 5 instead of 10
+    for (let i = 0; i < SERIES_DATA.length; i += 5) {
+      const batch = SERIES_DATA.slice(i, i + 5);
+      console.log(`Processing batch ${Math.floor(i/5) + 1}/${Math.ceil(SERIES_DATA.length/5)}`);
       
-      // Process each series in the current batch
       const batchPromises = batch.map(async (series) => {
         console.log(`Starting to process ${series.id}`);
         const data = await fetchSeriesData(supabase, series.id, fredApiKey);
         
         if (data && data.observations) {
-          console.log(`Got ${data.observations.length} observations for ${series.id}`);
-          
-          // Get last 25 observations
           const last25 = data.observations.slice(-25);
           
-          // Insert the data
           const insertData = last25.map((obs: any) => ({
             series_id: series.id,
             series_id_description: series.description,
@@ -164,18 +157,12 @@ Deno.serve(async (req) => {
         }
       });
       
-      // Wait for all promises in the current batch to resolve
-      try {
-        await Promise.all(batchPromises);
-        console.log(`Batch ${Math.floor(i/10) + 1} completed successfully`);
-      } catch (batchError) {
-        console.error('Error processing batch:', batchError);
-      }
+      await Promise.all(batchPromises);
+      console.log(`Batch ${Math.floor(i/5) + 1} completed`);
       
-      // If this isn't the last batch, wait 60 seconds before the next batch
-      if (i + 10 < SERIES_DATA.length) {
-        console.log('Waiting 60 seconds before next batch...');
-        await sleep(60000);
+      if (i + 5 < SERIES_DATA.length) {
+        console.log('Waiting 1 second before next batch...');
+        await sleep(1000); // Shorter wait between batches
       }
     }
 
@@ -185,8 +172,11 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('Fatal error in macro data fetch process:', error);
-    console.error('Error stack trace:', error.stack);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
