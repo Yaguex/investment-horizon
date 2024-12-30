@@ -59,7 +59,6 @@ const MetricCards = () => {
       .filter(row => (row.delta || 0) < -25)
       .reduce((sum, row) => sum + ((row.value_actual || 0) - (row.value_target || 0)), 0);
 
-    // Updated formula for Overinvested
     const toTrim = allocations
       .filter(row => (row.delta || 0) > 25)
       .reduce((sum, row) => sum + ((row.value_actual || 0) - (row.value_target || 0)), 0);
@@ -82,29 +81,36 @@ const MetricCards = () => {
 
   const fetchMacroData = async () => {
     try {
-      console.log('Invoking fetch_macro_data function...');
-      const { data, error } = await supabase.functions.invoke('fetch_macro_data');
+      console.log('Starting fetchMacroData function...');
+      console.log('Attempting to invoke fetch_macro_data edge function...');
+      
+      const { data, error } = await supabase.functions.invoke('fetch_macro_data', {
+        method: 'POST',
+        body: {},
+      });
       
       if (error) {
-        console.error('Error invoking fetch_macro_data:', error);
+        console.error('Error details:', error);
+        console.error('Error stack trace:', error.stack);
         toast({
           title: "Error",
-          description: "Failed to fetch macro data. Check console for details.",
+          description: `Failed to fetch macro data: ${error.message}`,
           variant: "destructive",
         });
         return;
       }
 
-      console.log('Fetch macro data response:', data);
+      console.log('Edge function response:', data);
       toast({
         title: "Success",
         description: "Macro data fetch initiated successfully",
       });
     } catch (error) {
-      console.error('Error in fetchMacroData:', error);
+      console.error('Detailed error in fetchMacroData:', error);
+      console.error('Error stack trace:', error.stack);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: `An unexpected error occurred: ${error.message}`,
         variant: "destructive",
       });
     }
