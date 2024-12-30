@@ -90,6 +90,33 @@ export type Database = {
         }
         Relationships: []
       }
+      macro_data_logs: {
+        Row: {
+          created_at: string
+          id: number
+          message: string | null
+          series_id: string
+          status: string
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          message?: string | null
+          series_id: string
+          status: string
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          message?: string | null
+          series_id?: string
+          status?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       portfolio_data: {
         Row: {
           balance: number | null
