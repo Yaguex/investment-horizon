@@ -105,12 +105,12 @@ const TradeMetrics = ({ tradeStatus }: TradeMetricsProps) => {
       />
       <MetricCard
         title="Average Winner"
-        value={`$${(metrics?.averageWinner || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+        value={`$${(metrics?.averageWinner || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
         isNumeric={true}
       />
       <MetricCard
         title="Average Loser"
-        value={`$${(metrics?.averageLoser || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+        value={`$${(metrics?.averageLoser || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
         isNumeric={true}
       />
       <MetricCard
