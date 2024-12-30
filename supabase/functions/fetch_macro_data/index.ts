@@ -10,7 +10,7 @@ const corsHeaders = {
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const logEvent = async (supabase: any, series_id: string, status: string, message: string) => {
-  console.log(`Logging event: ${status} - ${message}`);
+  console.log(`[${new Date().toISOString()}] Logging event: ${status} - ${message}`);
   await supabase
     .from('macro_data_logs')
     .insert([
@@ -68,74 +68,101 @@ async function fetchSeriesData(
   apiKey: string,
   retries = 3
 ): Promise<any> {
+  const startTime = Date.now();
+  console.log(`[${new Date().toISOString()}] Starting fetch for series ${series_id}`);
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&observation_start=2022-11-01&file_type=json`;
-      console.log(`Attempting to fetch ${series_id} (attempt ${attempt}/${retries})`);
+      console.log(`[${new Date().toISOString()}] Attempt ${attempt}/${retries} for ${series_id}`);
+      console.log(`[${new Date().toISOString()}] Request URL: ${url.replace(apiKey, '[REDACTED]')}`);
       
       const response = await fetch(url);
-      console.log(`Response status for ${series_id}: ${response.status}`);
+      const responseTime = Date.now() - startTime;
+      console.log(`[${new Date().toISOString()}] Response received for ${series_id} in ${responseTime}ms`);
+      console.log(`[${new Date().toISOString()}] Response status: ${response.status}`);
+      console.log(`[${new Date().toISOString()}] Response headers:`, Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`Error response for ${series_id}:`, errorText);
+        console.error(`[${new Date().toISOString()}] Error response for ${series_id}:`, errorText);
         throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
       const data = await response.json();
-      console.log(`Successfully fetched data for ${series_id}`);
+      console.log(`[${new Date().toISOString()}] Successfully fetched data for ${series_id}`);
+      console.log(`[${new Date().toISOString()}] Data points received: ${data.observations?.length || 0}`);
+      
+      // Validate data structure
+      if (!data.observations || !Array.isArray(data.observations)) {
+        const errorMessage = `Invalid data structure received for ${series_id}`;
+        console.error(`[${new Date().toISOString()}] ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
       return data;
     } catch (error) {
-      console.error(`Error fetching ${series_id} (attempt ${attempt}):`, error);
+      console.error(`[${new Date().toISOString()}] Error fetching ${series_id} (attempt ${attempt}):`, error);
       
       if (attempt === retries) {
         await logEvent(supabase, series_id, 'error', `Failed after ${retries} attempts: ${error.message}`);
         return null;
       }
       
+      console.log(`[${new Date().toISOString()}] Waiting 20 seconds before retry...`);
       await sleep(20000); // 20 seconds between retries
     }
   }
 }
 
 Deno.serve(async (req) => {
+  const requestStartTime = Date.now();
+  console.log(`[${new Date().toISOString()}] Starting macro data fetch process`);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Starting macro data fetch process');
-    
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const fredApiKey = Deno.env.get('FRED_API_KEY')!;
     
     if (!supabaseUrl || !supabaseKey || !fredApiKey) {
-      throw new Error('Missing required environment variables');
+      const missingVars = [
+        !supabaseUrl && 'SUPABASE_URL',
+        !supabaseKey && 'SUPABASE_SERVICE_ROLE_KEY',
+        !fredApiKey && 'FRED_API_KEY'
+      ].filter(Boolean).join(', ');
+      throw new Error(`Missing required environment variables: ${missingVars}`);
     }
     
-    console.log('Environment variables retrieved successfully');
+    console.log(`[${new Date().toISOString()}] Environment variables retrieved successfully`);
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Clean up existing data
+    console.log(`[${new Date().toISOString()}] Starting data cleanup`);
     await supabase.from('macro_data').delete().neq('id', 0);
     await logEvent(supabase, 'ALL', 'info', 'Cleaned up existing data');
-    console.log('Existing data cleaned up');
+    console.log(`[${new Date().toISOString()}] Existing data cleaned up`);
 
     // Process series in smaller batches of 5
     for (let i = 0; i < SERIES_DATA.length; i += 5) {
       const batch = SERIES_DATA.slice(i, i + 5);
-      console.log(`Processing batch ${Math.floor(i/5) + 1}/${Math.ceil(SERIES_DATA.length/5)}`);
+      const batchNumber = Math.floor(i/5) + 1;
+      const totalBatches = Math.ceil(SERIES_DATA.length/5);
+      console.log(`[${new Date().toISOString()}] Processing batch ${batchNumber}/${totalBatches}`);
       
       const batchPromises = batch.map(async (series) => {
-        console.log(`Starting to process ${series.id}`);
+        console.log(`[${new Date().toISOString()}] Starting to process ${series.id}`);
         const data = await fetchSeriesData(supabase, series.id, fredApiKey);
         
         if (data && data.observations) {
           const last25 = data.observations.slice(-25);
+          console.log(`[${new Date().toISOString()}] Processing ${last25.length} observations for ${series.id}`);
           
           const insertData = last25.map((obs: any) => ({
             series_id: series.id,
@@ -145,36 +172,43 @@ Deno.serve(async (req) => {
             last_update: new Date().toISOString(),
           }));
           
+          console.log(`[${new Date().toISOString()}] Inserting data for ${series.id}`);
           const { error: insertError } = await supabase.from('macro_data').insert(insertData);
           if (insertError) {
-            console.error(`Error inserting data for ${series.id}:`, insertError);
+            console.error(`[${new Date().toISOString()}] Error inserting data for ${series.id}:`, insertError);
             await logEvent(supabase, series.id, 'error', `Insert failed: ${insertError.message}`);
           } else {
-            console.log(`Successfully inserted ${last25.length} records for ${series.id}`);
-            await logEvent(supabase, series.id, 'success', `Successfully fetched ${series.id}`);
+            console.log(`[${new Date().toISOString()}] Successfully inserted ${last25.length} records for ${series.id}`);
+            await logEvent(supabase, series.id, 'success', `Successfully fetched and inserted ${last25.length} records`);
           }
         }
       });
       
       await Promise.all(batchPromises);
-      console.log(`Batch ${Math.floor(i/5) + 1} completed`);
+      console.log(`[${new Date().toISOString()}] Batch ${batchNumber} completed`);
       
       if (i + 5 < SERIES_DATA.length) {
-        console.log('Waiting 5 seconds before next batch...');
-        await sleep(5000); // Increased from 1 second to 5 seconds
+        console.log(`[${new Date().toISOString()}] Waiting 5 seconds before next batch...`);
+        await sleep(5000);
       }
     }
 
-    console.log('Macro data fetch process completed');
-    return new Response(JSON.stringify({ success: true }), {
+    const totalTime = Date.now() - requestStartTime;
+    console.log(`[${new Date().toISOString()}] Macro data fetch process completed in ${totalTime}ms`);
+    return new Response(JSON.stringify({ 
+      success: true,
+      executionTime: totalTime,
+      message: 'Macro data fetch completed successfully'
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Fatal error in macro data fetch process:', error);
+    console.error(`[${new Date().toISOString()}] Fatal error in macro data fetch process:`, error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error.stack 
+        details: error.stack,
+        timestamp: new Date().toISOString()
       }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
