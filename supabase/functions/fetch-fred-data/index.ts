@@ -32,20 +32,24 @@ const SERIES_IDS = [
   { id: 'UNRATE', description: 'Unemployment Rate' },
   { id: 'CPIAUCSL', description: 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average' },
   { id: 'FEDFUNDS', description: 'Federal Funds Effective Rate' },
-  // Add more series IDs here as needed
 ];
 
 async function logToDatabase(supabase: any, series_id: string, status: string, message?: string) {
   try {
-    await supabase
+    const { error } = await supabase
       .from('macro_data_logs')
       .insert([
         { 
           series_id,
           status,
-          message: message || null
+          message: message || null,
+          timestamp: new Date().toISOString()
         }
       ]);
+    
+    if (error) {
+      console.error('Error logging to database:', error);
+    }
   } catch (error) {
     console.error('Error logging to database:', error);
   }
@@ -54,6 +58,7 @@ async function logToDatabase(supabase: any, series_id: string, status: string, m
 async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
+      console.log(`Attempting to fetch ${url} (attempt ${attempt}/${retries})`);
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -64,8 +69,8 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
       if (attempt === retries) {
         throw error;
       }
-      // Wait 61 seconds before retrying
-      await new Promise(resolve => setTimeout(resolve, 61000));
+      // Wait 1 second before retrying to avoid rate limits
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
   throw new Error('All retry attempts failed');
@@ -77,10 +82,11 @@ async function processSeries(
   supabase: any
 ): Promise<void> {
   try {
-    console.log(`Fetching data for series ${series.id}`);
+    console.log(`Starting to process series ${series.id}`);
     
     const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series.id}&api_key=${fredApiKey}&file_type=json&limit=25&sort_order=desc`;
     
+    console.log(`Fetching data for series ${series.id}`);
     const response = await fetchWithRetry(url);
     const data: FredResponse = await response.json();
     
@@ -88,11 +94,18 @@ async function processSeries(
       throw new Error('No observations found');
     }
 
+    console.log(`Got ${data.observations.length} observations for ${series.id}`);
+
     // Delete existing entries for this series
-    await supabase
+    const { error: deleteError } = await supabase
       .from('macro_data')
       .delete()
       .eq('series_id', series.id);
+
+    if (deleteError) {
+      console.error(`Error deleting existing data for ${series.id}:`, deleteError);
+      throw deleteError;
+    }
 
     // Insert new data
     const observations = data.observations.map(obs => ({
@@ -103,9 +116,14 @@ async function processSeries(
       last_update: new Date().toISOString()
     }));
 
-    await supabase
+    const { error: insertError } = await supabase
       .from('macro_data')
       .insert(observations);
+
+    if (insertError) {
+      console.error(`Error inserting new data for ${series.id}:`, insertError);
+      throw insertError;
+    }
 
     await logToDatabase(supabase, series.id, 'success');
     console.log(`Successfully updated data for ${series.id}`);
@@ -114,6 +132,7 @@ async function processSeries(
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`Error processing series ${series.id}:`, errorMessage);
     await logToDatabase(supabase, series.id, 'error', errorMessage);
+    throw error; // Re-throw to handle in the main function
   }
 }
 
@@ -124,6 +143,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('Edge function started');
+    
     const fredApiKey = Deno.env.get('FRED_API_KEY');
     if (!fredApiKey) {
       throw new Error('FRED_API_KEY is not set');
@@ -136,13 +157,22 @@ Deno.serve(async (req) => {
       throw new Error('Supabase credentials are not set');
     }
 
+    console.log('Initializing Supabase client');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Process series with throttling
-    const delay = 600; // 600ms delay = 100 requests per minute
+    // Process series with minimal delay to avoid rate limits
+    const delay = 1000; // 1 second delay between series
     for (const series of SERIES_IDS) {
-      await processSeries(series, fredApiKey, supabase);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      try {
+        await processSeries(series, fredApiKey, supabase);
+        if (series !== SERIES_IDS[SERIES_IDS.length - 1]) {
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      } catch (error) {
+        console.error(`Failed to process series ${series.id}:`, error);
+        // Continue with next series even if one fails
+        continue;
+      }
     }
 
     return new Response(JSON.stringify({ success: true }), {
