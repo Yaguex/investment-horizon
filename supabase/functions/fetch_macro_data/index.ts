@@ -72,22 +72,33 @@ async function fetchSeriesData(
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&file_type=json`;
+      console.log(`Attempting to fetch ${series_id} (attempt ${attempt}/${retries})`);
+      console.log(`URL being called: ${url}`);
+      
       const response = await fetch(url);
+      console.log(`Response status for ${series_id}: ${response.status}`);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Error response for ${series_id}:`, errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
       const data = await response.json();
+      console.log(`Successfully fetched data for ${series_id}`);
       return data;
     } catch (error) {
-      console.error(`Attempt ${attempt} failed for series ${series_id}:`, error);
+      console.error(`Detailed error for ${series_id} (attempt ${attempt}):`, error);
+      console.error(`Error stack trace:`, error.stack);
       
       if (attempt === retries) {
-        await logEvent(supabase, series_id, 'error', `Failed to fetch ${series_id} after ${retries} attempts`);
+        const errorMessage = `Failed to fetch ${series_id} after ${retries} attempts. Last error: ${error.message}`;
+        console.error(errorMessage);
+        await logEvent(supabase, series_id, 'error', errorMessage);
         return null;
       }
       
+      console.log(`Waiting 60 seconds before retry ${attempt + 1}...`);
       await sleep(60000); // Wait 60 seconds before retry
     }
   }
@@ -100,26 +111,36 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('Starting macro data fetch process');
+    
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const fredApiKey = Deno.env.get('FRED_API_KEY')!;
+    
+    console.log('Environment variables retrieved successfully');
+    console.log('FRED API Key length:', fredApiKey.length);
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Clean up existing data
     await supabase.from('macro_data').delete().neq('id', 0);
     await logEvent(supabase, 'ALL', 'info', 'Cleaned up existing data');
+    console.log('Existing data cleaned up');
 
     // Process series in batches of 10
     for (let i = 0; i < SERIES_DATA.length; i += 10) {
       const batch = SERIES_DATA.slice(i, i + 10);
+      console.log(`Processing batch ${Math.floor(i/10) + 1}/${Math.ceil(SERIES_DATA.length/10)}`);
       
       // Process each series in the current batch
       const batchPromises = batch.map(async (series) => {
+        console.log(`Starting to process ${series.id}`);
         const data = await fetchSeriesData(supabase, series.id, fredApiKey);
         
         if (data && data.observations) {
+          console.log(`Got ${data.observations.length} observations for ${series.id}`);
+          
           // Get last 25 observations
           const last25 = data.observations.slice(-25);
           
@@ -132,13 +153,24 @@ Deno.serve(async (req) => {
             last_update: new Date().toISOString(),
           }));
           
-          await supabase.from('macro_data').insert(insertData);
-          await logEvent(supabase, series.id, 'success', `Successfully fetched ${series.id}`);
+          const { error: insertError } = await supabase.from('macro_data').insert(insertData);
+          if (insertError) {
+            console.error(`Error inserting data for ${series.id}:`, insertError);
+            await logEvent(supabase, series.id, 'error', `Insert failed: ${insertError.message}`);
+          } else {
+            console.log(`Successfully inserted ${last25.length} records for ${series.id}`);
+            await logEvent(supabase, series.id, 'success', `Successfully fetched ${series.id}`);
+          }
         }
       });
       
       // Wait for all promises in the current batch to resolve
-      await Promise.all(batchPromises);
+      try {
+        await Promise.all(batchPromises);
+        console.log(`Batch ${Math.floor(i/10) + 1} completed successfully`);
+      } catch (batchError) {
+        console.error('Error processing batch:', batchError);
+      }
       
       // If this isn't the last batch, wait 60 seconds before the next batch
       if (i + 10 < SERIES_DATA.length) {
@@ -147,11 +179,13 @@ Deno.serve(async (req) => {
       }
     }
 
+    console.log('Macro data fetch process completed');
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Fatal error in macro data fetch process:', error);
+    console.error('Error stack trace:', error.stack);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
