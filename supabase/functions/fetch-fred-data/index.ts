@@ -1,98 +1,17 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { FredResponse, SERIES_IDS } from './types.ts';
+import { RateLimiter } from './rateLimiter.ts';
+import { logToDatabase, clearMacroData } from './database.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
-interface FredResponse {
-  realtime_start: string;
-  realtime_end: string;
-  observation_start: string;
-  observation_end: string;
-  units: string;
-  output_type: number;
-  file_type: string;
-  order_by: string;
-  sort_order: string;
-  count: number;
-  offset: number;
-  limit: number;
-  observations: Array<{
-    realtime_start: string;
-    realtime_end: string;
-    date: string;
-    value: string;
-  }>;
-}
-
-// List of FRED series IDs to fetch
-const SERIES_IDS = [
-  { id: 'FEDFUNDS', description: 'Fed Funds' },
-  { id: 'GFDEGDQ188S', description: 'Debt to GDP' },
-  { id: 'FYFSGDA188S', description: 'Deficit to GDP' },
-  { id: 'WALCL', description: "Fed's balance sheet" },
-  { id: 'TOTRESNS', description: 'Reserves at Fed' },
-  { id: 'RRPONTSYD', description: 'Fed at Repo' },
-  { id: 'WTREGEN', description: 'TGA' },
-  { id: 'CPIAUCSL', description: 'CPI' },
-  { id: 'CPILFESL', description: 'CPI core' },
-  { id: 'PCEPI', description: 'PCE' },
-  { id: 'PCEPILFE', description: 'PCE core' },
-  { id: 'PPIFIS', description: 'PPI' },
-  { id: 'PAYEMS', description: 'Non-Farm Payrolls' },
-  { id: 'UNRATE', description: 'Unemployment' },
-  { id: 'CES0500000003', description: 'Hourly earnings' },
-  { id: 'GDPC1', description: 'GDP' },
-  { id: 'INDPRO', description: 'Industrial Production' },
-  { id: 'CP', description: 'Corporate profits' },
-  { id: 'DGORDER', description: 'Durable goods' },
-  { id: 'MRTSSM44000USS', description: 'Retail sales' },
-  { id: 'UMCSENT', description: 'Consumer sentiment' },
-  { id: 'PCE', description: 'Personal consumption' },
-  { id: 'HSN1F', description: 'New home sales' },
-  { id: 'EXSFHSUSM495S', description: 'Existing home sales' },
-  { id: 'PERMIT', description: 'Building permits' },
-  { id: 'HOUST', description: 'Housing starts' },
-  { id: 'BAMLH0A0HYM2', description: 'High Yield spread' },
-  { id: 'BAMLC0A0CM', description: 'Investment Grade spread' },
-  { id: 'T10YIE', description: '10yr breakeven inflation' },
-  { id: 'MORTGAGE30US', description: 'Mortgage rate' },
-  { id: 'VIXCLS', description: 'VIX' },
-  { id: 'T10Y2Y', description: '10yr - 2yr' },
-  { id: 'T10Y3M', description: '10yr - 3mo' },
-  { id: 'MSPUS', description: 'Median home price' }
-];
-
-async function logToDatabase(supabase: any, series_id: string, status: string, message?: string) {
-  try {
-    const { error } = await supabase
-      .from('macro_data_logs')
-      .insert([
-        { 
-          series_id,
-          status,
-          message: message || null,
-          timestamp: new Date().toISOString()
-        }
-      ]);
-    
-    if (error) {
-      console.error('Error logging to database:', error);
-    }
-  } catch (error) {
-    console.error('Error logging to database:', error);
-  }
-}
-
-async function fetchWithRetry(url: string, retries = 3, delayMs = 6000): Promise<Response> {
+async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       console.log(`Attempting to fetch ${url} (attempt ${attempt}/${retries})`);
-      // Add delay between requests to respect the 10 requests per minute limit
-      if (attempt > 1) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      }
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -103,8 +22,6 @@ async function fetchWithRetry(url: string, retries = 3, delayMs = 6000): Promise
       if (attempt === retries) {
         throw error;
       }
-      // Wait before retrying to respect rate limit
-      await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
   throw new Error('All retry attempts failed');
@@ -113,15 +30,20 @@ async function fetchWithRetry(url: string, retries = 3, delayMs = 6000): Promise
 async function processSeries(
   series: { id: string; description: string }, 
   fredApiKey: string,
-  supabase: any
+  supabase: any,
+  rateLimiter: RateLimiter
 ): Promise<void> {
   try {
     console.log(`Starting to process series ${series.id}`);
+    
+    await rateLimiter.checkLimit();
     
     const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series.id}&api_key=${fredApiKey}&file_type=json&limit=25&sort_order=desc`;
     
     console.log(`Fetching data for series ${series.id}`);
     const response = await fetchWithRetry(url);
+    rateLimiter.incrementCount();
+    
     const data: FredResponse = await response.json();
     
     if (!data.observations || data.observations.length === 0) {
@@ -130,18 +52,6 @@ async function processSeries(
 
     console.log(`Got ${data.observations.length} observations for ${series.id}`);
 
-    // Delete existing entries for this series
-    const { error: deleteError } = await supabase
-      .from('macro_data')
-      .delete()
-      .eq('series_id', series.id);
-
-    if (deleteError) {
-      console.error(`Error deleting existing data for ${series.id}:`, deleteError);
-      throw deleteError;
-    }
-
-    // Insert new data
     const observations = data.observations.map(obs => ({
       series_id: series.id,
       series_id_description: series.description,
@@ -171,7 +81,6 @@ async function processSeries(
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -184,7 +93,6 @@ Deno.serve(async (req) => {
       throw new Error('FRED_API_KEY is not set');
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!supabaseUrl || !supabaseKey) {
@@ -194,18 +102,16 @@ Deno.serve(async (req) => {
     console.log('Initializing Supabase client');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Process series with a delay to respect the 10 requests per minute limit
-    // 6000ms = 6 seconds between requests = 10 requests per minute
-    const delay = 6000;
+    // Clear existing data before fetching new data
+    await clearMacroData(supabase);
+
+    const rateLimiter = new RateLimiter();
+    
     for (const series of SERIES_IDS) {
       try {
-        await processSeries(series, fredApiKey, supabase);
-        if (series !== SERIES_IDS[SERIES_IDS.length - 1]) {
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
+        await processSeries(series, fredApiKey, supabase, rateLimiter);
       } catch (error) {
         console.error(`Failed to process series ${series.id}:`, error);
-        // Continue with next series even if one fails
         continue;
       }
     }
