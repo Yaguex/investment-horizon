@@ -1,54 +1,14 @@
-import Header from "@/components/Header";
-import MetricCard from "@/components/MetricCard";
-import PortfolioChart from "@/components/PortfolioChart";
-import AccumulatedReturnChart from "@/components/AccumulatedReturnChart";
+import { MacroDataTest } from "@/components/MacroDataTest";
 import PortfolioTable from "@/components/PortfolioTable";
 import { usePortfolioData } from "@/utils/portfolioData";
 
-const Index = () => {
-  const { data, latestData } = usePortfolioData();
-  
+export default function Index() {
+  const { data } = usePortfolioData();
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <main className="container mx-auto px-4 pt-24 pb-8">
-        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
-        
-        <div className="grid gap-4 md:grid-cols-4 mb-8">
-          <MetricCard
-            title="Portfolio Value"
-            value={`$${latestData.value.toLocaleString()}`}
-            isNumeric={true}
-          />
-          <MetricCard
-            title="YTD Net Flows"
-            value={`$${latestData.ytdNetFlow.toLocaleString()}`}
-            isNumeric={true}
-          />
-          <MetricCard
-            title="YTD Gains"
-            value={`$${latestData.ytdGain.toLocaleString()}`}
-            isNumeric={true}
-          />
-          <MetricCard
-            title="YTD Return"
-            value={`${latestData.ytdReturn}%`}
-            isNumeric={true}
-          />
-        </div>
-
-        <div className="space-y-8">
-          <PortfolioChart data={data} />
-          <AccumulatedReturnChart data={data} />
-        </div>
-
-        <div className="mt-8">
-          <PortfolioTable data={data} />
-        </div>
-      </main>
+    <div className="container mx-auto py-6 space-y-6">
+      <MacroDataTest />
+      <PortfolioTable data={data} />
     </div>
   );
-};
-
-export default Index;
+}
