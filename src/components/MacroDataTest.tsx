@@ -55,9 +55,7 @@ export const MacroDataTest = () => {
       setIsLoading(true);
       console.log('Starting FRED data fetch process');
       
-      const { data, error } = await supabase.functions.invoke('fetch-fred-data', {
-        body: { action: 'fetch' }
-      });
+      const { data, error } = await supabase.functions.invoke('fetch-fred-data');
       
       if (error) {
         console.error('Error invoking function:', error);

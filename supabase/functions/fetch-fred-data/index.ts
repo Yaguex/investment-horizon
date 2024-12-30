@@ -22,7 +22,6 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
       if (attempt === retries) {
         throw error;
       }
-      // Wait 1 second before retrying
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
@@ -55,7 +54,6 @@ async function processSeries(
       throw new Error(error);
     }
 
-    // Data comes in descending order and limited to 25 entries
     const observations = data.observations.map(obs => ({
       series_id: series.id,
       series_id_description: series.description,
@@ -107,7 +105,6 @@ Deno.serve(async (req) => {
     console.log('Initializing Supabase client');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Clear existing data before fetching new data
     console.log('Clearing existing macro data');
     await clearMacroData(supabase);
 
