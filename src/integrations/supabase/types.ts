@@ -335,6 +335,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      reset_macro_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
