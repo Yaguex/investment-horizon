@@ -2,10 +2,10 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
--- Schedule the cron job to run at midnight every day
+-- Calculate timestamp 2 minutes from now
 SELECT cron.schedule(
-  'fetch-fred-data-daily',
-  '0 0 * * *',
+  'fetch-fred-data-test',
+  (SELECT to_char(NOW() + interval '2 minutes', 'MM HH24:MI *')::text),
   $$
   SELECT net.http_post(
     url:='https://zdqoxjyicrczlzazgyae.supabase.co/functions/v1/fetch-fred-data',
