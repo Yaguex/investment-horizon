@@ -103,7 +103,12 @@ Deno.serve(async (req) => {
     }
 
     console.log('Initializing Supabase client with service role');
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    });
 
     console.log('Clearing existing macro data');
     await clearMacroData(supabase);
