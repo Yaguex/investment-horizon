@@ -22,6 +22,8 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
       if (attempt === retries) {
         throw error;
       }
+      // Wait 1 second before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
   throw new Error('All retry attempts failed');
@@ -38,23 +40,23 @@ async function processSeries(
     
     await rateLimiter.checkLimit();
     
-    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series.id}&api_key=${fredApiKey}&file_type=json`;
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series.id}&api_key=${fredApiKey}&file_type=json&sort_order=desc&limit=25`;
     
     console.log(`Fetching data for series ${series.id}`);
     const response = await fetchWithRetry(url);
     rateLimiter.incrementCount();
     
     const data: FredResponse = await response.json();
+    console.log(`Received response for ${series.id}:`, JSON.stringify(data).slice(0, 200) + '...');
     
     if (!data.observations || data.observations.length === 0) {
-      throw new Error('No observations found');
+      const error = `No observations found for ${series.id}`;
+      console.error(error);
+      throw new Error(error);
     }
 
-    // Get the last 25 observations (they come in ascending order)
-    const lastObservations = data.observations.slice(-25);
-    console.log(`Processing last 25 observations for ${series.id}`);
-
-    const observations = lastObservations.map(obs => ({
+    // Data comes in descending order and limited to 25 entries
+    const observations = data.observations.map(obs => ({
       series_id: series.id,
       series_id_description: series.description,
       date: obs.date,
@@ -62,6 +64,7 @@ async function processSeries(
       last_update: new Date().toISOString()
     }));
 
+    console.log(`Inserting ${observations.length} observations for ${series.id}`);
     const { error: insertError } = await supabase
       .from('macro_data')
       .insert(observations);
@@ -105,20 +108,33 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Clear existing data before fetching new data
+    console.log('Clearing existing macro data');
     await clearMacroData(supabase);
 
     const rateLimiter = new RateLimiter();
+    let successCount = 0;
+    let errorCount = 0;
     
     for (const series of SERIES_IDS) {
       try {
         await processSeries(series, fredApiKey, supabase, rateLimiter);
+        successCount++;
       } catch (error) {
         console.error(`Failed to process series ${series.id}:`, error);
+        errorCount++;
         continue;
       }
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    const summary = `Completed with ${successCount} successes and ${errorCount} failures`;
+    console.log(summary);
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      summary,
+      successCount,
+      errorCount
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
@@ -127,7 +143,10 @@ Deno.serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in fetch-fred-data function:', errorMessage);
     
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      success: false
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
