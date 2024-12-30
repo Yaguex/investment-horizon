@@ -55,10 +55,14 @@ async function logToDatabase(supabase: any, series_id: string, status: string, m
   }
 }
 
-async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
+async function fetchWithRetry(url: string, retries = 3, delayMs = 6000): Promise<Response> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       console.log(`Attempting to fetch ${url} (attempt ${attempt}/${retries})`);
+      // Add delay between requests to respect the 10 requests per minute limit
+      if (attempt > 1) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -69,8 +73,8 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
       if (attempt === retries) {
         throw error;
       }
-      // Wait 1 second before retrying to avoid rate limits
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait before retrying to respect rate limit
+      await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
   throw new Error('All retry attempts failed');
@@ -132,7 +136,7 @@ async function processSeries(
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`Error processing series ${series.id}:`, errorMessage);
     await logToDatabase(supabase, series.id, 'error', errorMessage);
-    throw error; // Re-throw to handle in the main function
+    throw error;
   }
 }
 
@@ -160,8 +164,9 @@ Deno.serve(async (req) => {
     console.log('Initializing Supabase client');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Process series with minimal delay to avoid rate limits
-    const delay = 1000; // 1 second delay between series
+    // Process series with a delay to respect the 10 requests per minute limit
+    // 6000ms = 6 seconds between requests = 10 requests per minute
+    const delay = 6000;
     for (const series of SERIES_IDS) {
       try {
         await processSeries(series, fredApiKey, supabase);
