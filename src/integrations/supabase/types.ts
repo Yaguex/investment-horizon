@@ -63,6 +63,36 @@ export type Database = {
         }
         Relationships: []
       }
+      macro_data: {
+        Row: {
+          id: number
+          last_update: string | null
+          realtime_end: string | null
+          series_id: string | null
+          series_id_description: string | null
+          user_id: string | null
+          value: number | null
+        }
+        Insert: {
+          id?: number
+          last_update?: string | null
+          realtime_end?: string | null
+          series_id?: string | null
+          series_id_description?: string | null
+          user_id?: string | null
+          value?: number | null
+        }
+        Update: {
+          id?: number
+          last_update?: string | null
+          realtime_end?: string | null
+          series_id?: string | null
+          series_id_description?: string | null
+          user_id?: string | null
+          value?: number | null
+        }
+        Relationships: []
+      }
       portfolio_data: {
         Row: {
           balance: number | null
