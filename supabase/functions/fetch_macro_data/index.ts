@@ -149,46 +149,40 @@ Deno.serve(async (req) => {
     await logEvent(supabase, 'ALL', 'info', 'Cleaned up existing data');
     console.log(`[${new Date().toISOString()}] Existing data cleaned up`);
 
-    // Process series in smaller batches of 5
-    for (let i = 0; i < SERIES_DATA.length; i += 5) {
-      const batch = SERIES_DATA.slice(i, i + 5);
-      const batchNumber = Math.floor(i/5) + 1;
-      const totalBatches = Math.ceil(SERIES_DATA.length/5);
-      console.log(`[${new Date().toISOString()}] Processing batch ${batchNumber}/${totalBatches}`);
+    // Process series one at a time
+    for (let i = 0; i < SERIES_DATA.length; i++) {
+      const series = SERIES_DATA[i];
+      const seriesNumber = i + 1;
+      const totalSeries = SERIES_DATA.length;
+      console.log(`[${new Date().toISOString()}] Processing series ${seriesNumber}/${totalSeries}: ${series.id}`);
       
-      const batchPromises = batch.map(async (series) => {
-        console.log(`[${new Date().toISOString()}] Starting to process ${series.id}`);
-        const data = await fetchSeriesData(supabase, series.id, fredApiKey);
+      const data = await fetchSeriesData(supabase, series.id, fredApiKey);
+      
+      if (data && data.observations) {
+        const last25 = data.observations.slice(-25);
+        console.log(`[${new Date().toISOString()}] Processing ${last25.length} observations for ${series.id}`);
         
-        if (data && data.observations) {
-          const last25 = data.observations.slice(-25);
-          console.log(`[${new Date().toISOString()}] Processing ${last25.length} observations for ${series.id}`);
-          
-          const insertData = last25.map((obs: any) => ({
-            series_id: series.id,
-            series_id_description: series.description,
-            date: obs.date,
-            value: obs.value,
-            last_update: new Date().toISOString(),
-          }));
-          
-          console.log(`[${new Date().toISOString()}] Inserting data for ${series.id}`);
-          const { error: insertError } = await supabase.from('macro_data').insert(insertData);
-          if (insertError) {
-            console.error(`[${new Date().toISOString()}] Error inserting data for ${series.id}:`, insertError);
-            await logEvent(supabase, series.id, 'error', `Insert failed: ${insertError.message}`);
-          } else {
-            console.log(`[${new Date().toISOString()}] Successfully inserted ${last25.length} records for ${series.id}`);
-            await logEvent(supabase, series.id, 'success', `Successfully fetched and inserted ${last25.length} records`);
-          }
+        const insertData = last25.map((obs: any) => ({
+          series_id: series.id,
+          series_id_description: series.description,
+          date: obs.date,
+          value: obs.value,
+          last_update: new Date().toISOString(),
+        }));
+        
+        console.log(`[${new Date().toISOString()}] Inserting data for ${series.id}`);
+        const { error: insertError } = await supabase.from('macro_data').insert(insertData);
+        if (insertError) {
+          console.error(`[${new Date().toISOString()}] Error inserting data for ${series.id}:`, insertError);
+          await logEvent(supabase, series.id, 'error', `Insert failed: ${insertError.message}`);
+        } else {
+          console.log(`[${new Date().toISOString()}] Successfully inserted ${last25.length} records for ${series.id}`);
+          await logEvent(supabase, series.id, 'success', `Successfully fetched and inserted ${last25.length} records`);
         }
-      });
+      }
       
-      await Promise.all(batchPromises);
-      console.log(`[${new Date().toISOString()}] Batch ${batchNumber} completed`);
-      
-      if (i + 5 < SERIES_DATA.length) {
-        console.log(`[${new Date().toISOString()}] Waiting 5 seconds before next batch...`);
+      if (i < SERIES_DATA.length - 1) {
+        console.log(`[${new Date().toISOString()}] Waiting 5 seconds before next series...`);
         await sleep(5000);
       }
     }
