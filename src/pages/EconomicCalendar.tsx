@@ -44,9 +44,11 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
+  // Calculate min and max values from the dataset
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
   
+  // Calculate domain boundaries (10% padding)
   const yAxisMin = minValue - (Math.abs(minValue) * 0.1);
   const yAxisMax = maxValue + (Math.abs(maxValue) * 0.1);
 
@@ -58,12 +60,7 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
       <ResponsiveContainer width="100%" height={100}>
         <BarChart data={data}>
           <XAxis dataKey="date" hide />
-          <YAxis 
-            domain={[yAxisMin, yAxisMax]} 
-            axisLine={false}
-            tickLine={false}
-            tick={false}
-          />
+          <YAxis hide domain={[yAxisMin, yAxisMax]} />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="value">
             {data.map((entry, index) => (
