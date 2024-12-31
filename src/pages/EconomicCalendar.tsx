@@ -25,14 +25,14 @@ const bundles = {
   "Interest Rates": ["DFF", "DGS10", "T10Y2Y"],
 };
 
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload, seriesId }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
     return (
       <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
         <p className="font-bold text-black">{payload[0].payload.date}</p>
         <p className={value > 0 ? "text-green-500" : "text-red-500"}>
-          {value.toLocaleString()}
+          {seriesId === "WALCL" ? `$${value.toLocaleString()} T` : value.toLocaleString()}
         </p>
       </div>
     );
@@ -40,7 +40,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
+const MiniChart = ({ data, title, seriesId }: { data: ChartData[], title: string, seriesId: string }) => {
   // Calculate min and max values from the dataset
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
@@ -64,9 +64,9 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
           <YAxis 
             hide 
             domain={[yAxisMin, yAxisMax]}
-            tickFormatter={(value) => value.toLocaleString()}
+            tickFormatter={(value) => seriesId === "WALCL" ? `${value}T` : value.toLocaleString()}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={(props) => <CustomTooltip {...props} seriesId={seriesId} />} />
           <Bar dataKey="value">
             {data.map((entry, index) => (
               <Cell 
@@ -141,6 +141,7 @@ const EconomicCalendar = () => {
                     key={seriesId}
                     data={getChartData(seriesId)}
                     title={getSeriesDescription(seriesId)}
+                    seriesId={seriesId}
                   />
                 ))}
               </div>
