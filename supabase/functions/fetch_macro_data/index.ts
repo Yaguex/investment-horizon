@@ -35,7 +35,14 @@ async function fetchSeriesData(
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&observation_start=${observationStart}&file_type=json`;
+      // Define special series that need different endpoint configuration
+      const specialSeries = ['T10Y2Y', 'T10Y3M', 'BAMLH0A0HYM2', 'BAMLC0A0CM', 'T10YIE', 'TOTRESNS'];
+      
+      // Construct URL based on series type
+      const url = specialSeries.includes(series_id)
+        ? `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&limit=25&frequency=m&file_type=json`
+        : `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&observation_start=${observationStart}&file_type=json`;
+
       console.log(`[${new Date().toISOString()}] Attempt ${attempt}/${retries} for ${series_id}`);
       
       const response = await fetch(url);
