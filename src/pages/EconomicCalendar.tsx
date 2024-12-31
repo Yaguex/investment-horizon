@@ -56,13 +56,11 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => (
         <Bar
           dataKey="value"
           fill="currentColor"
-          className="text-green-500 [&_.recharts-rectangle]:data-[value-positive=true]:text-green-500 [&_.recharts-rectangle]:data-[value-positive=false]:text-red-500"
-          isAnimationActive={false}
+          className="text-black"
         >
           {data.map((entry, index) => (
             <rect
               key={`bar-${index}`}
-              data-value-positive={entry.value > 0}
               className={entry.value > 0 ? "text-green-500" : "text-red-500"}
             />
           ))}
