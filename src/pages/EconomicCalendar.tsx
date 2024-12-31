@@ -17,17 +17,6 @@ type ChartData = {
   value: number;
 }
 
-const bundles = {
-  Rates: ['FEDFUNDS', 'BAMLC0A0CM', 'BAMLH0A0HYM2', 'T10YIE', 'T10Y2Y', 'T10Y3M'],
-  Macro: ['GDPC1', 'GFDEGDQ188S', 'FYFSGDA188S', 'VIXCLS'],
-  Liquidity: ['WALCL', 'TOTRESNS', 'RRPONTSYD', 'WTREGEN'],
-  Inflation: ['CPIAUCSL', 'CPILFESL', 'PCEPI', 'PCEPILFE', 'PPIFIS', 'CES0500000003'],
-  Employment: ['PAYEMS', 'UNRATE'],
-  Corporate: ['INDPRO', 'CP'],
-  Consumption: ['DGORDER', 'MRTSSM44000USS', 'UMCSENT', 'PCE'],
-  Housing: ['PERMIT', 'HOUST', 'HSN1F', 'EXHOSLUSM495S', 'MORTGAGE30US', 'MSPUS']
-};
-
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
@@ -48,9 +37,13 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
   
-  // Calculate domain boundaries (10% padding)
-  const yAxisMin = minValue - (Math.abs(minValue) * 0.1);
-  const yAxisMax = maxValue + (Math.abs(maxValue) * 0.1);
+  // Calculate padding based on the difference between max and min
+  const difference = maxValue - minValue;
+  const padding = difference * 0.1;
+  
+  // Calculate domain boundaries with consistent padding
+  const yAxisMin = minValue - padding;
+  const yAxisMax = maxValue + padding;
 
   return (
     <div className="w-[150px] bg-white rounded-lg shadow p-2">
