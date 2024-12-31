@@ -32,7 +32,7 @@ const CustomTooltip = ({ active, payload }: any) => {
       <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
         <p className="font-bold text-black">{payload[0].payload.date}</p>
         <p className={value > 0 ? "text-green-500" : "text-red-500"}>
-          {value}
+          {value.toLocaleString()}
         </p>
       </div>
     );
@@ -45,13 +45,13 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
   
-  // Calculate padding based on the difference between max and min
-  const difference = maxValue - minValue;
-  const padding = difference * 0.1;
+  // Calculate padding based on the data range
+  const range = maxValue - minValue;
+  const padding = range * 0.05; // Use 5% padding for better visualization
   
   // Calculate domain boundaries with consistent padding
-  const yAxisMin = minValue - padding;
-  const yAxisMax = maxValue + padding;
+  const yAxisMin = Math.floor((minValue - padding) / 100) * 100;
+  const yAxisMax = Math.ceil((maxValue + padding) / 100) * 100;
 
   return (
     <div className="w-[150px] bg-white rounded-lg shadow p-2">
@@ -61,7 +61,11 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
       <ResponsiveContainer width="100%" height={100}>
         <BarChart data={data}>
           <XAxis dataKey="date" hide />
-          <YAxis hide domain={[yAxisMin, yAxisMax]} />
+          <YAxis 
+            hide 
+            domain={[yAxisMin, yAxisMax]}
+            tickFormatter={(value) => value.toLocaleString()}
+          />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="value">
             {data.map((entry, index) => (
