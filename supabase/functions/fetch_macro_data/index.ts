@@ -36,7 +36,7 @@ async function fetchSeriesData(
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       // Define special series that need different endpoint configuration
-      const specialSeries = ['T10Y2Y', 'T10Y3M', 'BAMLH0A0HYM2', 'BAMLC0A0CM', 'T10YIE', 'TOTRESNS'];
+      const specialSeries = ['T10Y2Y', 'T10Y3M', 'BAMLH0A0HYM2', 'BAMLC0A0CM', 'T10YIE', 'TOTRESNS', 'MORTGAGE30US'];
       
       // Construct URL based on series type
       const url = specialSeries.includes(series_id)
