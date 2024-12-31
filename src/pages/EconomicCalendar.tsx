@@ -31,6 +31,7 @@ const bundles = {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
+    console.log('Tooltip payload:', payload[0].payload);
     return (
       <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
         <p className="font-bold text-black">{payload[0].payload.date}</p>
@@ -44,6 +45,8 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
+  console.log(`Chart data for ${title}:`, data);
+  
   // Calculate min and max values from the dataset
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
@@ -87,6 +90,7 @@ const EconomicCalendar = () => {
         .order('date', { ascending: true });
       
       if (error) throw error;
+      console.log('Raw data from Supabase:', data);
       return data as MacroData[];
     }
   });
@@ -107,13 +111,23 @@ const EconomicCalendar = () => {
   const getChartData = (seriesId: string): ChartData[] => {
     if (!macroData) return [];
     
-    return macroData
-      .filter(d => d.series_id === seriesId)
-      .slice(-12)
-      .map(d => ({
-        date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    const filteredData = macroData.filter(d => d.series_id === seriesId);
+    console.log(`Filtered data for ${seriesId}:`, filteredData);
+    
+    const slicedData = filteredData.slice(-12);
+    console.log(`Last 12 entries for ${seriesId}:`, slicedData);
+    
+    const formattedData = slicedData.map(d => {
+      const formattedDate = new Date(d.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      console.log(`Formatting date for ${seriesId}:`, { original: d.date, formatted: formattedDate });
+      return {
+        date: formattedDate,
         value: d.value_adjusted
-      }));
+      };
+    });
+    
+    console.log(`Final formatted data for ${seriesId}:`, formattedData);
+    return formattedData;
   };
 
   const getSeriesDescription = (seriesId: string): string => {
