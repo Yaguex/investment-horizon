@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload }: any) => {
       <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
         <p className="font-bold text-black">{payload[0].payload.date}</p>
         <p className={value > 0 ? "text-green-500" : "text-red-500"}>
-          {value.toFixed(1)}
+          {value}
         </p>
       </div>
     );
