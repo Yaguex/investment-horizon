@@ -17,6 +17,17 @@ type ChartData = {
   value: number;
 }
 
+const bundles = {
+  Rates: ['FEDFUNDS', 'BAMLC0A0CM', 'BAMLH0A0HYM2', 'T10YIE', 'T10Y2Y', 'T10Y3M'],
+  Macro: ['GDPC1', 'GFDEGDQ188S', 'FYFSGDA188S', 'VIXCLS'],
+  Liquidity: ['WALCL', 'TOTRESNS', 'RRPONTSYD', 'WTREGEN'],
+  Inflation: ['CPIAUCSL', 'CPILFESL', 'PCEPI', 'PCEPILFE', 'PPIFIS', 'CES0500000003'],
+  Employment: ['PAYEMS', 'UNRATE'],
+  Corporate: ['INDPRO', 'CP'],
+  Consumption: ['DGORDER', 'MRTSSM44000USS', 'UMCSENT', 'PCE'],
+  Housing: ['PERMIT', 'HOUST', 'HSN1F', 'EXHOSLUSM495S', 'MORTGAGE30US', 'MSPUS']
+};
+
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
@@ -34,14 +45,12 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
   // Calculate min and max values from the dataset
-  const values = data.map(item => item.value);
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
+  const minValue = Math.min(...data.map(item => item.value));
+  const maxValue = Math.max(...data.map(item => item.value));
   
-  // Calculate domain boundaries with proper 10% padding
-  const padding = 0.1; // 10% padding
-  const yAxisMin = minValue < 0 ? minValue * (1 + padding) : minValue * (1 - padding);
-  const yAxisMax = maxValue < 0 ? maxValue * (1 - padding) : maxValue * (1 + padding);
+  // Calculate domain boundaries (10% padding)
+  const yAxisMin = minValue - (Math.abs(minValue) * 0.1);
+  const yAxisMax = maxValue + (Math.abs(maxValue) * 0.1);
 
   return (
     <div className="w-[150px] bg-white rounded-lg shadow p-2">
