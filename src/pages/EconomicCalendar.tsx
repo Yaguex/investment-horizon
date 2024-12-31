@@ -60,10 +60,7 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
       <ResponsiveContainer width="100%" height={100}>
         <BarChart data={data}>
           <XAxis dataKey="date" hide />
-          <YAxis 
-            type="number"
-            domain={[yAxisMin, yAxisMax]}
-          />
+          <YAxis hide domain={[yAxisMin, yAxisMax]} />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="value">
             {data.map((entry, index) => (
