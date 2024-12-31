@@ -71,6 +71,7 @@ export type Database = {
           series_id: string | null
           series_id_description: string | null
           value: number | null
+          value_adjusted: number | null
         }
         Insert: {
           date?: string | null
@@ -79,6 +80,7 @@ export type Database = {
           series_id?: string | null
           series_id_description?: string | null
           value?: number | null
+          value_adjusted?: number | null
         }
         Update: {
           date?: string | null
@@ -87,6 +89,7 @@ export type Database = {
           series_id?: string | null
           series_id_description?: string | null
           value?: number | null
+          value_adjusted?: number | null
         }
         Relationships: []
       }
