@@ -48,9 +48,9 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
   
-  // Calculate domain boundaries (2% padding)
-  const yAxisMin = minValue - (Math.abs(minValue) * 0.02);
-  const yAxisMax = maxValue + (Math.abs(maxValue) * 0.02);
+  // Calculate domain boundaries (1% padding above, 4% padding below)
+  const yAxisMin = minValue - (Math.abs(minValue) * 0.04);
+  const yAxisMax = maxValue + (Math.abs(maxValue) * 0.01);
 
   return (
     <div className="w-[150px] bg-white rounded-lg shadow p-2">
