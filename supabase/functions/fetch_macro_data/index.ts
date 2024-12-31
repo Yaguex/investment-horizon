@@ -12,9 +12,30 @@ async function fetchSeriesData(
   const startTime = Date.now();
   console.log(`[${new Date().toISOString()}] Starting fetch for series ${series_id}`);
 
+  // Determine observation start date based on series_id
+  let observationStart = '2022-11-01'; // default
+  
+  switch(series_id) {
+    case 'FYFSGDA188S':
+      observationStart = '2012-01-01';
+      break;
+    case 'GFDEGDQ188S':
+      observationStart = '2021-01-01';
+      break;
+    case 'GDP':
+    case 'CP':
+      observationStart = '2019-01-01';
+      break;
+    case 'MSPUS':
+      observationStart = '2020-01-01';
+      break;
+  }
+  
+  console.log(`[${new Date().toISOString()}] Using observation_start=${observationStart} for series ${series_id}`);
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&observation_start=2022-11-01&file_type=json`;
+      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&observation_start=${observationStart}&file_type=json`;
       console.log(`[${new Date().toISOString()}] Attempt ${attempt}/${retries} for ${series_id}`);
       
       const response = await fetch(url);
