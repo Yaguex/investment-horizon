@@ -53,12 +53,12 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
       <div className="text-xs font-medium mb-2 truncate text-[#777]" title={title}>
         {title}
       </div>
-      <ResponsiveContainer width="100%" height={70}>
+      <ResponsiveContainer width="100%" height={100}>
         <BarChart data={data}>
           <XAxis dataKey="date" hide />
           <YAxis hide domain={[minValue, maxValue]} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="value" minPointLength={2}>
+          <Bar dataKey="value">
             {data.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`}
