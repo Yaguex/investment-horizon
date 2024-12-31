@@ -47,16 +47,20 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
   // Calculate min and max values from the dataset
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
+  
+  // Calculate domain boundaries (10% padding)
+  const yAxisMin = minValue - (Math.abs(minValue) * 0.1);
+  const yAxisMax = maxValue + (Math.abs(maxValue) * 0.1);
 
   return (
     <div className="w-[150px] bg-white rounded-lg shadow p-2">
       <div className="text-xs font-medium mb-2 truncate text-[#777]" title={title}>
         {title}
       </div>
-      <ResponsiveContainer width="100%" height={70}>
+      <ResponsiveContainer width="100%" height={100}>
         <BarChart data={data}>
           <XAxis dataKey="date" hide />
-          <YAxis hide domain={[minValue, maxValue]} />
+          <YAxis hide domain={[yAxisMin, yAxisMax]} />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="value">
             {data.map((entry, index) => (
