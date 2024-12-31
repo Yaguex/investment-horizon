@@ -11,6 +11,7 @@ import Signup from "./pages/Signup"
 import ResetPassword from "./pages/ResetPassword"
 import TradeLog from "./pages/TradeLog"
 import Allocations from "./pages/Allocations"
+import EconomicCalendar from "./pages/EconomicCalendar"
 
 const queryClient = new QueryClient()
 
@@ -46,6 +47,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Allocations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/economic-calendar"
+              element={
+                <ProtectedRoute>
+                  <EconomicCalendar />
                 </ProtectedRoute>
               }
             />
