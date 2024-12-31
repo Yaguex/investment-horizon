@@ -69,7 +69,6 @@ export const calculateAdjustedValue = (
       case 'VIXCLS':
       case 'T10Y2Y':
       case 'T10Y3M':
-      case 'CES0500000003':  // Added CES0500000003 to direct value with 2 decimals
         return round2(value);
 
       // Direct value with 0 decimals
@@ -109,7 +108,8 @@ export const calculateAdjustedValue = (
       case 'PCEPI':
       case 'PCEPILFE':
       case 'PPIFIS':
-      case 'GDPC1': {
+      case 'GDPC1':
+      case 'CES0500000003': {
         const yearAgoValue = getYearAgoValue();
         return yearAgoValue && yearAgoValue !== 0 
           ? round1(((value - yearAgoValue) / yearAgoValue) * 100)
