@@ -18,21 +18,24 @@ type ChartData = {
 }
 
 const bundles = {
-  "Fed's Balance Sheet": ["WALCL"],
-  "Inflation": ["CPIAUCSL", "PCEPI"],
-  "Labor Market": ["UNRATE", "PAYEMS", "JOLTSGAP"],
-  "GDP": ["GDP", "GDPC1"],
-  "Interest Rates": ["DFF", "DGS10", "T10Y2Y"],
+  Rates: ['FEDFUNDS', 'BAMLC0A0CM', 'BAMLH0A0HYM2', 'T10YIE', 'T10Y2Y', 'T10Y3M'],
+  Macro: ['GDPC1', 'GFDEGDQ188S', 'FYFSGDA188S', 'VIXCLS'],
+  Liquidity: ['WALCL', 'TOTRESNS', 'RRPONTSYD', 'WTREGEN'],
+  Inflation: ['CPIAUCSL', 'CPILFESL', 'PCEPI', 'PCEPILFE', 'PPIFIS', 'CES0500000003'],
+  Employment: ['PAYEMS', 'UNRATE'],
+  Corporate: ['INDPRO', 'CP'],
+  Consumption: ['DGORDER', 'MRTSSM44000USS', 'UMCSENT', 'PCE'],
+  Housing: ['PERMIT', 'HOUST', 'HSN1F', 'EXHOSLUSM495S', 'MORTGAGE30US', 'MSPUS']
 };
 
-const CustomTooltip = ({ active, payload, seriesId }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
     return (
       <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
         <p className="font-bold text-black">{payload[0].payload.date}</p>
         <p className={value > 0 ? "text-green-500" : "text-red-500"}>
-          {seriesId === "WALCL" ? `$${value.toLocaleString()} T` : value.toLocaleString()}
+          {value}
         </p>
       </div>
     );
@@ -40,18 +43,14 @@ const CustomTooltip = ({ active, payload, seriesId }: any) => {
   return null;
 };
 
-const MiniChart = ({ data, title, seriesId }: { data: ChartData[], title: string, seriesId: string }) => {
+const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
   // Calculate min and max values from the dataset
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
   
-  // Calculate padding based on the data range
-  const range = maxValue - minValue;
-  const padding = range * 0.05; // Use 5% padding for better visualization
-  
-  // Calculate domain boundaries with consistent padding
-  const yAxisMin = Math.floor((minValue - padding) / 100) * 100;
-  const yAxisMax = Math.ceil((maxValue + padding) / 100) * 100;
+  // Calculate domain boundaries (10% padding)
+  const yAxisMin = minValue - (Math.abs(minValue) * 0.1);
+  const yAxisMax = maxValue + (Math.abs(maxValue) * 0.1);
 
   return (
     <div className="w-[150px] bg-white rounded-lg shadow p-2">
@@ -61,12 +60,8 @@ const MiniChart = ({ data, title, seriesId }: { data: ChartData[], title: string
       <ResponsiveContainer width="100%" height={100}>
         <BarChart data={data}>
           <XAxis dataKey="date" hide />
-          <YAxis 
-            hide 
-            domain={[yAxisMin, yAxisMax]}
-            tickFormatter={(value) => seriesId === "WALCL" ? `${value}T` : value.toLocaleString()}
-          />
-          <Tooltip content={(props) => <CustomTooltip {...props} seriesId={seriesId} />} />
+          <YAxis hide domain={[yAxisMin, yAxisMax]} />
+          <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="value">
             {data.map((entry, index) => (
               <Cell 
@@ -141,7 +136,6 @@ const EconomicCalendar = () => {
                     key={seriesId}
                     data={getChartData(seriesId)}
                     title={getSeriesDescription(seriesId)}
-                    seriesId={seriesId}
                   />
                 ))}
               </div>
