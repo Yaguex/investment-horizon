@@ -61,10 +61,7 @@ export const calculateAdjustedValue = (
       // Direct value with 2 decimals
       case 'FEDFUNDS':
       case 'GFDEGDQ188S':
-      case 'RRPONTSYD':
-      case 'WTREGEN':
-      case 'CES0500000003':
-      case 'HSN1F':
+      case 'FYFSGDA188S':
       case 'BAMLH0A0HYM2':
       case 'BAMLC0A0CM':
       case 'T10YIE':
@@ -74,9 +71,13 @@ export const calculateAdjustedValue = (
       case 'T10Y3M':
         return round2(value);
 
+      // Direct value with 0 decimals
+      case 'RRPONTSYD':
+      case 'WTREGEN':
+        return round0(value);
+
       // Division by 1,000,000 with 2 decimals
       case 'WALCL':
-      case 'EXSFHSUSM495S':
         return round2(value / 1000000);
 
       // Division by 1,000 with 2 decimals

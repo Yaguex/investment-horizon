@@ -24,7 +24,7 @@ export const SERIES_DATA: SeriesData[] = [
   { id: 'UMCSENT', description: 'Consumer sentiment' },
   { id: 'PCE', description: 'Personal consumption' },
   { id: 'HSN1F', description: 'New home sales' },
-  { id: 'EXSFHSUSM495S', description: 'Existing home sales' },
+  { id: 'EXHOSLUSM495S', description: 'Existing home sales' },
   { id: 'PERMIT', description: 'Building permits' },
   { id: 'HOUST', description: 'Housing starts' },
   { id: 'BAMLH0A0HYM2', description: 'High Yield spread' },
