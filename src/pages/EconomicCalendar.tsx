@@ -17,6 +17,14 @@ type ChartData = {
   value: number;
 }
 
+const bundles = {
+  "Fed's Balance Sheet": ["WALCL"],
+  "Inflation": ["CPIAUCSL", "PCEPI"],
+  "Labor Market": ["UNRATE", "PAYEMS", "JOLTSGAP"],
+  "GDP": ["GDP", "GDPC1"],
+  "Interest Rates": ["DFF", "DGS10", "T10Y2Y"],
+};
+
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
