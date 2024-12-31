@@ -40,7 +40,7 @@ async function fetchSeriesData(
       
       // Construct URL based on series type
       const url = specialSeries.includes(series_id)
-        ? `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&limit=25&frequency=m&file_type=json`
+        ? `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&limit=25&frequency=m&sort_order=desc&file_type=json`
         : `https://api.stlouisfed.org/fred/series/observations?series_id=${series_id}&api_key=${apiKey}&observation_start=${observationStart}&file_type=json`;
 
       console.log(`[${new Date().toISOString()}] Attempt ${attempt}/${retries} for ${series_id}`);
