@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { Loader2 } from "lucide-react";
 import { ChartContainer } from "@/components/ui/chart";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 type MacroData = {
   series_id: string;
@@ -53,14 +53,11 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => (
         <XAxis dataKey="date" hide />
         <YAxis hide />
         <Tooltip content={<CustomTooltip />} />
-        <Bar
-          dataKey="value"
-          fill="currentColor"
-          className="text-black"
-        >
+        <Bar dataKey="value">
           {data.map((entry, index) => (
-            <rect
-              key={`bar-${index}`}
+            <Cell 
+              key={`cell-${index}`}
+              fill="currentColor"
               className={entry.value > 0 ? "text-green-500" : "text-red-500"}
             />
           ))}
