@@ -19,7 +19,7 @@ export const SERIES_DATA: SeriesData[] = [
   { id: 'GDPC1', description: 'GDP' },
   { id: 'INDPRO', description: 'Industrial product MoM' },
   { id: 'CP', description: 'Corporate profits QoQ' },
-  { id: 'DGORDER', description: 'Durable goods' },
+  { id: 'DGORDER', description: 'Durable goods MoM' },
   { id: 'MRTSSM44000USS', description: 'Retail sales MoM' },
   { id: 'UMCSENT', description: 'Consumer sentiment' },
   { id: 'PCE', description: 'Personal spending MoM' },
