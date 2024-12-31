@@ -54,7 +54,7 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
 
   return (
     <div className="w-[150px] bg-white rounded-lg shadow p-2">
-      <div className="text-xs font-medium mb-2 truncate" title={title}>
+      <div className="text-xs font-medium mb-2 truncate text-[#777]" title={title}>
         {title}
       </div>
       <ResponsiveContainer width="100%" height={100}>
