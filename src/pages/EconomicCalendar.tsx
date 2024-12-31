@@ -111,7 +111,7 @@ const EconomicCalendar = () => {
       .filter(d => d.series_id === seriesId)
       .slice(-12)
       .map(d => ({
-        date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         value: d.value_adjusted
       }));
   };
