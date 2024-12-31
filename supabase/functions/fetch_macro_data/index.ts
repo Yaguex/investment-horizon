@@ -22,7 +22,7 @@ async function fetchSeriesData(
     case 'GFDEGDQ188S':
       observationStart = '2021-01-01';
       break;
-    case 'GDP':
+    case 'GDPC1':
     case 'CP':
       observationStart = '2019-01-01';
       break;
