@@ -57,7 +57,7 @@ const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
       <div className="text-xs font-medium mb-2 truncate text-[#777]" title={title}>
         {title}
       </div>
-      <ResponsiveContainer width="100%" height={100}>
+      <ResponsiveContainer width="100%" height={70}>
         <BarChart data={data}>
           <XAxis dataKey="date" hide />
           <YAxis hide domain={[yAxisMin, yAxisMax]} />
