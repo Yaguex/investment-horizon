@@ -43,29 +43,39 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => (
-  <div className="w-[150px] bg-white rounded-lg shadow p-2">
-    <div className="text-xs font-medium mb-2 truncate" title={title}>
-      {title}
+const MiniChart = ({ data, title }: { data: ChartData[], title: string }) => {
+  // Calculate min and max values from the dataset
+  const minValue = Math.min(...data.map(item => item.value));
+  const maxValue = Math.max(...data.map(item => item.value));
+  
+  // Calculate domain boundaries (10% padding)
+  const yAxisMin = minValue - (Math.abs(minValue) * 0.1);
+  const yAxisMax = maxValue + (Math.abs(maxValue) * 0.1);
+
+  return (
+    <div className="w-[150px] bg-white rounded-lg shadow p-2">
+      <div className="text-xs font-medium mb-2 truncate" title={title}>
+        {title}
+      </div>
+      <ResponsiveContainer width="100%" height={100}>
+        <BarChart data={data}>
+          <XAxis dataKey="date" hide />
+          <YAxis hide domain={[yAxisMin, yAxisMax]} />
+          <Tooltip content={<CustomTooltip />} />
+          <Bar dataKey="value">
+            {data.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`}
+                fill="currentColor"
+                className={entry.value > 0 ? "text-green-500" : "text-red-500"}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
     </div>
-    <ResponsiveContainer width="100%" height={100}>
-      <BarChart data={data}>
-        <XAxis dataKey="date" hide />
-        <YAxis hide />
-        <Tooltip content={<CustomTooltip />} />
-        <Bar dataKey="value">
-          {data.map((entry, index) => (
-            <Cell 
-              key={`cell-${index}`}
-              fill="currentColor"
-              className={entry.value > 0 ? "text-green-500" : "text-red-500"}
-            />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-);
+  );
+};
 
 const EconomicCalendar = () => {
   const { data: macroData, isLoading } = useQuery({
