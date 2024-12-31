@@ -69,6 +69,7 @@ export const calculateAdjustedValue = (
       case 'VIXCLS':
       case 'T10Y2Y':
       case 'T10Y3M':
+      case 'CES0500000003':  // Added CES0500000003 to direct value with 2 decimals
         return round2(value);
 
       // Direct value with 0 decimals
