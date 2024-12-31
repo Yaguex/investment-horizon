@@ -74,10 +74,12 @@ export const calculateAdjustedValue = (
       // Direct value with 0 decimals
       case 'RRPONTSYD':
       case 'WTREGEN':
+      case 'HSN1F':
         return round0(value);
 
       // Division by 1,000,000 with 2 decimals
       case 'WALCL':
+      case 'EXHOSLUSM495S':
         return round2(value / 1000000);
 
       // Division by 1,000 with 2 decimals
