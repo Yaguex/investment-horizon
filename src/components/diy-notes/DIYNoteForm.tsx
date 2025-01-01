@@ -28,6 +28,8 @@ interface DIYNoteFormProps {
 }
 
 export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
+  console.log("DIYNoteForm mounted with note:", note) // Debug log
+  
   const form = useForm<DIYNoteFormValues>({
     defaultValues: note ? {
       ticker: note.ticker || "",

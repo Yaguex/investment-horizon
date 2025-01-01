@@ -10,8 +10,8 @@ import { supabase } from "@/integrations/supabase/client"
 import { formatNumber, formatDate } from "@/components/trade/utils/formatters"
 
 const DIYNotes = () => {
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [selectedNote, setSelectedNote] = useState<any>(null)
+  const [editNote, setEditNote] = useState<any>(null)
+  const [isNewNoteOpen, setIsNewNoteOpen] = useState(false)
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ['diy-notes'],
@@ -24,16 +24,6 @@ const DIYNotes = () => {
       return data
     }
   })
-
-  const handleEdit = (note: any) => {
-    setSelectedNote(note)
-    setIsFormOpen(true)
-  }
-
-  const handleFormClose = () => {
-    setIsFormOpen(false)
-    setSelectedNote(null)
-  }
 
   if (isLoading) {
     return (
@@ -50,16 +40,25 @@ const DIYNotes = () => {
       <main className="container mx-auto px-6 pt-24 pb-8">
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-foreground">DIY Notes</h1>
-          <Button size="lg" className="px-6" onClick={() => setIsFormOpen(true)}>
+          <Button size="lg" className="px-6" onClick={() => setIsNewNoteOpen(true)}>
             New Note
           </Button>
         </div>
         
+        {/* New Note Form */}
         <DIYNoteForm 
-          open={isFormOpen}
-          onOpenChange={handleFormClose}
-          note={selectedNote}
+          open={isNewNoteOpen}
+          onOpenChange={setIsNewNoteOpen}
         />
+
+        {/* Edit Note Form */}
+        {editNote && (
+          <DIYNoteForm 
+            open={true}
+            onOpenChange={() => setEditNote(null)}
+            note={editNote}
+          />
+        )}
 
         <div className="space-y-6">
           {notes?.map((note) => (
@@ -86,7 +85,7 @@ const DIYNotes = () => {
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button className="cursor-pointer" onClick={() => handleEdit(note)}>
+                          <button className="cursor-pointer" onClick={() => setEditNote(note)}>
                             <Edit className="h-5 w-5" />
                           </button>
                         </TooltipTrigger>
