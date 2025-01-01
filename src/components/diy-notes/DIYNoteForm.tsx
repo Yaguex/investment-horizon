@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form"
+import { format } from "date-fns"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -34,6 +35,7 @@ export function DIYNoteForm({ open, onOpenChange }: DIYNoteFormProps) {
         .insert([
           {
             ...data,
+            expiration: data.expiration ? format(data.expiration, 'yyyy-MM-dd') : null,
             profile_id: (await supabase.auth.getUser()).data.user?.id
           }
         ])
