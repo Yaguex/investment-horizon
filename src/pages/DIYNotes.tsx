@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Copy, Edit2, Trash2 } from "lucide-react";
 
 const DIYNotes = () => {
   return (
@@ -14,7 +15,21 @@ const DIYNotes = () => {
             New Note
           </Button>
         </div>
-        <Card className="w-full" />
+        <Card className="w-full">
+          <CardContent className="p-6">
+            <div className="flex justify-end gap-2">
+              <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                <Copy className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                <Edit2 className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                <Trash2 className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
