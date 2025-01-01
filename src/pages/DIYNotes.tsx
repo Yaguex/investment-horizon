@@ -17,16 +17,19 @@ const DIYNotes = () => {
         </div>
         <Card className="w-full">
           <CardContent className="p-6">
-            <div className="flex justify-end gap-2">
-              <button className="p-2 hover:bg-accent rounded-md transition-colors">
-                <Copy className="h-5 w-5 text-muted-foreground" />
-              </button>
-              <button className="p-2 hover:bg-accent rounded-md transition-colors">
-                <Edit2 className="h-5 w-5 text-muted-foreground" />
-              </button>
-              <button className="p-2 hover:bg-accent rounded-md transition-colors">
-                <Trash2 className="h-5 w-5 text-muted-foreground" />
-              </button>
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-lg">SPY</span>
+              <div className="flex gap-2">
+                <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                  <Copy className="h-5 w-5 text-muted-foreground" />
+                </button>
+                <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                  <Edit2 className="h-5 w-5 text-muted-foreground" />
+                </button>
+                <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                  <Trash2 className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>
