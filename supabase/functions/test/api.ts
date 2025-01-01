@@ -103,5 +103,11 @@ export async function fetchOptionsChain(
     firstItem: data?.data?.[0]
   });
   
+  // Add validation before returning
+  if (!data?.data || !Array.isArray(data.data)) {
+    console.error(`[Options] Invalid data structure received:`, data);
+    return null;
+  }
+  
   return data?.data || null;
 }
