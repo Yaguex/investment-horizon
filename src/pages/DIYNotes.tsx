@@ -75,7 +75,7 @@ const DIYNotes = () => {
               </div>
             </div>
             <div className="text-sm space-y-2 flex justify-between">
-              <div className="space-y-2">
+              <div>
                 <p className="text-black">Dividend: 2.38% ($17,039)</p>
                 <p className="text-black">Bond yield: 4.20% ($42,003)</p>
                 <p className="text-black">Note's net: <span className="text-green-600">$1,022</span></p>
