@@ -29,16 +29,26 @@ interface DIYNoteFormProps {
 
 export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   const form = useForm<DIYNoteFormValues>({
-    defaultValues: {
-      ticker: note?.ticker || "",
-      nominal: note?.nominal || null,
-      expiration: note?.expiration ? new Date(note.expiration) : null,
-      bond_yield: note?.bond_yield || null,
-      strike_entry: note?.strike_entry || null,
-      strike_target: note?.strike_target || null,
-      strike_protection: note?.strike_protection || null,
-      wiggle: note?.wiggle || null,
-      dividend_yield: note?.dividend_yield || null
+    defaultValues: note ? {
+      ticker: note.ticker || "",
+      nominal: note.nominal || null,
+      expiration: note.expiration ? new Date(note.expiration) : null,
+      bond_yield: note.bond_yield || null,
+      strike_entry: note.strike_entry || null,
+      strike_target: note.strike_target || null,
+      strike_protection: note.strike_protection || null,
+      wiggle: note.wiggle || null,
+      dividend_yield: note.dividend_yield || null
+    } : {
+      ticker: "",
+      nominal: null,
+      expiration: null,
+      bond_yield: null,
+      strike_entry: null,
+      strike_target: null,
+      strike_protection: null,
+      wiggle: null,
+      dividend_yield: null
     }
   })
 
