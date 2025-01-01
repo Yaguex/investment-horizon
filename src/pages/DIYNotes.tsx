@@ -11,6 +11,7 @@ import { formatNumber, formatDate } from "@/components/trade/utils/formatters"
 
 const DIYNotes = () => {
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [selectedNote, setSelectedNote] = useState<any>(null)
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ['diy-notes'],
@@ -23,6 +24,16 @@ const DIYNotes = () => {
       return data
     }
   })
+
+  const handleEdit = (note: any) => {
+    setSelectedNote(note)
+    setIsFormOpen(true)
+  }
+
+  const handleFormClose = () => {
+    setIsFormOpen(false)
+    setSelectedNote(null)
+  }
 
   if (isLoading) {
     return (
@@ -46,7 +57,8 @@ const DIYNotes = () => {
         
         <DIYNoteForm 
           open={isFormOpen}
-          onOpenChange={setIsFormOpen}
+          onOpenChange={handleFormClose}
+          note={selectedNote}
         />
 
         <div className="space-y-6">
@@ -74,7 +86,7 @@ const DIYNotes = () => {
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button className="cursor-pointer">
+                          <button className="cursor-pointer" onClick={() => handleEdit(note)}>
                             <Edit className="h-5 w-5" />
                           </button>
                         </TooltipTrigger>

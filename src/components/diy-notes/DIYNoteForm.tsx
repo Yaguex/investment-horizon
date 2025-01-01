@@ -24,31 +24,52 @@ interface DIYNoteFormValues {
 interface DIYNoteFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  note?: any // We'll type this properly later
 }
 
-export function DIYNoteForm({ open, onOpenChange }: DIYNoteFormProps) {
-  const form = useForm<DIYNoteFormValues>()
+export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
+  const form = useForm<DIYNoteFormValues>({
+    defaultValues: note ? {
+      ...note,
+      expiration: note.expiration ? new Date(note.expiration) : undefined
+    } : undefined
+  })
 
   const onSubmit = async (data: DIYNoteFormValues) => {
     try {
-      const { error } = await supabase
-        .from('diy_notes')
-        .insert([
-          {
+      if (note) {
+        // Update existing note
+        const { error } = await supabase
+          .from('diy_notes')
+          .update({
             ...data,
             expiration: data.expiration ? format(data.expiration, 'yyyy-MM-dd') : null,
-            profile_id: (await supabase.auth.getUser()).data.user?.id
-          }
-        ])
+          })
+          .eq('id', note.id)
 
-      if (error) throw error
+        if (error) throw error
+        toast.success('Note updated successfully')
+      } else {
+        // Create new note
+        const { error } = await supabase
+          .from('diy_notes')
+          .insert([
+            {
+              ...data,
+              expiration: data.expiration ? format(data.expiration, 'yyyy-MM-dd') : null,
+              profile_id: (await supabase.auth.getUser()).data.user?.id
+            }
+          ])
 
-      toast.success('Note created successfully')
+        if (error) throw error
+        toast.success('Note created successfully')
+      }
+      
       onOpenChange(false)
       form.reset()
     } catch (error) {
-      console.error('Error creating note:', error)
-      toast.error('Error creating note')
+      console.error('Error saving note:', error)
+      toast.error(`Error ${note ? 'updating' : 'creating'} note`)
     }
   }
 
@@ -56,7 +77,7 @@ export function DIYNoteForm({ open, onOpenChange }: DIYNoteFormProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>
-          <SheetTitle>New DIY Note</SheetTitle>
+          <SheetTitle>{note ? 'Edit' : 'New'} DIY Note</SheetTitle>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
@@ -106,7 +127,7 @@ export function DIYNoteForm({ open, onOpenChange }: DIYNoteFormProps) {
               label="Wiggle"
             />
             <div className="flex justify-end space-x-2">
-              <Button type="submit">Create Note</Button>
+              <Button type="submit">{note ? 'Update' : 'Create'} Note</Button>
             </div>
           </form>
         </Form>
