@@ -44,8 +44,7 @@ export async function fetchWithRetry(url: string, apiKey: string, retries = 3): 
 }
 
 export async function fetchStockQuote(ticker: string, apiKey: string): Promise<any> {
-  const encodedTicker = encodeURIComponent(ticker);
-  const url = `https://api.marketdata.app/v1/stocks/quotes/${encodedTicker}/`;
+  const url = `https://api.marketdata.app/v1/stocks/quotes/${ticker}/`;
   
   const { data, error } = await fetchWithRetry(url, apiKey);
   
@@ -64,7 +63,6 @@ export async function fetchOptionsChain(
   strikes: string,
   apiKey: string
 ): Promise<any> {
-  const encodedTicker = encodeURIComponent(ticker);
   const encodedStrikes = encodeURIComponent(strikes);
   
   // Convert YYYY-MM-DD to YYMMDD
@@ -75,7 +73,7 @@ export async function fetchOptionsChain(
   
   console.log(`[Options] Formatting expiration from ${expiration} to ${formattedExpiration}`);
   
-  const url = `https://api.marketdata.app/v1/options/chain/${encodedTicker}/?expiration=${formattedExpiration}&side=${side}&strikeLimit=${encodedStrikes}`;
+  const url = `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=${side}&strikeLimit=${encodedStrikes}`;
   console.log(`[Options] Request URL: ${url}`);
   
   const { data, error } = await fetchWithRetry(url, apiKey);
