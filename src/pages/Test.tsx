@@ -72,6 +72,8 @@ export default function Test() {
           ticker: "SPY",
           expiration: "2026-01-16",
           strike_entry: 580,
+          strike_target: 640,
+          strike_protection: 540,
           hardcodedUrl: "https://api.marketdata.app/v1/options/chain/SPY/?expiration=2026-01-16&side=call&strikeLimit=580,640,540"
         }
       })
