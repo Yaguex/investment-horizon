@@ -65,18 +65,18 @@ const DIYNotes = () => {
               </div>
               {/* Text under $590 circle */}
               <div className="absolute left-1/2 -translate-x-1/2 top-8 flex flex-col items-center">
-                <span className="text-sm text-black">+46C at $80.45</span>
-                <span className="text-sm text-red-500">$-58,094</span>
+                <span className="text-xs text-black">+46C at $80.45</span>
+                <span className="text-xs text-red-500">$-58,094</span>
               </div>
               {/* Text under $570 circle */}
               <div className="absolute left-[25%] -translate-x-1/2 top-8 flex flex-col items-center">
-                <span className="text-sm text-black">-32P at $11.20</span>
-                <span className="text-sm text-green-500">$7,450</span>
+                <span className="text-xs text-black">-32P at $11.20</span>
+                <span className="text-xs text-green-500">$7,450</span>
               </div>
               {/* Text under $640 circle */}
               <div className="absolute left-[95%] -translate-x-1/2 top-8 flex flex-col items-center">
-                <span className="text-sm text-black">-46C at $50.22</span>
-                <span className="text-sm text-green-500">$32,622</span>
+                <span className="text-xs text-black">-46C at $50.22</span>
+                <span className="text-xs text-green-500">$32,622</span>
               </div>
             </div>
           </CardContent>
