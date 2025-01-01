@@ -93,7 +93,7 @@ export async function fetchOptionsChain(
     return null;
   }
   
-  console.log(`[Options] Raw options data:`, data);
+  console.log(`[Options] Raw options data:`, JSON.stringify(data, null, 2));
   console.log(`[Options] Data structure:`, {
     hasData: !!data,
     dataType: typeof data,
