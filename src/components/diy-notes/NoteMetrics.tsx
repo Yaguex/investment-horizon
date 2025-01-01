@@ -5,10 +5,21 @@ interface NoteMetricsProps {
 }
 
 export function NoteMetrics({ note }: NoteMetricsProps) {
+  // Calculate days until expiration
+  const today = new Date()
+  const expirationDate = note.expiration ? new Date(note.expiration) : today
+  const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  const yearsUntilExpiration = daysUntilExpiration / 365
+
+  // Calculate total dividend amount
+  const totalDividend = note.nominal * (note.dividend_yield / 100) * yearsUntilExpiration
+
   return (
     <div className="text-sm space-y-2 flex justify-between">
       <div>
-        <p className="text-black">Dividend: {note.dividend_yield}% annual (${formatNumber(note.nominal * note.dividend_yield / 100, 0)} total)</p>
+        <p className="text-black">
+          Dividend: {note.dividend_yield}% annual (${formatNumber(totalDividend, 0)} total)
+        </p>
         <p className="text-black">Bond yield: {note.bond_yield}% annual (${formatNumber(note.nominal * note.bond_yield / 100, 0)} total)</p>
         <p className="text-black">Max gain: 14.42% total ($130,034 total)</p>
         <p className="text-black">Note's net: <span className="text-green-600">$1,022</span></p>
