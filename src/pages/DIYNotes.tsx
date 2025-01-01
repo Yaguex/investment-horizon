@@ -1,10 +1,14 @@
-import Header from "@/components/Header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Edit, Trash, Circle } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useState } from "react"
+import Header from "@/components/Header"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Copy, Edit, Trash, Circle } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { DIYNoteForm } from "@/components/diy-notes/DIYNoteForm"
 
 const DIYNotes = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -12,10 +16,16 @@ const DIYNotes = () => {
       <main className="container mx-auto px-6 pt-24 pb-8">
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-foreground">DIY Notes</h1>
-          <Button size="lg" className="px-6">
+          <Button size="lg" className="px-6" onClick={() => setIsFormOpen(true)}>
             New Note
           </Button>
         </div>
+        
+        <DIYNoteForm 
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+        />
+
         <Card className="w-full">
           <CardContent className="p-6">
             <div className="flex justify-between items-center">
@@ -125,7 +135,7 @@ const DIYNotes = () => {
         </Card>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default DIYNotes;
+export default DIYNotes
