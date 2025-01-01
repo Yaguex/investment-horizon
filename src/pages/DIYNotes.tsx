@@ -84,15 +84,15 @@ const DIYNotes = () => {
               </div>
               <div className="flex gap-8 items-start">
                 <div className="text-center">
-                  <p className="text-red-500 text-xl font-bold">8.3%</p>
+                  <p className="text-red-600 text-xl font-bold">8.3%</p>
                   <p className="text-xs text-black">Max ROI<br />annualized</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-green-500 text-xl font-bold">58%</p>
+                  <p className="text-green-600 text-xl font-bold">58%</p>
                   <p className="text-xs text-black">Leverage<br />ratio</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-red-500 text-xl font-bold">2.0</p>
+                  <p className="text-red-600 text-xl font-bold">2.0</p>
                   <p className="text-xs text-black">Convexity<br />ratio</p>
                 </div>
               </div>
