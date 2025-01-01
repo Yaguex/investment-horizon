@@ -36,7 +36,7 @@ const DIYNotes = () => {
                 </button>
               </div>
             </div>
-            <div className="mt-12 mb-20 relative">
+            <div className="mt-12 relative">
               <div className="absolute left-1/2 -translate-x-1/2 -top-6 flex flex-col items-center z-10">
                 <span className="text-sm text-black mb-1">$590</span>
                 <Circle className="h-4 w-4 fill-black text-black" />
@@ -58,28 +58,26 @@ const DIYNotes = () => {
                 <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
               </div>
               <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
+                {/* Red section from left edge to $570 */}
                 <div className="absolute left-0 top-0 bottom-0 bg-red-500 w-[25%]"></div>
+                {/* Green section from $590 to $640 */}
                 <div className="absolute left-1/2 top-0 bottom-0 bg-green-500 w-[40%]"></div>
               </div>
+              {/* Text under $590 circle */}
               <div className="absolute left-1/2 -translate-x-1/2 top-8 flex flex-col items-center">
                 <span className="text-xs text-black">+46C at $80.45</span>
                 <span className="text-xs text-red-500">$-58,094</span>
               </div>
+              {/* Text under $570 circle */}
               <div className="absolute left-[25%] -translate-x-1/2 top-8 flex flex-col items-center">
                 <span className="text-xs text-black">-32P at $11.20</span>
                 <span className="text-xs text-green-500">$7,450</span>
               </div>
+              {/* Text under $640 circle */}
               <div className="absolute left-[90%] -translate-x-1/2 top-8 flex flex-col items-center">
                 <span className="text-xs text-black">-46C at $50.22</span>
                 <span className="text-xs text-green-500">$32,622</span>
               </div>
-            </div>
-            <div className="space-y-2 text-sm text-black">
-              <p>Dividend: 2.38% ($17,039)</p>
-              <p>Bond yield: 4.20% ($42,003)</p>
-              <p>Note's net: $1,022</p>
-              <p>Options premium: -$22,390</p>
-              <p>Max gain: 14.42% ($130,034)</p>
             </div>
           </CardContent>
         </Card>
