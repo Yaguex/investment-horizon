@@ -43,19 +43,6 @@ export async function fetchWithRetry(url: string, apiKey: string, retries = 3): 
   return { data: null, error: new Error('All retry attempts failed') };
 }
 
-export async function fetchStockQuote(ticker: string, apiKey: string): Promise<any> {
-  const url = `https://api.marketdata.app/v1/stocks/quotes/${ticker}/`;
-  
-  const { data, error } = await fetchWithRetry(url, apiKey);
-  
-  if (error) {
-    console.error(`[Stock] Error fetching stock quote:`, error);
-    return null;
-  }
-  
-  return data?.data?.[0];
-}
-
 export async function fetchOptionsChain(
   ticker: string,
   expiration: string,
@@ -63,8 +50,6 @@ export async function fetchOptionsChain(
   strikes: string,
   apiKey: string
 ): Promise<any> {
-  const encodedStrikes = encodeURIComponent(strikes);
-  
   // Convert YYYY-MM-DD to YYMMDD
   const formattedExpiration = expiration
     .split('-')
@@ -73,7 +58,7 @@ export async function fetchOptionsChain(
   
   console.log(`[Options] Formatting expiration from ${expiration} to ${formattedExpiration}`);
   
-  const url = `https://api.marketdata.app/v1/options/chain/${ticker}/${formattedExpiration}/${side}/${encodedStrikes}/`;
+  const url = `https://api.marketdata.app/v1/options/chain/${ticker}/${formattedExpiration}/${side}/${strikes}/`;
   console.log(`[Options] Request URL: ${url}`);
   
   const { data, error } = await fetchWithRetry(url, apiKey);
