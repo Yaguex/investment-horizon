@@ -49,7 +49,7 @@ export default function Test() {
       console.log('Test function response:', responseData)
       setData(responseData)
       
-      if (!responseData.callOptions.entry.mid && !responseData.callOptions.target.mid && !responseData.putOptions.protection.mid) {
+      if (!responseData.stock.mid && !responseData.callOptions.entry.mid && !responseData.putOptions.protection.mid) {
         console.warn('No option data found in response')
         toast.error('No option data found for the specified parameters')
       } else {
@@ -133,6 +133,15 @@ export default function Test() {
 
       {data && (
         <div className="mt-4 grid gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Stock Price</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Mid: ${data.stock.mid || 'N/A'}</p>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Call Options</CardTitle>
