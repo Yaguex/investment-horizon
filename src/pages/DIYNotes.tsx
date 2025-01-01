@@ -18,7 +18,10 @@ const DIYNotes = () => {
         <Card className="w-full">
           <CardContent className="p-6">
             <div className="flex justify-between items-center">
-              <span className="font-bold text-lg">SPY</span>
+              <div className="flex items-center">
+                <span className="font-bold text-lg mr-10">SPY</span>
+                <span className="text-sm text-gray-500">18 Dec 2024</span>
+              </div>
               <div className="flex gap-2">
                 <button className="p-2 hover:bg-accent rounded-md transition-colors">
                   <Copy className="h-5 w-5 text-muted-foreground" />
