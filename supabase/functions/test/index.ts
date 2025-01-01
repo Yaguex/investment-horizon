@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders, formatExpirationDate, findOptionByStrike, processOptionData } from './utils.ts';
-import { fetchOptionsChain } from './api.ts';
+import { fetchStockQuote, fetchOptionsChain } from './api.ts';
 
 console.log("Test function initialized");
 
@@ -22,6 +22,10 @@ serve(async (req) => {
     // Format the expiration date
     const formattedExpiration = formatExpirationDate(expiration);
     console.log("Formatted expiration:", formattedExpiration);
+
+    // Fetch stock quote
+    const stockQuote = await fetchStockQuote(ticker, apiKey);
+    console.log("Stock quote:", stockQuote);
 
     // Fetch call options
     const callOptions = await fetchOptionsChain(
@@ -45,6 +49,9 @@ serve(async (req) => {
 
     // Process the data
     const responseData = {
+      stock: {
+        mid: stockQuote?.mid || null
+      },
       callOptions: {
         entry: processOptionData(
           findOptionByStrike(callOptions, parseFloat(strike_entry)),
