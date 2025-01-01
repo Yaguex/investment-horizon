@@ -73,7 +73,7 @@ export async function fetchOptionsChain(
   
   console.log(`[Options] Formatting expiration from ${expiration} to ${formattedExpiration}`);
   
-  const url = `https://api.marketdata.app/v1/options/chain/${ticker}/${formattedExpiration}/${side}/${encodedStrikes}/`;
+  const url = `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=${side}&strikeLimit=${encodedStrikes}`;
   console.log(`[Options] Request URL: ${url}`);
   
   const { data, error } = await fetchWithRetry(url, apiKey);
