@@ -63,6 +63,45 @@ export type Database = {
         }
         Relationships: []
       }
+      diy_notes: {
+        Row: {
+          bond_yield: number | null
+          expiration: string | null
+          id: number
+          nominal: number | null
+          profile_id: string | null
+          strike_entry: number | null
+          strike_protection: number | null
+          strike_target: number | null
+          ticker: string | null
+          wiggle: number | null
+        }
+        Insert: {
+          bond_yield?: number | null
+          expiration?: string | null
+          id?: number
+          nominal?: number | null
+          profile_id?: string | null
+          strike_entry?: number | null
+          strike_protection?: number | null
+          strike_target?: number | null
+          ticker?: string | null
+          wiggle?: number | null
+        }
+        Update: {
+          bond_yield?: number | null
+          expiration?: string | null
+          id?: number
+          nominal?: number | null
+          profile_id?: string | null
+          strike_entry?: number | null
+          strike_protection?: number | null
+          strike_target?: number | null
+          ticker?: string | null
+          wiggle?: number | null
+        }
+        Relationships: []
+      }
       macro_data: {
         Row: {
           date: string | null
