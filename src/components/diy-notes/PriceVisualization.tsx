@@ -63,15 +63,13 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
       
       {/* Price rectangles */}
       <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
-        {/* Red rectangle */}
-        <div 
-          className="absolute left-0 top-0 bottom-0 bg-red-500"
-          style={{ 
-            width: note.strike_protection !== 0
-              ? `${leftPosition}%` 
-              : `${middlePosition}%`
-          }}
-        />
+        {/* Red rectangle - only show if strike_protection exists */}
+        {note.strike_protection !== 0 && (
+          <div 
+            className="absolute left-0 top-0 bottom-0 bg-red-500"
+            style={{ width: `${leftPosition}%` }}
+          />
+        )}
         {/* Green rectangle */}
         <div 
           className="absolute top-0 bottom-0 bg-green-500"
