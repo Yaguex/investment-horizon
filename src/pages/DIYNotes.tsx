@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy, Edit2, Trash2, Circle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const DIYNotes = () => {
   return (
@@ -24,17 +25,40 @@ const DIYNotes = () => {
                 <span className="text-sm text-gray-500 mr-8">$1,000,000</span>
                 <span className="text-sm text-gray-500">IV 72% | IVP 72%</span>
               </div>
-              <div className="flex gap-2">
-                <button className="p-2 hover:bg-accent rounded-md transition-colors">
-                  <Copy className="h-5 w-5 text-muted-foreground" />
-                </button>
-                <button className="p-2 hover:bg-accent rounded-md transition-colors">
-                  <Edit2 className="h-5 w-5 text-muted-foreground" />
-                </button>
-                <button className="p-2 hover:bg-accent rounded-md transition-colors">
-                  <Trash2 className="h-5 w-5 text-muted-foreground" />
-                </button>
-              </div>
+              <TooltipProvider>
+                <div className="flex gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                        <Copy className="h-5 w-5 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Duplicate note</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                        <Edit2 className="h-5 w-5 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit note</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="p-2 hover:bg-accent rounded-md transition-colors">
+                        <Trash2 className="h-5 w-5 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete note</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
             </div>
             <div className="mt-12 mb-20 relative">
               <div className="absolute left-1/2 -translate-x-1/2 -top-6 flex flex-col items-center z-10">
