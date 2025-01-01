@@ -51,7 +51,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
       )}
       
       {/* Strike Protection Circle (Left) */}
-      {note.strike_protection && note.strike_protection !== 0 && (
+      {note.strike_protection !== 0 && (
         <div 
           className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
           style={{ left: `${leftPosition}%` }}
@@ -67,7 +67,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         <div 
           className="absolute left-0 top-0 bottom-0 bg-red-500"
           style={{ 
-            width: note.strike_protection && note.strike_protection !== 0
+            width: note.strike_protection !== 0
               ? `${leftPosition}%` 
               : `${middlePosition}%`
           }}
