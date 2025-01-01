@@ -17,6 +17,7 @@ type TestFormProps = {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onTestFunction: () => void
   onHardcodedTest: () => void
+  onDirectContractTest: () => void
 }
 
 export default function TestForm({ 
@@ -24,7 +25,8 @@ export default function TestForm({
   loading, 
   onInputChange, 
   onTestFunction, 
-  onHardcodedTest 
+  onHardcodedTest,
+  onDirectContractTest
 }: TestFormProps) {
   return (
     <>
@@ -98,6 +100,14 @@ export default function TestForm({
           variant="secondary"
         >
           Test Hardcoded URL
+        </Button>
+
+        <Button
+          onClick={onDirectContractTest}
+          disabled={loading}
+          variant="outline"
+        >
+          Test Direct Contract
         </Button>
       </div>
     </>

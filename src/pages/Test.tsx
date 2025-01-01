@@ -101,6 +101,45 @@ export default function Test() {
     }
   }
 
+  const handleDirectContractTest = async () => {
+    try {
+      setLoading(true)
+      console.log('Sending request to direct contract URL')
+      
+      const { data: responseData, error } = await supabase.functions.invoke('test', {
+        body: {
+          ticker: "SPY",
+          expiration: "2026-01-16",
+          strike_entry: 585,
+          strike_target: 640,
+          strike_protection: 540,
+          directContractUrl: "https://api.marketdata.app/v1/options/chain/SPY260116C00585000/"
+        }
+      })
+      
+      if (error) {
+        console.error('Supabase function error:', error)
+        throw error
+      }
+      
+      console.log('Direct contract test response:', responseData)
+      setData(responseData)
+      
+      if (!responseData.callOptions?.entry?.mid) {
+        console.warn('No option data found in response')
+        toast.error('No option data found from direct contract URL')
+      } else {
+        console.log('Successfully received option data')
+        toast.success('Direct contract test executed successfully!')
+      }
+    } catch (error) {
+      console.error('Error calling direct contract test:', error)
+      toast.error('Error executing direct contract test')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Test Page</h1>
@@ -111,6 +150,7 @@ export default function Test() {
         onInputChange={handleInputChange}
         onTestFunction={handleTestFunction}
         onHardcodedTest={handleHardcodedTest}
+        onDirectContractTest={handleDirectContractTest}
       />
 
       <TestResults data={data} />
