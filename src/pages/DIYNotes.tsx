@@ -77,8 +77,8 @@ const DIYNotes = () => {
             <div className="text-sm space-y-2">
               <p className="text-black">Dividend: 2.38% ($17,039)</p>
               <p className="text-black">Bond yield: 4.20% ($42,003)</p>
-              <p className="text-black">Note's net: $1,022</p>
-              <p className="text-black">Options premium: -$22,390</p>
+              <p className="text-black">Note's net: <span className="text-green-600">$1,022</span></p>
+              <p className="text-black">Options premium: <span className="text-red-600">-$22,390</span></p>
               <p className="text-black">Max gain: 14.42% ($130,034)</p>
             </div>
           </CardContent>
