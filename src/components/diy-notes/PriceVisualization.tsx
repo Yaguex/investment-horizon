@@ -29,25 +29,29 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   return (
     <div className="mt-12 mb-20 relative">
       {/* Strike Entry Circle (Middle) */}
-      <div 
-        className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-        style={{ left: `${middlePosition}%` }}
-      >
-        <span className="text-sm text-black mb-1">${note.strike_entry}</span>
-        <Circle className="h-4 w-4 fill-black text-black" />
-      </div>
+      {note.strike_entry !== 0 && (
+        <div 
+          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+          style={{ left: `${middlePosition}%` }}
+        >
+          <span className="text-sm text-black mb-1">${note.strike_entry}</span>
+          <Circle className="h-4 w-4 fill-black text-black" />
+        </div>
+      )}
       
       {/* Strike Target Circle (Right) */}
-      <div 
-        className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-        style={{ left: `${rightPosition}%` }}
-      >
-        <span className="text-sm text-black mb-1">${note.strike_target}</span>
-        <Circle className="h-4 w-4 fill-black text-black" />
-      </div>
+      {note.strike_target !== 0 && (
+        <div 
+          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+          style={{ left: `${rightPosition}%` }}
+        >
+          <span className="text-sm text-black mb-1">${note.strike_target}</span>
+          <Circle className="h-4 w-4 fill-black text-black" />
+        </div>
+      )}
       
       {/* Strike Protection Circle (Left) */}
-      {note.strike_protection && (
+      {note.strike_protection && note.strike_protection !== 0 && (
         <div 
           className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
           style={{ left: `${leftPosition}%` }}
@@ -63,7 +67,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         <div 
           className="absolute left-0 top-0 bottom-0 bg-red-500"
           style={{ 
-            width: note.strike_protection 
+            width: note.strike_protection && note.strike_protection !== 0
               ? `${leftPosition}%` 
               : `${middlePosition}%`
           }}
@@ -79,27 +83,33 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
       </div>
       
       {/* Position indicators aligned with circles */}
-      <div 
-        className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-        style={{ left: `${middlePosition}%` }}
-      >
-        <span className="text-xs text-black"><span className="font-bold">+46C</span> at $80.45</span>
-        <span className="text-xs text-red-500">$-58,094</span>
-      </div>
-      <div 
-        className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-        style={{ left: `${leftPosition}%` }}
-      >
-        <span className="text-xs text-black"><span className="font-bold">-32P</span> at $11.20</span>
-        <span className="text-xs text-green-500">$7,450</span>
-      </div>
-      <div 
-        className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-        style={{ left: `${rightPosition}%` }}
-      >
-        <span className="text-xs text-black"><span className="font-bold">-46C</span> at $50.22</span>
-        <span className="text-xs text-green-500">$32,622</span>
-      </div>
+      {note.strike_entry !== 0 && (
+        <div 
+          className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+          style={{ left: `${middlePosition}%` }}
+        >
+          <span className="text-xs text-black"><span className="font-bold">+46C</span> at $80.45</span>
+          <span className="text-xs text-red-500">$-58,094</span>
+        </div>
+      )}
+      {note.strike_protection !== 0 && (
+        <div 
+          className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+          style={{ left: `${leftPosition}%` }}
+        >
+          <span className="text-xs text-black"><span className="font-bold">-32P</span> at $11.20</span>
+          <span className="text-xs text-green-500">$7,450</span>
+        </div>
+      )}
+      {note.strike_target !== 0 && (
+        <div 
+          className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+          style={{ left: `${rightPosition}%` }}
+        >
+          <span className="text-xs text-black"><span className="font-bold">-46C</span> at $50.22</span>
+          <span className="text-xs text-green-500">$32,622</span>
+        </div>
+      )}
     </div>
   )
 }
