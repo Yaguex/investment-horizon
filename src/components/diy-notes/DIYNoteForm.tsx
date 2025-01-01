@@ -8,6 +8,7 @@ import { NumberField } from "@/components/trade/form-fields/NumberField"
 import { DateField } from "@/components/trade/form-fields/DateField"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface DIYNoteFormValues {
   ticker: string
@@ -29,6 +30,7 @@ interface DIYNoteFormProps {
 
 export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   console.log("DIYNoteForm mounted with note:", note) // Debug log
+  const queryClient = useQueryClient()
   
   const form = useForm<DIYNoteFormValues>({
     defaultValues: note ? {
@@ -83,6 +85,9 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
         if (error) throw error
         toast.success('Note created successfully')
       }
+      
+      // Invalidate and refetch the notes query
+      await queryClient.invalidateQueries({ queryKey: ['diy-notes'] })
       
       onOpenChange(false)
       form.reset()
