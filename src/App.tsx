@@ -12,6 +12,7 @@ import ResetPassword from "./pages/ResetPassword"
 import TradeLog from "./pages/TradeLog"
 import Allocations from "./pages/Allocations"
 import EconomicCalendar from "./pages/EconomicCalendar"
+import DIYNotes from "./pages/DIYNotes"
 
 const queryClient = new QueryClient()
 
@@ -55,6 +56,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <EconomicCalendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/diy-notes"
+              element={
+                <ProtectedRoute>
+                  <DIYNotes />
                 </ProtectedRoute>
               }
             />
