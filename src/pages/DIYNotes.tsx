@@ -36,7 +36,7 @@ const DIYNotes = () => {
                 </button>
               </div>
             </div>
-            <div className="mt-12 relative">
+            <div className="mt-12 mb-20 relative">
               <div className="absolute left-1/2 -translate-x-1/2 -top-6 flex flex-col items-center z-10">
                 <span className="text-sm text-black mb-1">$590</span>
                 <Circle className="h-4 w-4 fill-black text-black" />
