@@ -74,12 +74,28 @@ const DIYNotes = () => {
                 <span className="text-xs text-green-500">$32,622</span>
               </div>
             </div>
-            <div className="text-sm space-y-2">
-              <p className="text-black">Dividend: 2.38% ($17,039)</p>
-              <p className="text-black">Bond yield: 4.20% ($42,003)</p>
-              <p className="text-black">Note's net: <span className="text-green-600">$1,022</span></p>
-              <p className="text-black">Options premium: <span className="text-red-600">-$22,390</span></p>
-              <p className="text-black">Max gain: 14.42% ($130,034)</p>
+            <div className="text-sm space-y-2 flex justify-between">
+              <div className="space-y-2">
+                <p className="text-black">Dividend: 2.38% ($17,039)</p>
+                <p className="text-black">Bond yield: 4.20% ($42,003)</p>
+                <p className="text-black">Note's net: <span className="text-green-600">$1,022</span></p>
+                <p className="text-black">Options premium: <span className="text-red-600">-$22,390</span></p>
+                <p className="text-black">Max gain: 14.42% ($130,034)</p>
+              </div>
+              <div className="flex gap-8 items-start">
+                <div className="text-center">
+                  <p className="text-red-500 text-xl font-bold">8.3%</p>
+                  <p className="text-xs text-black">Max ROI<br />annualized</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-green-500 text-xl font-bold">58%</p>
+                  <p className="text-xs text-black">Leverage<br />ratio</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-red-500 text-xl font-bold">2.0</p>
+                  <p className="text-xs text-black">Convexity<br />ratio</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
