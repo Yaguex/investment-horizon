@@ -36,6 +36,9 @@ const DIYNotes = () => {
                 </button>
               </div>
             </div>
+            <div className="mt-4 w-full bg-gray-100 rounded-lg p-4">
+              {/* Price range content will go here */}
+            </div>
           </CardContent>
         </Card>
       </main>
