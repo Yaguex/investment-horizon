@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
-import { format } from "date-fns"
 
 export default function Test() {
   const [loading, setLoading] = useState(false)
@@ -30,23 +29,31 @@ export default function Test() {
       setLoading(true)
       console.log('Sending request with data:', formData)
       
-      const { data, error } = await supabase.functions.invoke('test', {
-        body: {
-          ...formData,
-          strike_entry: parseFloat(formData.strike_entry),
-          strike_target: parseFloat(formData.strike_target),
-          strike_protection: parseFloat(formData.strike_protection)
-        }
+      const requestBody = {
+        ...formData,
+        strike_entry: parseFloat(formData.strike_entry),
+        strike_target: parseFloat(formData.strike_target),
+        strike_protection: parseFloat(formData.strike_protection)
+      }
+      console.log('Parsed request body:', requestBody)
+      
+      const { data: responseData, error } = await supabase.functions.invoke('test', {
+        body: requestBody
       })
       
-      if (error) throw error
+      if (error) {
+        console.error('Supabase function error:', error)
+        throw error
+      }
       
-      console.log('Test function response:', data)
-      setData(data)
+      console.log('Test function response:', responseData)
+      setData(responseData)
       
-      if (!data.stock.mid && !data.callOptions.entry.mid && !data.putOptions.protection.mid) {
+      if (!responseData.stock.mid && !responseData.callOptions.entry.mid && !responseData.putOptions.protection.mid) {
+        console.warn('No option data found in response')
         toast.error('No option data found for the specified parameters')
       } else {
+        console.log('Successfully received option data')
         toast.success('Test function executed successfully!')
       }
     } catch (error) {

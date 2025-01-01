@@ -19,14 +19,15 @@ async function fetchWithRetry(url: string, apiKey: string, retries = 3): Promise
       })
       
       if (!response.ok) {
+        console.error(`HTTP error! status: ${response.status}`)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
       const data = await response.json()
-      console.log(`Response data for ${url}:`, data)
+      console.log(`Raw API Response for ${url}:`, JSON.stringify(data, null, 2))
       return data
     } catch (error) {
-      console.error(`Attempt ${attempt} failed:`, error)
+      console.error(`Attempt ${attempt} failed for ${url}:`, error)
       if (attempt === retries) {
         console.log(`All ${retries} attempts failed for ${url}`)
         return null
@@ -46,8 +47,9 @@ serve(async (req) => {
 
   try {
     const { ticker, expiration, strike_entry, strike_target, strike_protection } = await req.json()
+    console.log("Received parameters:", { ticker, expiration, strike_entry, strike_target, strike_protection })
+    
     const apiKey = Deno.env.get('MARKETDATA_API_KEY')
-
     if (!apiKey) {
       throw new Error('MARKETDATA_API_KEY not found')
     }
@@ -57,45 +59,38 @@ serve(async (req) => {
     const strikeTarget = parseFloat(strike_target)
     const strikeProtection = parseFloat(strike_protection)
 
-    console.log(`Processing request for:
+    console.log(`Processing request with parsed values:
       ticker: ${ticker}
       expiration: ${expiration}
       strikes: ${strikeEntry}, ${strikeTarget}, ${strikeProtection}
     `)
 
     // Convert date format from YYYY-MM-DD to YYMMDD
-    const formattedExpiration = format(
-      parse(expiration, 'yyyy-MM-dd', new Date()),
-      'yyMMdd'
-    )
-
-    console.log(`Formatted expiration: ${formattedExpiration}`)
+    const parsedDate = parse(expiration, 'yyyy-MM-dd', new Date())
+    const formattedExpiration = format(parsedDate, 'yyMMdd')
+    console.log(`Formatted expiration date: ${formattedExpiration}`)
 
     // Fetch stock quote
-    const stockQuote = await fetchWithRetry(
-      `https://api.marketdata.app/v1/stocks/quotes/${ticker}/`,
-      apiKey
-    )
+    const stockQuoteUrl = `https://api.marketdata.app/v1/stocks/quotes/${ticker}/`
+    console.log("Fetching stock quote from:", stockQuoteUrl)
+    const stockQuote = await fetchWithRetry(stockQuoteUrl, apiKey)
+    console.log("Stock quote response:", stockQuote)
 
     // Fetch call options chain
-    const callOptions = await fetchWithRetry(
-      `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=call&strikeLimit=${strikeEntry},${strikeTarget}`,
-      apiKey
-    )
+    const callOptionsUrl = `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=call&strikeLimit=${strikeEntry},${strikeTarget}`
+    console.log("Fetching call options from:", callOptionsUrl)
+    const callOptions = await fetchWithRetry(callOptionsUrl, apiKey)
+    console.log("Call options response:", callOptions)
 
     // Fetch put options chain
-    const putOptions = await fetchWithRetry(
-      `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=put&strikeLimit=${strikeProtection}`,
-      apiKey
-    )
-
-    console.log('Stock quote response:', stockQuote)
-    console.log('Call options response:', callOptions)
-    console.log('Put options response:', putOptions)
+    const putOptionsUrl = `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=put&strikeLimit=${strikeProtection}`
+    console.log("Fetching put options from:", putOptionsUrl)
+    const putOptions = await fetchWithRetry(putOptionsUrl, apiKey)
+    console.log("Put options response:", putOptions)
 
     const responseData = {
       stock: {
-        mid: stockQuote?.mid || null
+        mid: stockQuote?.data?.[0]?.mid || null
       },
       callOptions: {
         entry: {
@@ -121,45 +116,69 @@ serve(async (req) => {
       }
     }
 
-    // Process call options data
+    // Process call options data with detailed logging
     if (callOptions?.data) {
-      const entryOption = callOptions.data.find((opt: any) => parseFloat(opt.strike) === strikeEntry)
-      const targetOption = callOptions.data.find((opt: any) => parseFloat(opt.strike) === strikeTarget)
+      console.log("Processing call options data...")
+      const entryOption = callOptions.data.find((opt: any) => {
+        console.log(`Comparing option strike ${opt.strike} with entry strike ${strikeEntry}`)
+        return parseFloat(opt.strike) === strikeEntry
+      })
+      const targetOption = callOptions.data.find((opt: any) => {
+        console.log(`Comparing option strike ${opt.strike} with target strike ${strikeTarget}`)
+        return parseFloat(opt.strike) === strikeTarget
+      })
 
       if (entryOption) {
+        console.log("Found entry option:", entryOption)
         responseData.callOptions.entry = {
           strike: strikeEntry,
           optionSymbol: entryOption.optionSymbol,
           mid: entryOption.mid,
           iv: entryOption.iv
         }
+      } else {
+        console.log(`No entry option found for strike ${strikeEntry}`)
       }
 
       if (targetOption) {
+        console.log("Found target option:", targetOption)
         responseData.callOptions.target = {
           strike: strikeTarget,
           optionSymbol: targetOption.optionSymbol,
           mid: targetOption.mid,
           iv: targetOption.iv
         }
+      } else {
+        console.log(`No target option found for strike ${strikeTarget}`)
       }
+    } else {
+      console.log("No call options data available")
     }
 
-    // Process put options data
+    // Process put options data with detailed logging
     if (putOptions?.data) {
-      const protectionOption = putOptions.data.find((opt: any) => parseFloat(opt.strike) === strikeProtection)
+      console.log("Processing put options data...")
+      const protectionOption = putOptions.data.find((opt: any) => {
+        console.log(`Comparing option strike ${opt.strike} with protection strike ${strikeProtection}`)
+        return parseFloat(opt.strike) === strikeProtection
+      })
 
       if (protectionOption) {
+        console.log("Found protection option:", protectionOption)
         responseData.putOptions.protection = {
           strike: strikeProtection,
           optionSymbol: protectionOption.optionSymbol,
           mid: protectionOption.mid,
           iv: protectionOption.iv
         }
+      } else {
+        console.log(`No protection option found for strike ${strikeProtection}`)
       }
+    } else {
+      console.log("No put options data available")
     }
 
-    console.log("Sending response:", responseData)
+    console.log("Final response data:", responseData)
     
     return new Response(
       JSON.stringify(responseData),
