@@ -31,6 +31,25 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
     }
   }
 
+  const handleClone = async () => {
+    try {
+      // Create a new note object without the id
+      const { id, ...noteWithoutId } = note
+
+      const { error } = await supabase
+        .from('diy_notes')
+        .insert([noteWithoutId])
+
+      if (error) throw error
+
+      toast.success('Note cloned successfully')
+      queryClient.invalidateQueries({ queryKey: ['diy-notes'] })
+    } catch (error) {
+      console.error('Error cloning note:', error)
+      toast.error('Error cloning note')
+    }
+  }
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center">
@@ -43,7 +62,7 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
         <div className="flex gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="cursor-pointer">
+              <button className="cursor-pointer" onClick={handleClone}>
                 <Copy className="h-5 w-5" />
               </button>
             </TooltipTrigger>
