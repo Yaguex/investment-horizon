@@ -1,7 +1,6 @@
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus } from "lucide-react";
 
 const DIYNotes = () => {
   const notes = [
@@ -26,7 +25,6 @@ const DIYNotes = () => {
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-foreground">DIY Notes</h1>
           <Button size="lg" className="px-6">
-            <Plus className="mr-2 h-5 w-5" />
             New Note
           </Button>
         </div>
@@ -37,15 +35,12 @@ const DIYNotes = () => {
               <CardContent className="p-8">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground mb-1">Ticker</div>
                     <div className="text-xl font-semibold">{note.ticker}</div>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground mb-1">Date</div>
                     <div className="text-xl font-semibold">{note.date}</div>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground mb-1">IV/IVP</div>
                     <div className="text-xl font-semibold">{note.iv}% / {note.ivp}%</div>
                   </div>
                 </div>
