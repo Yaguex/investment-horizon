@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Edit2, Trash2, Circle } from "lucide-react";
+import { Copy, Edit, Trash, Circle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const DIYNotes = () => {
@@ -40,7 +40,7 @@ const DIYNotes = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button className="cursor-pointer">
-                        <Edit2 className="h-5 w-5" />
+                        <Edit className="h-5 w-5" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -50,7 +50,7 @@ const DIYNotes = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button className="cursor-pointer">
-                        <Trash2 className="h-5 w-5" />
+                        <Trash className="h-5 w-5" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
