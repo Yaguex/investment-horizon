@@ -11,11 +11,11 @@ export default function Test() {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<any>(null)
   const [formData, setFormData] = useState({
-    ticker: "AAPL",
-    expiration: format(new Date(), "yyyy-MM-dd"),
-    strike_entry: "180",
-    strike_target: "185",
-    strike_protection: "175"
+    ticker: "SPY",
+    expiration: "2026-01-16",
+    strike_entry: "585",
+    strike_target: "640",
+    strike_protection: "540"
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
