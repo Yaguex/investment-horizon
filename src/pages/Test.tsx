@@ -2,14 +2,17 @@ import { Button } from "@/components/ui/button"
 import { TestTube } from "lucide-react"
 import { toast } from "sonner"
 import Header from "@/components/Header"
+import { supabase } from "@/integrations/supabase/client"
 
 const Test = () => {
   const handleTest = async () => {
     try {
-      const response = await fetch('/api/test')
-      const data = await response.json()
-      toast.success('Test successful!')
+      const { data, error } = await supabase.functions.invoke('test')
+      
+      if (error) throw error
+      
       console.log('Test response:', data)
+      toast.success('Test successful!')
     } catch (error) {
       console.error('Test error:', error)
       toast.error('Test failed. Check console for details.')
