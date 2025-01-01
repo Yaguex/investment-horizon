@@ -14,13 +14,18 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   // Calculate total dividend amount
   const totalDividend = note.nominal * (note.dividend_yield / 100) * yearsUntilExpiration
 
+  // Calculate total bond yield amount
+  const totalBondYield = note.nominal * (note.bond_yield / 100) * yearsUntilExpiration
+
   return (
     <div className="text-sm space-y-2 flex justify-between">
       <div>
         <p className="text-black">
           Dividend: {note.dividend_yield}% annual (${formatNumber(totalDividend, 0)} total)
         </p>
-        <p className="text-black">Bond yield: {note.bond_yield}% annual (${formatNumber(note.nominal * note.bond_yield / 100, 0)} total)</p>
+        <p className="text-black">
+          Bond yield: {note.bond_yield}% annual (${formatNumber(totalBondYield, 0)} total)
+        </p>
         <p className="text-black">Max gain: 14.42% total ($130,034 total)</p>
         <p className="text-black">Note's net: <span className="text-green-600">$1,022</span></p>
         <p className="text-black">Options premium: <span className="text-red-600">-$22,390</span></p>
