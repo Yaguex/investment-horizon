@@ -4,6 +4,7 @@ import PortfolioChart from "@/components/PortfolioChart";
 import AccumulatedReturnChart from "@/components/AccumulatedReturnChart";
 import PortfolioTable from "@/components/PortfolioTable";
 import { usePortfolioData } from "@/utils/portfolioData";
+import { APITest } from "@/components/APITest";
 
 const Index = () => {
   const { data, latestData } = usePortfolioData();
@@ -36,6 +37,11 @@ const Index = () => {
             value={`${latestData.ytdReturn}%`}
             isNumeric={true}
           />
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">API Test</h2>
+          <APITest />
         </div>
 
         <div className="space-y-8">
