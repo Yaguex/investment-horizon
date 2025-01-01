@@ -50,8 +50,12 @@ const DIYNotes = () => {
                 <Circle className="h-4 w-4 fill-black text-black" />
               </div>
               <div className="absolute left-[55%] -translate-x-1/2 -top-6 flex flex-col items-center z-10">
-                <span className="text-sm text-gray-500 mb-1">$595</span>
-                <Circle className="h-4 w-4 fill-gray-500 text-gray-500" />
+                <span className="text-sm text-gray-300 mb-1">$595</span>
+                <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
+              </div>
+              <div className="absolute left-[58%] -translate-x-1/2 -top-6 flex flex-col items-center z-10">
+                <span className="text-sm text-gray-300 mb-1">$595</span>
+                <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
               </div>
               <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
                 {/* Red section from left edge to $570 */}
