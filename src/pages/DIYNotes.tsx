@@ -19,7 +19,7 @@ const DIYNotes = () => {
           <CardContent className="p-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center">
-                <span className="font-bold text-lg mr-10">SPY</span>
+                <span className="font-bold text-lg mr-8">SPY</span>
                 <span className="text-sm text-gray-500 mr-8">18 Dec 2024</span>
                 <span className="text-sm text-gray-500">$1,000,000</span>
               </div>
