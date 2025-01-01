@@ -65,15 +65,10 @@ export async function fetchOptionsChain(
 ): Promise<any> {
   const encodedStrikes = encodeURIComponent(strikes);
   
-  // Convert YYYY-MM-DD to YYMMDD
-  const formattedExpiration = expiration
-    .split('-')
-    .map((part, index) => index === 0 ? part.slice(2) : part)
-    .join('');
+  // Remove the date formatting logic and use the expiration date as-is
+  console.log(`[Options] Using expiration date: ${expiration}`);
   
-  console.log(`[Options] Formatting expiration from ${expiration} to ${formattedExpiration}`);
-  
-  const url = `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=${side}&strikeLimit=${encodedStrikes}`;
+  const url = `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${expiration}&side=${side}&strikeLimit=${encodedStrikes}`;
   console.log(`[Options] Request URL: ${url}`);
   
   const { data, error } = await fetchWithRetry(url, apiKey);

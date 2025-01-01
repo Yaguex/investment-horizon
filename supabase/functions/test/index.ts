@@ -19,30 +19,26 @@ serve(async (req) => {
       throw new Error('MARKETDATA_API_KEY not found');
     }
 
-    // Format the expiration date
-    const formattedExpiration = formatExpirationDate(expiration);
-    console.log("Formatted expiration:", formattedExpiration);
-
     // Fetch stock quote
     const stockQuote = await fetchStockQuote(ticker, apiKey);
     console.log("Stock quote:", stockQuote);
 
-    // Fetch call options
+    // Fetch call options with both entry and target strikes
     const callOptions = await fetchOptionsChain(
       ticker,
-      formattedExpiration,
+      expiration,
       'call',
       `${strike_entry},${strike_target}`,
       apiKey
     );
     console.log("Call options:", callOptions);
 
-    // Fetch put options
+    // Fetch put options with protection strike
     const putOptions = await fetchOptionsChain(
       ticker,
-      formattedExpiration,
+      expiration,
       'put',
-      strike_protection,
+      `${strike_protection}`,
       apiKey
     );
     console.log("Put options:", putOptions);
