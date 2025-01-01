@@ -63,10 +63,10 @@ serve(async (req) => {
       strikes: ${strikeEntry}, ${strikeTarget}, ${strikeProtection}
     `)
 
-    // Convert date format from YYYY-MM-DD to MM/DD/YY
+    // Convert date format from YYYY-MM-DD to YYMMDD
     const formattedExpiration = format(
       parse(expiration, 'yyyy-MM-dd', new Date()),
-      'MM/dd/yy'
+      'yyMMdd'
     )
 
     console.log(`Formatted expiration: ${formattedExpiration}`)
