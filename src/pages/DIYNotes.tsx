@@ -62,15 +62,15 @@ const DIYNotes = () => {
                 <div className="absolute left-1/2 top-0 bottom-0 bg-green-500 w-[40%]"></div>
               </div>
               <div className="absolute left-1/2 -translate-x-1/2 top-8 flex flex-col items-center">
-                <span className="text-xs text-black">+46C at $80.45</span>
+                <span className="text-xs text-black"><span className="font-bold">+46C</span> at $80.45</span>
                 <span className="text-xs text-red-500">$-58,094</span>
               </div>
               <div className="absolute left-[25%] -translate-x-1/2 top-8 flex flex-col items-center">
-                <span className="text-xs text-black">-32P at $11.20</span>
+                <span className="text-xs text-black"><span className="font-bold">-32P</span> at $11.20</span>
                 <span className="text-xs text-green-500">$7,450</span>
               </div>
               <div className="absolute left-[90%] -translate-x-1/2 top-8 flex flex-col items-center">
-                <span className="text-xs text-black">-46C at $50.22</span>
+                <span className="text-xs text-black"><span className="font-bold">-46C</span> at $50.22</span>
                 <span className="text-xs text-green-500">$32,622</span>
               </div>
             </div>
