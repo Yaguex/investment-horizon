@@ -21,7 +21,8 @@ const DIYNotes = () => {
               <div className="flex items-center">
                 <span className="font-bold text-lg mr-8">SPY</span>
                 <span className="text-sm text-gray-500 mr-8">18 Dec 2024</span>
-                <span className="text-sm text-gray-500">$1,000,000</span>
+                <span className="text-sm text-gray-500 mr-8">$1,000,000</span>
+                <span className="text-sm text-gray-500">IV 72% | IVP 72%</span>
               </div>
               <div className="flex gap-2">
                 <button className="p-2 hover:bg-accent rounded-md transition-colors">
