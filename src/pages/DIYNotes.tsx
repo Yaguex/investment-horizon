@@ -41,6 +41,10 @@ const DIYNotes = () => {
                 <span className="text-sm text-black mb-1">$590</span>
                 <Circle className="h-4 w-4 fill-black text-black" />
               </div>
+              <div className="absolute left-[95%] -translate-x-1/2 -top-6 flex flex-col items-center">
+                <span className="text-sm text-black mb-1">$590</span>
+                <Circle className="h-4 w-4 fill-black text-black" />
+              </div>
               <div className="w-full bg-gray-100 rounded-lg h-4">
                 {/* Price range content will go here */}
               </div>
