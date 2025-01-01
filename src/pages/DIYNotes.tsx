@@ -41,7 +41,7 @@ const DIYNotes = () => {
                 <span className="text-sm text-black mb-1">$590</span>
                 <Circle className="h-4 w-4 fill-black text-black" />
               </div>
-              <div className="absolute left-[95%] -translate-x-1/2 -top-6 flex flex-col items-center z-10">
+              <div className="absolute left-[90%] -translate-x-1/2 -top-6 flex flex-col items-center z-10">
                 <span className="text-sm text-black mb-1">$640</span>
                 <Circle className="h-4 w-4 fill-black text-black" />
               </div>
@@ -61,7 +61,7 @@ const DIYNotes = () => {
                 {/* Red section from left edge to $570 */}
                 <div className="absolute left-0 top-0 bottom-0 bg-red-500 w-[25%]"></div>
                 {/* Green section from $590 to $640 */}
-                <div className="absolute left-1/2 top-0 bottom-0 bg-green-500 w-[45%]"></div>
+                <div className="absolute left-1/2 top-0 bottom-0 bg-green-500 w-[40%]"></div>
               </div>
               {/* Text under $590 circle */}
               <div className="absolute left-1/2 -translate-x-1/2 top-8 flex flex-col items-center">
@@ -74,7 +74,7 @@ const DIYNotes = () => {
                 <span className="text-xs text-green-500">$7,450</span>
               </div>
               {/* Text under $640 circle */}
-              <div className="absolute left-[95%] -translate-x-1/2 top-8 flex flex-col items-center">
+              <div className="absolute left-[90%] -translate-x-1/2 top-8 flex flex-col items-center">
                 <span className="text-xs text-black">-46C at $50.22</span>
                 <span className="text-xs text-green-500">$32,622</span>
               </div>
