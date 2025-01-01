@@ -22,7 +22,9 @@ async function fetchWithRetry(url: string, apiKey: string, retries = 3): Promise
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
-      return await response.json()
+      const data = await response.json()
+      console.log(`Response data for ${url}:`, data)
+      return data
     } catch (error) {
       console.error(`Attempt ${attempt} failed:`, error)
       if (attempt === retries) {
@@ -50,13 +52,24 @@ serve(async (req) => {
       throw new Error('MARKETDATA_API_KEY not found')
     }
 
-    console.log(`Processing request for ticker: ${ticker}, expiration: ${expiration}`)
+    // Convert strike prices to numbers
+    const strikeEntry = parseFloat(strike_entry)
+    const strikeTarget = parseFloat(strike_target)
+    const strikeProtection = parseFloat(strike_protection)
+
+    console.log(`Processing request for:
+      ticker: ${ticker}
+      expiration: ${expiration}
+      strikes: ${strikeEntry}, ${strikeTarget}, ${strikeProtection}
+    `)
 
     // Convert date format from YYYY-MM-DD to MM/DD/YY
     const formattedExpiration = format(
       parse(expiration, 'yyyy-MM-dd', new Date()),
       'MM/dd/yy'
     )
+
+    console.log(`Formatted expiration: ${formattedExpiration}`)
 
     // Fetch stock quote
     const stockQuote = await fetchWithRetry(
@@ -66,15 +79,19 @@ serve(async (req) => {
 
     // Fetch call options chain
     const callOptions = await fetchWithRetry(
-      `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=call&strikeLimit=${strike_entry},${strike_target}`,
+      `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=call&strikeLimit=${strikeEntry},${strikeTarget}`,
       apiKey
     )
 
     // Fetch put options chain
     const putOptions = await fetchWithRetry(
-      `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=put&strikeLimit=${strike_protection}`,
+      `https://api.marketdata.app/v1/options/chain/${ticker}/?expiration=${formattedExpiration}&side=put&strikeLimit=${strikeProtection}`,
       apiKey
     )
+
+    console.log('Stock quote response:', stockQuote)
+    console.log('Call options response:', callOptions)
+    console.log('Put options response:', putOptions)
 
     const responseData = {
       stock: {
@@ -82,13 +99,13 @@ serve(async (req) => {
       },
       callOptions: {
         entry: {
-          strike: strike_entry,
+          strike: strikeEntry,
           optionSymbol: null,
           mid: null,
           iv: null
         },
         target: {
-          strike: strike_target,
+          strike: strikeTarget,
           optionSymbol: null,
           mid: null,
           iv: null
@@ -96,7 +113,7 @@ serve(async (req) => {
       },
       putOptions: {
         protection: {
-          strike: strike_protection,
+          strike: strikeProtection,
           optionSymbol: null,
           mid: null,
           iv: null
@@ -106,12 +123,12 @@ serve(async (req) => {
 
     // Process call options data
     if (callOptions?.data) {
-      const entryOption = callOptions.data.find((opt: any) => opt.strike === strike_entry)
-      const targetOption = callOptions.data.find((opt: any) => opt.strike === strike_target)
+      const entryOption = callOptions.data.find((opt: any) => parseFloat(opt.strike) === strikeEntry)
+      const targetOption = callOptions.data.find((opt: any) => parseFloat(opt.strike) === strikeTarget)
 
       if (entryOption) {
         responseData.callOptions.entry = {
-          strike: strike_entry,
+          strike: strikeEntry,
           optionSymbol: entryOption.optionSymbol,
           mid: entryOption.mid,
           iv: entryOption.iv
@@ -120,7 +137,7 @@ serve(async (req) => {
 
       if (targetOption) {
         responseData.callOptions.target = {
-          strike: strike_target,
+          strike: strikeTarget,
           optionSymbol: targetOption.optionSymbol,
           mid: targetOption.mid,
           iv: targetOption.iv
@@ -130,11 +147,11 @@ serve(async (req) => {
 
     // Process put options data
     if (putOptions?.data) {
-      const protectionOption = putOptions.data.find((opt: any) => opt.strike === strike_protection)
+      const protectionOption = putOptions.data.find((opt: any) => parseFloat(opt.strike) === strikeProtection)
 
       if (protectionOption) {
         responseData.putOptions.protection = {
-          strike: strike_protection,
+          strike: strikeProtection,
           optionSymbol: protectionOption.optionSymbol,
           mid: protectionOption.mid,
           iv: protectionOption.iv

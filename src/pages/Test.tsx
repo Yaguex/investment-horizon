@@ -28,15 +28,27 @@ export default function Test() {
   const handleTestFunction = async () => {
     try {
       setLoading(true)
+      console.log('Sending request with data:', formData)
+      
       const { data, error } = await supabase.functions.invoke('test', {
-        body: formData
+        body: {
+          ...formData,
+          strike_entry: parseFloat(formData.strike_entry),
+          strike_target: parseFloat(formData.strike_target),
+          strike_protection: parseFloat(formData.strike_protection)
+        }
       })
       
       if (error) throw error
       
       console.log('Test function response:', data)
       setData(data)
-      toast.success('Test function executed successfully!')
+      
+      if (!data.stock.mid && !data.callOptions.entry.mid && !data.putOptions.protection.mid) {
+        toast.error('No option data found for the specified parameters')
+      } else {
+        toast.success('Test function executed successfully!')
+      }
     } catch (error) {
       console.error('Error calling test function:', error)
       toast.error('Error executing test function')
@@ -119,7 +131,7 @@ export default function Test() {
               <CardTitle>Stock Price</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Mid: ${data.stock.mid}</p>
+              <p>Mid: ${data.stock.mid || 'N/A'}</p>
             </CardContent>
           </Card>
 
@@ -131,15 +143,15 @@ export default function Test() {
               <div className="grid gap-4">
                 <div>
                   <h3 className="font-semibold">Entry ({data.callOptions.entry.strike})</h3>
-                  <p>Symbol: {data.callOptions.entry.optionSymbol}</p>
-                  <p>Mid: ${data.callOptions.entry.mid}</p>
-                  <p>IV: {data.callOptions.entry.iv}%</p>
+                  <p>Symbol: {data.callOptions.entry.optionSymbol || 'N/A'}</p>
+                  <p>Mid: ${data.callOptions.entry.mid || 'N/A'}</p>
+                  <p>IV: {data.callOptions.entry.iv || 'N/A'}%</p>
                 </div>
                 <div>
                   <h3 className="font-semibold">Target ({data.callOptions.target.strike})</h3>
-                  <p>Symbol: {data.callOptions.target.optionSymbol}</p>
-                  <p>Mid: ${data.callOptions.target.mid}</p>
-                  <p>IV: {data.callOptions.target.iv}%</p>
+                  <p>Symbol: {data.callOptions.target.optionSymbol || 'N/A'}</p>
+                  <p>Mid: ${data.callOptions.target.mid || 'N/A'}</p>
+                  <p>IV: {data.callOptions.target.iv || 'N/A'}%</p>
                 </div>
               </div>
             </CardContent>
@@ -152,9 +164,9 @@ export default function Test() {
             <CardContent>
               <div>
                 <h3 className="font-semibold">Protection ({data.putOptions.protection.strike})</h3>
-                <p>Symbol: {data.putOptions.protection.optionSymbol}</p>
-                <p>Mid: ${data.putOptions.protection.mid}</p>
-                <p>IV: {data.putOptions.protection.iv}%</p>
+                <p>Symbol: {data.putOptions.protection.optionSymbol || 'N/A'}</p>
+                <p>Mid: ${data.putOptions.protection.mid || 'N/A'}</p>
+                <p>IV: {data.putOptions.protection.iv || 'N/A'}%</p>
               </div>
             </CardContent>
           </Card>
