@@ -21,7 +21,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     <div className="text-sm space-y-2 flex justify-between">
       <div>
         <p className="text-black">
-          Dividend: {note.dividend_yield}% annual (${formatNumber(totalDividend, 0)} total)
+          Dividend yield: {note.dividend_yield}% annual (${formatNumber(totalDividend, 0)} total)
         </p>
         <p className="text-black">
           Bond yield: {note.bond_yield}% annual (${formatNumber(totalBondYield, 0)} total)
