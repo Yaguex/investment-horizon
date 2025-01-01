@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Edit2, Trash2, Triangle } from "lucide-react";
+import { Copy, Edit2, Trash2, Circle } from "lucide-react";
 
 const DIYNotes = () => {
   return (
@@ -21,7 +21,7 @@ const DIYNotes = () => {
               <div className="flex items-center">
                 <span className="font-bold text-lg mr-8">SPY</span>
                 <span className="text-sm text-gray-500 mr-8">18 Dec 2024</span>
-                <span className="text-sm text-gray-500 mr-8">$1,000,000</span>
+                <span className="text-sm text-gray-500 mr-30">$1,000,000</span>
                 <span className="text-sm text-gray-500">IV 72% | IVP 72%</span>
               </div>
               <div className="flex gap-2">
@@ -39,9 +39,9 @@ const DIYNotes = () => {
             <div className="mt-12 relative">
               <div className="absolute left-1/2 -translate-x-1/2 -top-6 flex flex-col items-center">
                 <span className="text-sm text-black mb-1">$590</span>
-                <Triangle className="h-4 w-4 fill-black text-black transform rotate-180" />
+                <Circle className="h-4 w-4 fill-black text-black" />
               </div>
-              <div className="w-full bg-gray-100 rounded-lg h-2">
+              <div className="w-full bg-gray-100 rounded-lg h-4">
                 {/* Price range content will go here */}
               </div>
             </div>
