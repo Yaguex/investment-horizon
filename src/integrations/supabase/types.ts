@@ -66,6 +66,7 @@ export type Database = {
       diy_notes: {
         Row: {
           bond_yield: number | null
+          dividend_yield: number | null
           expiration: string | null
           id: number
           nominal: number | null
@@ -78,6 +79,7 @@ export type Database = {
         }
         Insert: {
           bond_yield?: number | null
+          dividend_yield?: number | null
           expiration?: string | null
           id?: number
           nominal?: number | null
@@ -90,6 +92,7 @@ export type Database = {
         }
         Update: {
           bond_yield?: number | null
+          dividend_yield?: number | null
           expiration?: string | null
           id?: number
           nominal?: number | null

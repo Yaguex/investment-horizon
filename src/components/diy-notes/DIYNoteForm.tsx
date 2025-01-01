@@ -18,6 +18,7 @@ interface DIYNoteFormValues {
   strike_target: number
   strike_protection: number
   wiggle: number
+  dividend_yield: number
 }
 
 interface DIYNoteFormProps {
@@ -73,6 +74,11 @@ export function DIYNoteForm({ open, onOpenChange }: DIYNoteFormProps) {
               control={form.control}
               name="expiration"
               label="Expiration"
+            />
+            <NumberField
+              control={form.control}
+              name="dividend_yield"
+              label="Dividend Yield"
             />
             <NumberField
               control={form.control}
