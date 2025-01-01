@@ -1,10 +1,8 @@
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import TestForm from "@/components/test/TestForm"
+import TestResults from "@/components/test/TestResults"
 
 export default function Test() {
   const [loading, setLoading] = useState(false)
@@ -74,7 +72,7 @@ export default function Test() {
           ticker: "SPY",
           expiration: "2026-01-16",
           strike_entry: 580,
-          hardcodedUrl: "https://api.marketdata.app/v1/options/chain/SPY/?expiration=2026-01-16&side=Call&strikeLimit=580"
+          hardcodedUrl: "https://api.marketdata.app/v1/options/chain/SPY/?expiration=2026-01-16&side=call&strikeLimit=580,640,540"
         }
       })
       
@@ -105,127 +103,15 @@ export default function Test() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Test Page</h1>
       
-      <div className="grid gap-4 mb-4">
-        <div>
-          <Label htmlFor="ticker">Ticker</Label>
-          <Input
-            id="ticker"
-            name="ticker"
-            value={formData.ticker}
-            onChange={handleInputChange}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="expiration">Expiration Date</Label>
-          <Input
-            id="expiration"
-            name="expiration"
-            type="date"
-            value={formData.expiration}
-            onChange={handleInputChange}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="strike_entry">Entry Strike</Label>
-          <Input
-            id="strike_entry"
-            name="strike_entry"
-            type="number"
-            value={formData.strike_entry}
-            onChange={handleInputChange}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="strike_target">Target Strike</Label>
-          <Input
-            id="strike_target"
-            name="strike_target"
-            type="number"
-            value={formData.strike_target}
-            onChange={handleInputChange}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="strike_protection">Protection Strike</Label>
-          <Input
-            id="strike_protection"
-            name="strike_protection"
-            type="number"
-            value={formData.strike_protection}
-            onChange={handleInputChange}
-          />
-        </div>
-      </div>
+      <TestForm 
+        formData={formData}
+        loading={loading}
+        onInputChange={handleInputChange}
+        onTestFunction={handleTestFunction}
+        onHardcodedTest={handleHardcodedTest}
+      />
 
-      <div className="flex gap-4 mb-4">
-        <Button 
-          onClick={handleTestFunction}
-          disabled={loading}
-        >
-          {loading ? 'Fetching...' : 'Fetch Option Data'}
-        </Button>
-
-        <Button
-          onClick={handleHardcodedTest}
-          disabled={loading}
-          variant="secondary"
-        >
-          Test Hardcoded URL
-        </Button>
-      </div>
-
-      {data && (
-        <div className="mt-4 grid gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Stock Price</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Mid: ${data.stock.mid || 'N/A'}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Call Options</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                <div>
-                  <h3 className="font-semibold">Entry ({data.callOptions.entry.strike})</h3>
-                  <p>Symbol: {data.callOptions.entry.optionSymbol || 'N/A'}</p>
-                  <p>Mid: ${data.callOptions.entry.mid || 'N/A'}</p>
-                  <p>IV: {data.callOptions.entry.iv || 'N/A'}%</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Target ({data.callOptions.target.strike})</h3>
-                  <p>Symbol: {data.callOptions.target.optionSymbol || 'N/A'}</p>
-                  <p>Mid: ${data.callOptions.target.mid || 'N/A'}</p>
-                  <p>IV: {data.callOptions.target.iv || 'N/A'}%</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Put Options</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <h3 className="font-semibold">Protection ({data.putOptions.protection.strike})</h3>
-                <p>Symbol: {data.putOptions.protection.optionSymbol || 'N/A'}</p>
-                <p>Mid: ${data.putOptions.protection.mid || 'N/A'}</p>
-                <p>IV: {data.putOptions.protection.iv || 'N/A'}%</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <TestResults data={data} />
     </div>
   )
 }
