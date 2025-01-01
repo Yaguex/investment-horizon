@@ -1,16 +1,7 @@
 import { Copy, Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatDate, formatNumber } from "../trade/utils/formatters"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 import { useQueryClient } from "@tanstack/react-query"
@@ -21,7 +12,6 @@ interface NoteHeaderProps {
 }
 
 export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
 
   const handleDelete = async () => {
@@ -38,8 +28,6 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
     } catch (error) {
       console.error('Error deleting note:', error)
       toast.error('Error deleting note')
-    } finally {
-      setIsDeleteDialogOpen(false)
     }
   }
 
@@ -73,36 +61,16 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
               <p>Edit Note</p>
             </TooltipContent>
           </Tooltip>
-          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <DialogTrigger asChild>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="cursor-pointer">
-                    <Trash className="h-5 w-5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Delete Note</p>
-                </TooltipContent>
-              </Tooltip>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete Note</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to delete this note? This action cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="destructive" onClick={handleDelete}>
-                  Delete
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="cursor-pointer" onClick={handleDelete}>
+                <Trash className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete Note</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </TooltipProvider>
     </div>
