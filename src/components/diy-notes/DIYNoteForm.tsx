@@ -11,28 +11,35 @@ import { supabase } from "@/integrations/supabase/client"
 
 interface DIYNoteFormValues {
   ticker: string
-  nominal: number
-  expiration: Date
-  bond_yield: number
-  strike_entry: number
-  strike_target: number
-  strike_protection: number
-  wiggle: number
-  dividend_yield: number
+  nominal: number | null
+  expiration: Date | null
+  bond_yield: number | null
+  strike_entry: number | null
+  strike_target: number | null
+  strike_protection: number | null
+  wiggle: number | null
+  dividend_yield: number | null
 }
 
 interface DIYNoteFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  note?: any // We'll type this properly later
+  note?: any
 }
 
 export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   const form = useForm<DIYNoteFormValues>({
-    defaultValues: note ? {
-      ...note,
-      expiration: note.expiration ? new Date(note.expiration) : undefined
-    } : undefined
+    defaultValues: {
+      ticker: note?.ticker || "",
+      nominal: note?.nominal || null,
+      expiration: note?.expiration ? new Date(note.expiration) : null,
+      bond_yield: note?.bond_yield || null,
+      strike_entry: note?.strike_entry || null,
+      strike_target: note?.strike_target || null,
+      strike_protection: note?.strike_protection || null,
+      wiggle: note?.wiggle || null,
+      dividend_yield: note?.dividend_yield || null
+    }
   })
 
   const onSubmit = async (data: DIYNoteFormValues) => {
