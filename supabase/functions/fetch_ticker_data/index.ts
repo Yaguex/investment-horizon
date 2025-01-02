@@ -31,7 +31,7 @@ async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Pro
           mid: Number(data.mid[0]).toFixed(2),
           openInterest: data.openInterest[0],
           iv: Math.round(data.iv[0] * 100),
-          delta: Math.round(data.delta[0]),
+          delta: Number(data.delta[0]).toFixed(2),
           intrinsicValue: Number(data.intrinsicValue[0]).toFixed(2),
           extrinsicValue: Number(data.extrinsicValue[0]).toFixed(2)
         };
