@@ -22,6 +22,7 @@ interface TradeActionsProps {
   bucketId?: number
   tradeId?: number
   ticker?: string
+  portfolioId?: number
 }
 
 export const TradeActions = ({ 
@@ -34,9 +35,10 @@ export const TradeActions = ({
   bucket,
   bucketId,
   tradeId,
-  ticker
+  ticker,
+  portfolioId
 }: TradeActionsProps) => {
-  console.log('TradeActions rendered with:', { isSubRow, id, tradeId, ticker })
+  console.log('TradeActions rendered with:', { isSubRow, id, tradeId, ticker, portfolioId })
   
   const [isEditBucketOpen, setIsEditBucketOpen] = useState(false)
   const queryClient = useQueryClient()
@@ -53,6 +55,96 @@ export const TradeActions = ({
     
     // Always call onEdit() regardless of row type
     onEdit()
+  }
+
+  const handleAddSubposition = async () => {
+    if (!profileId || !tradeId || !ticker || !portfolioId) {
+      console.error('Missing required fields for adding subposition:', { profileId, tradeId, ticker, portfolioId })
+      toast({
+        title: "Error",
+        description: "Missing required fields for adding subposition",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      console.log('Starting new subposition creation for trade:', tradeId)
+      
+      const { data: maxIdResult } = await supabase
+        .from('trade_log')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single()
+
+      const newId = (maxIdResult?.id || 0) + 1
+      console.log('Generated new id:', newId)
+
+      const today = new Date().toISOString().split('T')[0]
+
+      const { error } = await supabase
+        .from('trade_log')
+        .insert({
+          id: newId,
+          profile_id: profileId,
+          portfolio_id: portfolioId,
+          trade_id: tradeId,
+          ticker: ticker,
+          row_type: 'child',
+          trade_status: 'open',
+          vehicle: 'Stock',
+          order: 'Buy to open',
+          qty: 0,
+          date_entry: today,
+          date_expiration: null,
+          date_exit: null,
+          days_in_trade: null,
+          strike_start: null,
+          strike_end: null,
+          premium: null,
+          stock_price: null,
+          "risk_%": null,
+          "risk_$": null,
+          commission: null,
+          pnl: null,
+          roi: null,
+          roi_yearly: null,
+          roi_portfolio: null,
+          be_0: null,
+          be_1: null,
+          be_2: null,
+          delta: null,
+          iv: null,
+          iv_percentile: null,
+          notes: null
+        })
+
+      if (error) {
+        console.error('Error adding subposition:', error)
+        toast({
+          title: "Error",
+          description: "Failed to add subposition",
+          variant: "destructive"
+        })
+        return
+      }
+
+      console.log('Successfully added subposition')
+      queryClient.invalidateQueries({ queryKey: ['trades'] })
+      
+      toast({
+        title: "Success",
+        description: "New subposition added successfully"
+      })
+    } catch (error) {
+      console.error('Error in handleAddSubposition:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleAddTrade = async () => {
@@ -184,7 +276,7 @@ export const TradeActions = ({
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
+                  <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddSubposition} />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Add Sub-position</p>
