@@ -8,26 +8,37 @@ const corsHeaders = {
 async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Promise<any> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const response = await fetch(`https://api.marketdata.app/v1/options/quotes/${symbol}/`, {
+      const url = `https://api.marketdata.app/v1/options/quotes/${symbol}/`;
+      console.log(`[${new Date().toISOString()}] Attempting to fetch data from: ${url} (attempt ${attempt})`);
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Token ${apiKey}`,
         }
       });
 
+      console.log(`[${new Date().toISOString()}] Response status:`, response.status);
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log(`[${new Date().toISOString()}] Raw API response:`, JSON.stringify(data));
+      
       if (data.data && data.data.length > 0) {
         return data.data[0];
       }
+      
+      console.log(`[${new Date().toISOString()}] No data found for symbol: ${symbol}`);
       return null;
     } catch (error) {
+      console.error(`[${new Date().toISOString()}] Error in attempt ${attempt}:`, error);
       if (attempt === retries) {
-        console.error(`Failed to fetch data after ${retries} attempts:`, error);
+        console.error(`[${new Date().toISOString()}] Failed to fetch data after ${retries} attempts:`, error);
         return null;
       }
+      console.log(`[${new Date().toISOString()}] Waiting 5 seconds before retry...`);
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
   }
@@ -62,6 +73,7 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       throw new Error('MARKETDATA_API_KEY not found');
     }
+    console.log(`[${new Date().toISOString()}] API Key found, length:`, apiKey.length);
 
     const marketData = await fetchOptionData(symbol, apiKey);
     console.log(`[${new Date().toISOString()}] Market data:`, marketData);
