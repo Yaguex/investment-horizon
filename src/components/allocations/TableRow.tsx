@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Allocation } from "@/types/allocations"
 import { formatNumber } from "../trade/utils/formatters"
 import { getRowBackground, getStickyBackground } from "../trade/utils/styles"
-import { TradeActions } from "../trade/actions/TradeActions"
+import { AllocationActions } from "./actions/AllocationActions"
 import { EditAllocationSheet } from "./EditAllocationSheet"
 
 interface TableRowProps {
@@ -33,7 +33,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
         className={cn("group", getRowBackground(isSubRow, "open", 0))}
       >
         <TableCell className={cn("sticky left-0 z-10 w-[100px]", getStickyBackground(isSubRow, "open", 0))}>
-          <TradeActions 
+          <AllocationActions 
             isSubRow={isSubRow}
             isExpanded={isExpanded}
             onToggle={onToggle}
