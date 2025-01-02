@@ -26,10 +26,10 @@ export function TextField<T extends FieldValues>({
             <Input 
               {...field} 
               type={type}
-              value={field.value || ''}
+              value={field.value === null || field.value === undefined ? '' : field.value}
               onChange={e => {
                 const value = type === "number" ? 
-                  e.target.value ? Number(e.target.value) : null 
+                  e.target.value === '' ? null : Number(e.target.value)
                   : e.target.value;
                 field.onChange(value);
               }}
