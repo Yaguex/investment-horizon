@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowDown, ArrowUp, Edit, Plus } from "lucide-react"
+import { ArrowDown, ArrowUp, Edit, Plus, X } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
