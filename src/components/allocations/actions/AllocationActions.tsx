@@ -187,7 +187,7 @@ export const AllocationActions = ({
                   <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Add Sub-position</p>
+                  <p>Add Sub-bucket</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -201,7 +201,7 @@ export const AllocationActions = ({
                 <X className="h-4 w-4 cursor-pointer" onClick={handleDeleteTrade} />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Delete Sub-position</p>
+                <p>Delete Sub-bucket</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -216,7 +216,7 @@ export const AllocationActions = ({
               />
             </TooltipTrigger>
             <TooltipContent>
-              <p>{isSubRow ? "Edit Sub-position" : "Edit Position"}</p>
+              <p>{isSubRow ? "Edit Sub-bucket" : "Edit Bucket"}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

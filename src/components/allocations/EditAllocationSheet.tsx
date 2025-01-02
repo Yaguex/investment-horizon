@@ -100,7 +100,7 @@ export function EditAllocationSheet({ isOpen, onClose, allocation }: EditAllocat
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Edit Allocation</SheetTitle>
+          <SheetTitle>Edit Bucket</SheetTitle>
         </SheetHeader>
         
         <Form {...form}>
