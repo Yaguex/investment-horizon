@@ -22,15 +22,16 @@ export const TableRow = ({
   tradeStatus 
 }: TableRowProps) => {
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
+  const effectiveTradeStatus = isSubRow ? row.trade_status as "open" | "closed" : tradeStatus
 
   return (
     <TableRowComponent className={cn(
       "group",
-      getRowBackground(isSubRow, tradeStatus, row.pnl)
+      getRowBackground(isSubRow, effectiveTradeStatus, row.pnl)
     )}>
       <TableCell className={cn(
         "sticky left-0",
-        getStickyBackground(isSubRow, tradeStatus, row.pnl)
+        getStickyBackground(isSubRow, effectiveTradeStatus, row.pnl)
       )}>
         <TradeActions
           isSubRow={isSubRow}
@@ -40,7 +41,7 @@ export const TableRow = ({
           id={row.id}
           profileId={row.profile_id}
           tradeId={row.trade_id}
-          tradeStatus={tradeStatus}
+          tradeStatus={effectiveTradeStatus}
         />
       </TableCell>
       
