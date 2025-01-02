@@ -37,7 +37,6 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle, tradeSta
             id={row.id}
             profileId={row.profile_id}
             ticker={row.ticker}
-            portfolioId={row.portfolio_id}
           />
         </TableCell>
         <TableCell className={cn("sticky left-[100px] z-10 min-w-[200px] font-bold", getStickyBackground(isSubRow, row.trade_status, row.pnl))}>{row.ticker}</TableCell>
