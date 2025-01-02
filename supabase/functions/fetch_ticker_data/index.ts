@@ -5,10 +5,38 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Promise<any> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(`https://api.marketdata.app/v1/options/quotes/${symbol}/`, {
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.data && data.data.length > 0) {
+        return data.data[0];
+      }
+      return null;
+    } catch (error) {
+      if (attempt === retries) {
+        console.error(`Failed to fetch data after ${retries} attempts:`, error);
+        return null;
+      }
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   console.log(`[${new Date().toISOString()}] Received request`);
 
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -29,10 +57,27 @@ Deno.serve(async (req) => {
     const symbol = `${ticker.toUpperCase()}${year}${month}${day}${optionType}${strikeStr}`;
     console.log(`[${new Date().toISOString()}] Generated symbol: ${symbol}`);
 
+    // Fetch market data
+    const apiKey = Deno.env.get('MARKETDATA_API_KEY');
+    if (!apiKey) {
+      throw new Error('MARKETDATA_API_KEY not found');
+    }
+
+    const marketData = await fetchOptionData(symbol, apiKey);
+    console.log(`[${new Date().toISOString()}] Market data:`, marketData);
+
     return new Response(
       JSON.stringify({ 
         success: true,
         symbol,
+        marketData: marketData ? {
+          mid: marketData.mid,
+          openInterest: marketData.openInterest,
+          iv: marketData.iv,
+          delta: marketData.delta,
+          intrinsicValue: marketData.intrinsicValue,
+          extrinsicValue: marketData.extrinsicValue
+        } : null,
         timestamp: new Date().toISOString()
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

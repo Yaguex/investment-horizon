@@ -17,10 +17,20 @@ interface TestFormValues {
   strike: number | null
 }
 
+interface MarketData {
+  mid: number
+  openInterest: number
+  iv: number
+  delta: number
+  intrinsicValue: number
+  extrinsicValue: number
+}
+
 const Test = () => {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [generatedSymbol, setGeneratedSymbol] = useState<string | null>(null)
+  const [marketData, setMarketData] = useState<MarketData | null>(null)
 
   const form = useForm<TestFormValues>({
     defaultValues: {
@@ -34,6 +44,7 @@ const Test = () => {
   const onSubmit = async (data: TestFormValues) => {
     console.log("Submitting test form with data:", data)
     setIsLoading(true)
+    setMarketData(null)
 
     try {
       const { data: response, error } = await supabase.functions.invoke('fetch_ticker_data', {
@@ -55,8 +66,9 @@ const Test = () => {
         return
       }
 
-      console.log("Generated symbol:", response)
+      console.log("API response:", response)
       setGeneratedSymbol(response.symbol)
+      setMarketData(response.marketData)
     } catch (error) {
       console.error("Error in symbol generation:", error)
       toast({
@@ -120,6 +132,24 @@ const Test = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-lg font-mono">{generatedSymbol}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {marketData && (
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>Market Data</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p><span className="font-semibold">Mid:</span> {marketData.mid}</p>
+                  <p><span className="font-semibold">Open Interest:</span> {marketData.openInterest}</p>
+                  <p><span className="font-semibold">IV:</span> {marketData.iv}</p>
+                  <p><span className="font-semibold">Delta:</span> {marketData.delta}</p>
+                  <p><span className="font-semibold">Intrinsic Value:</span> {marketData.intrinsicValue}</p>
+                  <p><span className="font-semibold">Extrinsic Value:</span> {marketData.extrinsicValue}</p>
+                </div>
               </CardContent>
             </Card>
           )}
