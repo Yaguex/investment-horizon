@@ -2,30 +2,16 @@ import { supabase } from "@/integrations/supabase/client"
 
 export const createSubPosition = async (
   profileId: string | undefined,
-  parentId: number | undefined,
+  tradeId: number | undefined,
   parentStatus: string
 ) => {
-  if (!profileId || !parentId) {
-    console.error('Missing required fields for adding sub-position:', { profileId, parentId })
+  if (!profileId || !tradeId) {
+    console.error('Missing required fields for adding sub-position:', { profileId, tradeId })
     throw new Error('Missing required fields for adding sub-position')
   }
 
-  console.log('Starting new sub-position creation for parent id:', parentId)
+  console.log('Starting new sub-position creation for trade:', tradeId)
   
-  // Get the parent's trade_id and ticker
-  const { data: parentTrade, error: parentError } = await supabase
-    .from('trade_log')
-    .select('trade_id, ticker')
-    .eq('id', parentId)
-    .single()
-
-  if (parentError || !parentTrade) {
-    console.error('Error fetching parent trade:', parentError)
-    throw new Error('Could not fetch parent trade')
-  }
-
-  console.log('Found parent trade:', parentTrade)
-
   const { data: maxIdResult } = await supabase
     .from('trade_log')
     .select('id')
@@ -41,8 +27,7 @@ export const createSubPosition = async (
     .insert({
       id: newId,
       profile_id: profileId,
-      trade_id: parentTrade.trade_id,
-      ticker: parentTrade.ticker, // Copy the ticker from parent
+      trade_id: tradeId,
       row_type: 'child',
       trade_status: parentStatus,
       date_entry: new Date().toISOString().split('T')[0]
@@ -53,6 +38,6 @@ export const createSubPosition = async (
     throw error
   }
 
-  console.log('Successfully added sub-position with parent trade_id:', parentTrade.trade_id)
+  console.log('Successfully added sub-position')
   return newId
 }
