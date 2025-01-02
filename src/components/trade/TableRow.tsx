@@ -1,8 +1,9 @@
 import React, { useState } from "react"
-import { TableRow as TableRowComponent } from "@/components/ui/table"
+import { TableCell, TableRow as TableRowComponent } from "@/components/ui/table"
 import { TradeActions } from "./actions/TradeActions"
 import { EditTradeSheet } from "./EditTradeSheet"
 import { TradeData } from "./types"
+import { cn } from "@/lib/utils"
 
 interface TableRowProps {
   row: TradeData
