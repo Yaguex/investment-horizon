@@ -9,6 +9,7 @@ import { formatNumber } from "../trade/utils/formatters"
 import { getRowBackground, getStickyBackground } from "../trade/utils/styles"
 import { AllocationActions } from "./actions/AllocationActions"
 import { EditAllocationSheet } from "./EditAllocationSheet"
+import { EditSubBucketSheet } from "./EditSubBucketSheet"
 
 interface TableRowProps {
   row: Allocation
@@ -61,11 +62,19 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
       </TableRowBase>
       
       {isEditSheetOpen && (
-        <EditAllocationSheet
-          isOpen={isEditSheetOpen}
-          onClose={() => setIsEditSheetOpen(false)}
-          allocation={row}
-        />
+        isSubRow ? (
+          <EditSubBucketSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            allocation={row}
+          />
+        ) : (
+          <EditAllocationSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            allocation={row}
+          />
+        )
       )}
     </>
   )
