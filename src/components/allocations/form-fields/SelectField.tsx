@@ -1,15 +1,16 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Control, FieldValues, Path } from "react-hook-form"
+import { Control } from "react-hook-form"
+import { AllocationTradeFormValues } from "@/types/forms"
 
-interface SelectFieldProps<T extends FieldValues> {
-  control: Control<T>
-  name: Path<T>
+interface SelectFieldProps {
+  control: Control<AllocationTradeFormValues>
+  name: keyof AllocationTradeFormValues
   label: string
   options: { label: string; value: string }[]
 }
 
-export function SelectField<T extends FieldValues>({ control, name, label, options }: SelectFieldProps<T>) {
+export function SelectField({ control, name, label, options }: SelectFieldProps) {
   return (
     <FormField
       control={control}
