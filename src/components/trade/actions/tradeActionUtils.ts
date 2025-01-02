@@ -12,10 +12,10 @@ export const createSubPosition = async (
 
   console.log('Starting new sub-position creation for parent id:', parentId)
   
-  // First, get the parent's trade_id
+  // Get the parent's trade_id and ticker
   const { data: parentTrade, error: parentError } = await supabase
     .from('trade_log')
-    .select('trade_id')
+    .select('trade_id, ticker')
     .eq('id', parentId)
     .single()
 
@@ -24,7 +24,7 @@ export const createSubPosition = async (
     throw new Error('Could not fetch parent trade')
   }
 
-  console.log('Found parent trade with trade_id:', parentTrade.trade_id)
+  console.log('Found parent trade:', parentTrade)
 
   const { data: maxIdResult } = await supabase
     .from('trade_log')
@@ -41,7 +41,8 @@ export const createSubPosition = async (
     .insert({
       id: newId,
       profile_id: profileId,
-      trade_id: parentTrade.trade_id, // Use parent's trade_id instead of its id
+      trade_id: parentTrade.trade_id,
+      ticker: parentTrade.ticker, // Copy the ticker from parent
       row_type: 'child',
       trade_status: parentStatus,
       date_entry: new Date().toISOString().split('T')[0]
