@@ -26,8 +26,15 @@ async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Pro
       const data = await response.json();
       console.log(`[${new Date().toISOString()}] Raw API response:`, JSON.stringify(data));
       
-      if (data.data && data.data.length > 0) {
-        return data.data[0];
+      if (data.s === 'ok' && data.mid && data.mid.length > 0) {
+        return {
+          mid: data.mid[0],
+          openInterest: data.openInterest[0],
+          iv: data.iv[0],
+          delta: data.delta[0],
+          intrinsicValue: data.intrinsicValue[0],
+          extrinsicValue: data.extrinsicValue[0]
+        };
       }
       
       console.log(`[${new Date().toISOString()}] No data found for symbol: ${symbol}`);
