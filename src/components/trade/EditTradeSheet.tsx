@@ -147,7 +147,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Edit {trade.row_type === 'parent' ? 'Parent' : 'Child'} Trade</SheetTitle>
+          <SheetTitle>Edit {trade.row_type === 'parent' ? 'Parent' : 'Sub-position'}</SheetTitle>
         </SheetHeader>
         
         <Form {...form}>
