@@ -28,6 +28,21 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
     return ""
   }
 
+  const formatDelta = (delta: number | undefined | null) => {
+    if (delta === undefined || delta === null) return "0"
+    
+    // Special case: if weight_target is 0
+    if (row.weight_target === 0) {
+      return row.weight_actual && row.weight_actual > 0 ? "100" : "0"
+    }
+    
+    // Cap display values at ±100%
+    if (delta > 100) return "100"
+    if (delta < -100) return "-100"
+    
+    return formatNumber(delta, 0)
+  }
+
   return (
     <>
       <TableRowBase 
@@ -55,7 +70,7 @@ export const TableRow = ({ row, isExpanded, isSubRow = false, onToggle }: TableR
         <TableCell className="min-w-[140px]">${formatNumber(row.value_actual, 0)}</TableCell>
         <TableCell className="min-w-[140px]">{formatNumber(row.weight_target, 2)}%</TableCell>
         <TableCell className="min-w-[140px]">{formatNumber(row.weight_actual, 2)}%</TableCell>
-        <TableCell className={cn("min-w-[100px] font-bold", getDeltaColor(row.delta))}>{formatNumber(row.delta, 0)}%</TableCell>
+        <TableCell className={cn("min-w-[100px] font-bold", getDeltaColor(row.delta))}>{formatDelta(row.delta)}%</TableCell>
         <TableCell className="min-w-[160px]">{row.risk_profile}</TableCell>
         <TableCell className="min-w-[140px]">{formatNumber(row["dividend_%"], 2)}{!isSubRow ? '' : '%'}</TableCell>
         <TableCell className="min-w-[160px]">${formatNumber(row["dividend_$"], 0)}</TableCell>
