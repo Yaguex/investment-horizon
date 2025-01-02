@@ -13,6 +13,7 @@ import TradeLog from "./pages/TradeLog"
 import Allocations from "./pages/Allocations"
 import EconomicCalendar from "./pages/EconomicCalendar"
 import DIYNotes from "./pages/DIYNotes"
+import Test from "./pages/Test"
 
 const queryClient = new QueryClient()
 
@@ -67,11 +68,17 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/test"
+              element={
+                <ProtectedRoute>
+                  <Test />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 )
-
-export default App
