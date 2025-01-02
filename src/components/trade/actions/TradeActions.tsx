@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowDown, ArrowUp, Edit, Plus } from "lucide-react"
+import { ArrowDown, ArrowUp, Edit, X } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip"
 import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
-import { createSubPosition } from "./tradeActionUtils"
+import { createSubPosition, deleteSubPosition } from "./tradeActionUtils"
 
 interface TradeActionsProps {
   isSubRow: boolean
@@ -54,6 +54,28 @@ export const TradeActions = ({
     }
   }
 
+  const handleDeleteSubPosition = async () => {
+    try {
+      if (!id) throw new Error('Missing sub-position id')
+      
+      await deleteSubPosition(id)
+      
+      queryClient.invalidateQueries({ queryKey: ['trades'] })
+      
+      toast({
+        title: "Success",
+        description: "Sub-position deleted successfully"
+      })
+    } catch (error) {
+      console.error('Error in handleDeleteSubPosition:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete sub-position",
+        variant: "destructive"
+      })
+    }
+  }
+
   return (
     <div className="flex items-center gap-2">
       {!isSubRow && (
@@ -80,6 +102,22 @@ export const TradeActions = ({
             </Tooltip>
           </TooltipProvider>
         </>
+      )}
+      
+      {isSubRow && (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <X 
+                className="h-4 w-4 cursor-pointer text-red-500 hover:text-red-600" 
+                onClick={handleDeleteSubPosition}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete Sub-position</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
       
       <TooltipProvider delayDuration={0}>

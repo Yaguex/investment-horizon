@@ -56,3 +56,20 @@ export const createSubPosition = async (
   console.log('Successfully added sub-position with parent trade_id:', parentTrade.trade_id)
   return newId
 }
+
+export const deleteSubPosition = async (id: number) => {
+  console.log('Starting sub-position deletion for id:', id)
+  
+  const { error } = await supabase
+    .from('trade_log')
+    .delete()
+    .eq('id', id)
+    .eq('row_type', 'child')
+
+  if (error) {
+    console.error('Error deleting sub-position:', error)
+    throw error
+  }
+
+  console.log('Successfully deleted sub-position with id:', id)
+}
