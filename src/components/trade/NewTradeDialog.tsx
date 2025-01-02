@@ -88,6 +88,6 @@ export function NewTradeDialog() {
   }
 
   return (
-    <Button onClick={handleNewTrade}>New Trade</Button>
+    <Button onClick={handleNewTrade}>New Position</Button>
   )
 }

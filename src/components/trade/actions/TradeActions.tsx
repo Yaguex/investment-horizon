@@ -187,7 +187,7 @@ export const TradeActions = ({
                   <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Add Trade</p>
+                  <p>Add Sub-position</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
