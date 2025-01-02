@@ -4,6 +4,7 @@ import { TradeActions } from "./actions/TradeActions"
 import { EditTradeSheet } from "./EditTradeSheet"
 import { TradeData } from "./types"
 import { cn } from "@/lib/utils"
+import { getRowBackground, getStickyBackground } from "./utils/styles"
 
 interface TableRowProps {
   row: TradeData
@@ -24,10 +25,13 @@ export const TableRow = ({
 
   return (
     <TableRowComponent className={cn(
-      "group hover:bg-muted/50",
-      isSubRow && "bg-muted/50"
+      "group",
+      getRowBackground(isSubRow, tradeStatus, row.pnl)
     )}>
-      <TableCell className="sticky left-0 bg-white group-hover:bg-muted/50">
+      <TableCell className={cn(
+        "sticky left-0",
+        getStickyBackground(isSubRow, tradeStatus, row.pnl)
+      )}>
         <TradeActions
           isSubRow={isSubRow}
           isExpanded={isExpanded}
