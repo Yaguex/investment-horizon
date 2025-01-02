@@ -37,7 +37,12 @@ const Test = () => {
 
     try {
       const { data: response, error } = await supabase.functions.invoke('fetch_ticker_data', {
-        body: { ticker: data.ticker }
+        body: { 
+          ticker: data.ticker,
+          expiration: data.expiration,
+          type: data.type,
+          strike: data.strike
+        }
       })
 
       if (error) {

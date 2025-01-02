@@ -14,11 +14,19 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { ticker } = await req.json();
-    console.log(`[${new Date().toISOString()}] Input ticker: ${ticker}`);
+    const { ticker, expiration, type, strike } = await req.json();
+    console.log(`[${new Date().toISOString()}] Input data:`, { ticker, expiration, type, strike });
 
-    // Generate symbol (placeholder implementation)
-    const symbol = ticker.toUpperCase();
+    // Generate option symbol (placeholder implementation)
+    // Format: SPY260116C00585000
+    const expirationDate = new Date(expiration);
+    const year = expirationDate.getFullYear().toString().slice(-2);
+    const month = (expirationDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = expirationDate.getDate().toString().padStart(2, '0');
+    const optionType = type.toUpperCase().charAt(0);
+    const strikeStr = (strike * 1000).toString().padStart(8, '0');
+    
+    const symbol = `${ticker.toUpperCase()}${year}${month}${day}${optionType}${strikeStr}`;
     console.log(`[${new Date().toISOString()}] Generated symbol: ${symbol}`);
 
     return new Response(
