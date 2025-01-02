@@ -201,7 +201,7 @@ export const TradeActions = ({
                 <X className="h-4 w-4 cursor-pointer" onClick={handleDeleteTrade} />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Delete Trade</p>
+                <p>Delete Sub-position</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -216,7 +216,7 @@ export const TradeActions = ({
               />
             </TooltipTrigger>
             <TooltipContent>
-              <p>{isSubRow ? "Edit Trade" : "Edit Position"}</p>
+              <p>{isSubRow ? "Edit Sub-position" : "Edit Position"}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
