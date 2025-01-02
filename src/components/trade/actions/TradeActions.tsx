@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { EditBucketSheet } from "@/components/allocations/EditBucketSheet"
 
 interface TradeActionsProps {
@@ -51,8 +51,49 @@ export const TradeActions = ({
       type: isSubRow ? 'child row' : 'parent row'
     })
     
-    // Always call onEdit() regardless of row type
     onEdit()
+  }
+
+  const handleAddSubposition = async () => {
+    try {
+      // 1. Fetch parent trade data
+      const { data: parentTrade, error: fetchError } = await supabase
+        .from('trade_log')
+        .select('portfolio_id, trade_id, ticker')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // 2. Create new child row
+      const { error: insertError } = await supabase
+        .from('trade_log')
+        .insert({
+          portfolio_id: parentTrade.portfolio_id,
+          trade_id: parentTrade.trade_id,
+          ticker: parentTrade.ticker,
+          row_type: 'child',
+          trade_status: 'open',
+          date_entry: new Date().toISOString().split('T')[0],
+          profile_id: profileId
+        })
+
+      if (insertError) throw insertError
+
+      // 3. Refresh data
+      queryClient.invalidateQueries({ queryKey: ['trades'] })
+      
+      // 4. Show success toast
+      toast({
+        title: "Sub-position created successfully"
+      })
+    } catch (error) {
+      console.error('Error in handleAddSubposition:', error)
+      toast({
+        title: "Could not create a new sub-position",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleAddTrade = async () => {
@@ -184,7 +225,10 @@ export const TradeActions = ({
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Plus className="h-4 w-4 cursor-pointer" onClick={handleAddTrade} />
+                  <Plus 
+                    className="h-4 w-4 cursor-pointer" 
+                    onClick={handleAddSubposition} 
+                  />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Add Sub-position</p>
