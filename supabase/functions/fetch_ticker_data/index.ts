@@ -28,12 +28,12 @@ async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Pro
       
       if (data.s === 'ok' && data.mid && data.mid.length > 0) {
         return {
-          mid: data.mid[0],
+          mid: Number(data.mid[0]).toFixed(2),
           openInterest: data.openInterest[0],
-          iv: data.iv[0],
-          delta: data.delta[0],
-          intrinsicValue: data.intrinsicValue[0],
-          extrinsicValue: data.extrinsicValue[0]
+          iv: Math.round(data.iv[0] * 100),
+          delta: Math.round(data.delta[0]),
+          intrinsicValue: Number(data.intrinsicValue[0]).toFixed(2),
+          extrinsicValue: Number(data.extrinsicValue[0]).toFixed(2)
         };
       }
       
