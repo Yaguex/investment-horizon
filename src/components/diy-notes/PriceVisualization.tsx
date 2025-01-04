@@ -86,7 +86,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${middlePosition}%` }}
         >
-          <span className="text-xs text-black"><span className="font-bold">+46C</span> at $80.45</span>
+          <span className="text-xs text-black"><span className="font-bold">+46C</span> at ${note.strike_entry_mid}</span>
           <span className="text-xs text-red-500">$-58,094</span>
         </div>
       )}
@@ -95,7 +95,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${leftPosition}%` }}
         >
-          <span className="text-xs text-black"><span className="font-bold">-32P</span> at $11.20</span>
+          <span className="text-xs text-black"><span className="font-bold">-32P</span> at ${note.strike_protection_mid}</span>
           <span className="text-xs text-green-500">$7,450</span>
         </div>
       )}
@@ -104,7 +104,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${rightPosition}%` }}
         >
-          <span className="text-xs text-black"><span className="font-bold">-46C</span> at $50.22</span>
+          <span className="text-xs text-black"><span className="font-bold">-46C</span> at ${note.strike_target_mid}</span>
           <span className="text-xs text-green-500">$32,622</span>
         </div>
       )}

@@ -56,7 +56,7 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
         <span className="font-bold text-lg mr-8">{note.ticker}</span>
         <span className="text-sm text-gray-500 mr-8">{formatDate(note.expiration)}</span>
         <span className="text-sm text-gray-500 mr-8">${formatNumber(note.nominal, 0)}</span>
-        <span className="text-sm text-gray-500">IV 20% | IVP 72%</span>
+        <span className="text-sm text-gray-500">IV {note.strike_entry_iv}% | IVP 72%</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
