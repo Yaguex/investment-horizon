@@ -60,6 +60,22 @@ const Test = () => {
     setApiResponse(null)
 
     try {
+      // First check if a record exists
+      const { data: existingRecord, error: checkError } = await supabase
+        .from('diy_notes')
+        .select('*')
+        .eq('ticker', data.ticker)
+        .eq('expiration', data.expiration)
+        .single()
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error("Error checking existing record:", checkError)
+        throw checkError
+      }
+
+      const isUpdate = !!existingRecord
+      console.log(isUpdate ? "Updating existing record" : "Creating new record")
+
       const { data: response, error } = await supabase.functions.invoke('fetch_ticker_data', {
         body: { 
           ticker: data.ticker,
@@ -85,7 +101,9 @@ const Test = () => {
       console.log("API response:", response)
       setApiResponse(response)
       toast({
-        description: "API data successfully fetched and stored in the database"
+        description: isUpdate 
+          ? "Record updated successfully" 
+          : "New record created successfully"
       })
     } catch (error) {
       console.error("Error in symbol generation:", error)
