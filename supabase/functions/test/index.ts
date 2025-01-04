@@ -75,11 +75,18 @@ serve(async (req) => {
     updateData[`${prefix}intrinsic_value`] = options?.[0]?.intrinsicValue || null;
     updateData[`${prefix}extrinsic_value`] = options?.[0]?.extrinsicValue || null;
 
-    // Update or insert the data
+    // Also store the strike value in the appropriate column based on strike_position
+    updateData[strike_position === 'entry' ? 'strike_entry' : 
+               strike_position === 'target' ? 'strike_target' : 
+               'strike_protection'] = parseFloat(strike);
+
+    console.log("Preparing to upsert data:", updateData);
+
+    // Update or insert the data with the new conflict condition
     const { error: upsertError } = await supabase
       .from('diy_notes')
       .upsert(updateData, {
-        onConflict: 'ticker,expiration,profile_id'
+        onConflict: 'ticker,expiration,profile_id,strike_entry,strike_target,strike_protection'
       });
 
     if (upsertError) {
