@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
@@ -8,35 +7,8 @@ import { supabase } from "@/integrations/supabase/client"
 import { TextField } from "@/components/test/form-fields/TextField"
 import { NumberField } from "@/components/test/form-fields/NumberField"
 import Header from "@/components/Header"
-
-interface TestFormValues {
-  ticker: string
-  expiration: string
-  type: string
-  strike_entry: number | null
-  strike_target: number | null
-  strike_protection: number | null
-}
-
-interface MarketData {
-  mid: number
-  openInterest: number
-  iv: number
-  delta: number
-  intrinsicValue: number
-  extrinsicValue: number
-}
-
-interface StrikeData {
-  symbol: string
-  marketData: MarketData | null
-}
-
-interface ApiResponse {
-  entry: StrikeData
-  target: StrikeData
-  protection: StrikeData
-}
+import { MarketDataCard } from "./test/MarketDataCard"
+import type { TestFormValues, ApiResponse } from "./test/types"
 
 const Test = () => {
   const { toast } = useToast()
@@ -60,20 +32,19 @@ const Test = () => {
     setApiResponse(null)
 
     try {
-      // First check if a record exists
-      const { data: existingRecord, error: checkError } = await supabase
+      // Use count() instead of select() to check for existing records
+      const { count, error: countError } = await supabase
         .from('diy_notes')
-        .select('*')
+        .select('*', { count: 'exact', head: true })
         .eq('ticker', data.ticker)
         .eq('expiration', data.expiration)
-        .single()
 
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-        console.error("Error checking existing record:", checkError)
-        throw checkError
+      if (countError) {
+        console.error("Error checking existing record:", countError)
+        throw countError
       }
 
-      const isUpdate = !!existingRecord
+      const isUpdate = count && count > 0
       console.log(isUpdate ? "Updating existing record" : "Creating new record")
 
       const { data: response, error } = await supabase.functions.invoke('fetch_ticker_data', {
@@ -115,34 +86,6 @@ const Test = () => {
       setIsLoading(false)
     }
   }
-
-  const renderMarketDataCard = (title: string, data: StrikeData | undefined, strike: number | null) => {
-    if (!data) return null;
-    
-    return (
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <p><span className="font-semibold">Symbol:</span> {data.symbol}</p>
-            <p><span className="font-semibold">Strike:</span> {strike}</p>
-            {data.marketData && (
-              <>
-                <p><span className="font-semibold">Mid:</span> {data.marketData.mid}</p>
-                <p><span className="font-semibold">Open Interest:</span> {data.marketData.openInterest}</p>
-                <p><span className="font-semibold">IV:</span> {data.marketData.iv}</p>
-                <p><span className="font-semibold">Delta:</span> {data.marketData.delta}</p>
-                <p><span className="font-semibold">Intrinsic Value:</span> {data.marketData.intrinsicValue}</p>
-                <p><span className="font-semibold">Extrinsic Value:</span> {data.marketData.extrinsicValue}</p>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -202,9 +145,21 @@ const Test = () => {
 
           {apiResponse && (
             <div className="space-y-4">
-              {renderMarketDataCard("Strike Entry", apiResponse.entry, form.getValues("strike_entry"))}
-              {renderMarketDataCard("Strike Target", apiResponse.target, form.getValues("strike_target"))}
-              {renderMarketDataCard("Strike Protection", apiResponse.protection, form.getValues("strike_protection"))}
+              <MarketDataCard 
+                title="Strike Entry" 
+                data={apiResponse.entry} 
+                strike={form.getValues("strike_entry")} 
+              />
+              <MarketDataCard 
+                title="Strike Target" 
+                data={apiResponse.target} 
+                strike={form.getValues("strike_target")} 
+              />
+              <MarketDataCard 
+                title="Strike Protection" 
+                data={apiResponse.protection} 
+                strike={form.getValues("strike_protection")} 
+              />
             </div>
           )}
         </div>
