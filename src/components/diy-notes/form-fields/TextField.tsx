@@ -25,12 +25,7 @@ export function TextField<T extends FieldValues>({
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Input 
-              {...field} 
-              placeholder={placeholder} 
-              value={field.value || ''} 
-              type={name === 'expiration' ? 'date' : 'text'}
-            />
+            <Input {...field} placeholder={placeholder} value={field.value || ''} />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
         </FormItem>
