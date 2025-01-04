@@ -5,9 +5,9 @@ export const corsHeaders = {
 
 export function formatExpirationDate(dateStr: string): string {
   try {
-    // Input format: "DD-MM-YYYY"
+    // Input format: "YYYY-MM-DD"
     // Required output format: "YYMMDD"
-    const [day, month, year] = dateStr.split('-');
+    const [year, month, day] = dateStr.split('-');
     
     // Take last 2 digits of year
     const shortYear = year.slice(2);
