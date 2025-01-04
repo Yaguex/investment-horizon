@@ -43,6 +43,9 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
     ((totalBondYield * -1) - (protectionContracts * note.strike_protection_mid * 100)) / 
     ((note.strike_target_mid * 100) - (note.strike_entry_mid * 100))
   )
+
+  // Set target contracts equal to entry contracts
+  const targetContracts = entryContracts
   
   return (
     <div className="mt-12 mb-20 relative">
@@ -122,7 +125,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${rightPosition}%` }}
         >
-          <span className="text-xs text-black"><span className="font-bold">-{entryContracts}C</span> at ${note.strike_target_mid}</span>
+          <span className="text-xs text-black"><span className="font-bold">-{targetContracts}C</span> at ${note.strike_target_mid}</span>
           <span className="text-xs text-green-500">$32,622</span>
         </div>
       )}
