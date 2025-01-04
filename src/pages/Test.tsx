@@ -148,7 +148,7 @@ const Test = () => {
 
       console.log("API response:", response)
       
-      // Store response data before setting state
+      // Store response data in a variable
       const responseData = response as ApiResponse
       
       // Set state with the stored data
