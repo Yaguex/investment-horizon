@@ -50,7 +50,7 @@ const Test = () => {
   const form = useForm<TestFormValues>({
     defaultValues: {
       ticker: "SPY",
-      expiration: "19-12-2025",
+      expiration: "2025-12-19",
       strike_entry: 590,
       strike_target: 640,
       strike_protection: 560
@@ -141,7 +141,8 @@ const Test = () => {
               <TextField
                 control={form.control}
                 name="expiration"
-                label="Expiration (DD-MM-YYYY)"
+                label="Expiration"
+                placeholder="YYYY-MM-DD"
               />
               
               <NumberField
