@@ -117,7 +117,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             <TextField
               control={form.control}
               name="expiration"
-              label="Expiration (DD-MM-YYYY)"
+              label="Expiration (YYYY-MM-DD)"
             />
             <NumberField
               control={form.control}
