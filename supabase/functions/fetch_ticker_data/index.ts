@@ -28,23 +28,20 @@ Deno.serve(async (req) => {
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Generate symbols and fetch data for all strikes in parallel with correct parameter order
+    // Generate symbols and fetch data for all strikes in parallel with hardcoded types
     const [entryData, targetData, protectionData] = await Promise.all([
       (async () => {
         const symbol = generateOptionSymbol(ticker, expiration, 'C', strikes.entry);
-        console.log(`[${new Date().toISOString()}] Fetching entry data with symbol:`, symbol);
         const marketData = await fetchOptionData(symbol, apiKey);
         return { symbol, marketData };
       })(),
       (async () => {
         const symbol = generateOptionSymbol(ticker, expiration, 'C', strikes.target);
-        console.log(`[${new Date().toISOString()}] Fetching target data with symbol:`, symbol);
         const marketData = await fetchOptionData(symbol, apiKey);
         return { symbol, marketData };
       })(),
       (async () => {
         const symbol = generateOptionSymbol(ticker, expiration, 'P', strikes.protection);
-        console.log(`[${new Date().toISOString()}] Fetching protection data with symbol:`, symbol);
         const marketData = await fetchOptionData(symbol, apiKey);
         return { symbol, marketData };
       })()
