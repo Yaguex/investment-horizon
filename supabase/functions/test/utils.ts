@@ -10,7 +10,7 @@ export function formatExpirationDate(dateStr: string | Date): string {
     let date: Date;
     
     if (dateStr instanceof Date) {
-      // If it's already a Date object, format it directly
+      // If it's already a Date object, use it directly
       date = dateStr;
       console.log('[Utils] Input date is Date object:', date);
     } else {

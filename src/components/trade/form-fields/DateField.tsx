@@ -3,7 +3,7 @@ import { Control, FieldValues, Path } from "react-hook-form"
 import DatePicker from "react-date-picker"
 import "react-date-picker/dist/DatePicker.css"
 import "react-calendar/dist/Calendar.css"
-import { format, parse } from "date-fns"
+import { format } from "date-fns"
 
 interface DateFieldProps<T extends FieldValues> {
   control: Control<T>
@@ -23,13 +23,23 @@ export function DateField<T extends FieldValues>({ control, name, label, maxDate
           <FormControl>
             <DatePicker
               value={field.value}
-              onChange={(date) => {
-                // Ensure we're working with the local date string
-                if (date) {
-                  const localDate = format(date, 'dd-MM-yyyy')
-                  console.log('DateField selected date (local):', localDate)
-                  field.onChange(date)
+              onChange={(value) => {
+                // Handle the Value type from react-date-picker
+                if (value instanceof Date) {
+                  console.log('DateField selected date:', value)
+                  field.onChange(value)
+                } else if (Array.isArray(value)) {
+                  // If somehow we get a range, use the first date
+                  const date = value[0]
+                  if (date instanceof Date) {
+                    console.log('DateField selected date from range:', date)
+                    field.onChange(date)
+                  } else {
+                    console.log('DateField clearing value')
+                    field.onChange(null)
+                  }
                 } else {
+                  console.log('DateField clearing value')
                   field.onChange(null)
                 }
               }}
