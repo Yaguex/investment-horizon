@@ -36,6 +36,7 @@ interface ApiResponse {
   entry: StrikeData
   target: StrikeData
   protection: StrikeData
+  underlyingPrice?: number
 }
 
 const Test = () => {
@@ -53,6 +54,75 @@ const Test = () => {
       strike_protection: 560
     }
   })
+
+  const saveToDatabase = async (formData: TestFormValues, responseData: ApiResponse) => {
+    try {
+      // Check if record exists
+      const { data: existingRecord, error: checkError } = await supabase
+        .from('diy_notes')
+        .select('id')
+        .eq('ticker', formData.ticker)
+        .eq('expiration', formData.expiration)
+        .single()
+
+      const dbData = {
+        ticker: formData.ticker,
+        expiration: formData.expiration,
+        strike_entry: formData.strike_entry,
+        strike_target: formData.strike_target,
+        strike_protection: formData.strike_protection,
+        underlying_price: responseData.underlyingPrice,
+        // Entry strike data
+        strike_entry_mid: responseData.entry.marketData?.mid,
+        strike_entry_open_interest: responseData.entry.marketData?.openInterest,
+        strike_entry_iv: responseData.entry.marketData?.iv,
+        strike_entry_delta: responseData.entry.marketData?.delta,
+        strike_entry_intrinsic_value: responseData.entry.marketData?.intrinsicValue,
+        strike_entry_extrinsic_value: responseData.entry.marketData?.extrinsicValue,
+        // Target strike data
+        strike_target_mid: responseData.target.marketData?.mid,
+        strike_target_open_interest: responseData.target.marketData?.openInterest,
+        strike_target_iv: responseData.target.marketData?.iv,
+        strike_target_delta: responseData.target.marketData?.delta,
+        strike_target_intrinsic_value: responseData.target.marketData?.intrinsicValue,
+        strike_target_extrinsic_value: responseData.target.marketData?.extrinsicValue,
+        // Protection strike data
+        strike_protection_mid: responseData.protection.marketData?.mid,
+        strike_protection_open_interest: responseData.protection.marketData?.openInterest,
+        strike_protection_iv: responseData.protection.marketData?.iv,
+        strike_protection_delta: responseData.protection.marketData?.delta,
+        strike_protection_intrinsic_value: responseData.protection.marketData?.intrinsicValue,
+        strike_protection_extrinsic_value: responseData.protection.marketData?.extrinsicValue,
+      }
+
+      if (existingRecord) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('diy_notes')
+          .update(dbData)
+          .eq('id', existingRecord.id)
+
+        if (updateError) throw updateError
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('diy_notes')
+          .insert([dbData])
+
+        if (insertError) throw insertError
+      }
+
+      toast({
+        description: "API data successfully fetched and stored in the database"
+      })
+    } catch (error) {
+      console.error("Error in database operation:", error)
+      toast({
+        variant: "destructive",
+        description: "API data could not be fetched or stored in the database"
+      })
+    }
+  }
 
   const onSubmit = async (data: TestFormValues) => {
     console.log("Submitting test form with data:", data)
@@ -82,11 +152,15 @@ const Test = () => {
         return
       }
 
-      console.log("API response:", response)
-      setApiResponse(response)
-      toast({
-        description: "API data successfully fetched and stored in the database"
-      })
+      // Store the parsed response data
+      const responseData = response as ApiResponse
+      
+      // Set state for UI display
+      setApiResponse(responseData)
+      
+      // Save to database using the parsed data
+      await saveToDatabase(data, responseData)
+      
     } catch (error) {
       console.error("Error in symbol generation:", error)
       toast({
