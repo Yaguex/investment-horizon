@@ -37,7 +37,7 @@ const Test = () => {
     defaultValues: {
       ticker: "SPY",
       expiration: "19-12-2025",
-      type: "19-12-2025",
+      type: "call",
       strike: 585,
       strike_position: "entry"
     }
