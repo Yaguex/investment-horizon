@@ -1,5 +1,5 @@
 import { Circle } from "lucide-react"
-import { formatNumber } from "../trade/utils/formatters"
+import { formatNumber } from "./utils/formatters"
 
 interface PriceVisualizationProps {
   note: any
