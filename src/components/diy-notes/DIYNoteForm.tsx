@@ -5,7 +5,6 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { TextField } from "@/components/diy-notes/form-fields/TextField"
 import { NumberField } from "@/components/diy-notes/form-fields/NumberField"
-import { DateField } from "@/components/diy-notes/form-fields/DateField"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
@@ -13,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query"
 interface DIYNoteFormValues {
   ticker: string
   nominal: number | null
-  expiration: Date | null
+  expiration: string
   bond_yield: number | null
   strike_entry: number | null
   strike_target: number | null
@@ -36,7 +35,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
     defaultValues: note ? {
       ticker: note.ticker || "",
       nominal: note.nominal || null,
-      expiration: note.expiration ? new Date(note.expiration) : null,
+      expiration: note.expiration || "",
       bond_yield: note.bond_yield || null,
       strike_entry: note.strike_entry || null,
       strike_target: note.strike_target || null,
@@ -46,7 +45,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
     } : {
       ticker: "",
       nominal: null,
-      expiration: null,
+      expiration: "",
       bond_yield: null,
       strike_entry: null,
       strike_target: null,
@@ -64,7 +63,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
           .from('diy_notes')
           .update({
             ...data,
-            expiration: data.expiration ? format(data.expiration, 'yyyy-MM-dd') : null,
+            expiration: data.expiration || null,
           })
           .eq('id', note.id)
 
@@ -77,7 +76,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
           .insert([
             {
               ...data,
-              expiration: data.expiration ? format(data.expiration, 'yyyy-MM-dd') : null,
+              expiration: data.expiration || null,
               profile_id: (await supabase.auth.getUser()).data.user?.id
             }
           ])
@@ -115,10 +114,10 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
               name="nominal"
               label="Nominal"
             />
-            <DateField
+            <TextField
               control={form.control}
               name="expiration"
-              label="Expiration"
+              label="Expiration (DD-MM-YYYY)"
             />
             <NumberField
               control={form.control}
