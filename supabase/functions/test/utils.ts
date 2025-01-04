@@ -1,5 +1,3 @@
-import { format, parse } from "https://esm.sh/date-fns@3.3.1";
-
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -7,12 +5,18 @@ export const corsHeaders = {
 
 export function formatExpirationDate(dateStr: string): string {
   try {
-    // Parse the input date string (yyyy-MM-dd) into a Date object
-    const parsedDate = parse(dateStr, 'yyyy-MM-dd', new Date());
+    // Input format: "DD-MM-YYYY"
+    // Required output format: "YYMMDD"
+    const [day, month, year] = dateStr.split('-');
     
-    // Format it to exactly match the API's expected format (YYMMDD)
-    // Using date-fns format with explicit formatting to ensure leading zeros
-    return format(parsedDate, 'yyMMdd');
+    // Take last 2 digits of year
+    const shortYear = year.slice(2);
+    
+    // Combine in required format
+    const formattedDate = `${shortYear}${month}${day}`;
+    
+    console.log(`[Utils] Formatted date ${dateStr} to ${formattedDate}`);
+    return formattedDate;
   } catch (error) {
     console.error('[Utils] Error formatting date:', error);
     throw error;

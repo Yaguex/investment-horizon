@@ -5,7 +5,6 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { DateField } from "@/components/trade/form-fields/DateField"
 import { TextField } from "@/components/trade/form-fields/TextField"
 import { NumberField } from "@/components/trade/form-fields/NumberField"
 import { SelectField } from "@/components/test/form-fields/SelectField"
@@ -13,7 +12,7 @@ import Header from "@/components/Header"
 
 interface TestFormValues {
   ticker: string
-  expiration: Date
+  expiration: string
   type: string
   strike: number | null
   strike_position: string
@@ -37,7 +36,7 @@ const Test = () => {
   const form = useForm<TestFormValues>({
     defaultValues: {
       ticker: "SPY",
-      expiration: new Date("2026-01-16"),
+      expiration: "19-12-2025",
       type: "call",
       strike: 585,
       strike_position: "entry"
@@ -102,10 +101,10 @@ const Test = () => {
                 label="Ticker"
               />
               
-              <DateField
+              <TextField
                 control={form.control}
                 name="expiration"
-                label="Expiration"
+                label="Expiration (DD-MM-YYYY)"
               />
               
               <TextField
