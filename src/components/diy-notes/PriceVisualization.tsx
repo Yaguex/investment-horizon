@@ -49,6 +49,9 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
 
   // Calculate protection fee
   const protectionFee = protectionContracts * note.strike_protection_mid * 100
+
+  // Calculate entry fee
+  const entryFee = entryContracts * note.strike_entry_mid * 100 * -1
   
   return (
     <div className="mt-12 mb-20 relative">
@@ -111,7 +114,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           style={{ left: `${middlePosition}%` }}
         >
           <span className="text-xs text-black"><span className="font-bold">+{entryContracts}C</span> at ${note.strike_entry_mid}</span>
-          <span className="text-xs text-red-500">$-58,094</span>
+          <span className="text-xs text-red-500">${formatNumber(entryFee, 0)}</span>
         </div>
       )}
       {note.strike_protection !== 0 && (
