@@ -52,6 +52,9 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
 
   // Calculate entry fee
   const entryFee = entryContracts * note.strike_entry_mid * 100 * -1
+
+  // Calculate target fee
+  const targetFee = targetContracts * note.strike_target_mid * 100
   
   return (
     <div className="mt-12 mb-20 relative">
@@ -132,7 +135,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           style={{ left: `${rightPosition}%` }}
         >
           <span className="text-xs text-black"><span className="font-bold">-{targetContracts}C</span> at ${note.strike_target_mid}</span>
-          <span className="text-xs text-green-500">$32,622</span>
+          <span className="text-xs text-green-500">${formatNumber(targetFee, 0)}</span>
         </div>
       )}
     </div>
