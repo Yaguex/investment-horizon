@@ -7,8 +7,8 @@ export const corsHeaders = {
 
 export function formatExpirationDate(dateStr: string): string {
   try {
-    // Parse the input date string (yyyy-MM-dd) into a Date object
-    const parsedDate = parse(dateStr, 'yyyy-MM-dd', new Date());
+    // Parse the input date string (dd-MM-yyyy) into a Date object
+    const parsedDate = parse(dateStr, 'dd-MM-yyyy', new Date());
     
     // Format it to exactly match the API's expected format (YYMMDD)
     // Using date-fns format with explicit formatting to ensure leading zeros
