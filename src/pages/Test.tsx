@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { TextField } from "@/components/test/form-fields/TextField"
 import { NumberField } from "@/components/test/form-fields/NumberField"
+import { useAuth } from "@/contexts/AuthContext"
 import Header from "@/components/Header"
 
 interface TestFormValues {
@@ -41,6 +42,7 @@ interface ApiResponse {
 
 const Test = () => {
   const { toast } = useToast()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null)
 
@@ -57,15 +59,12 @@ const Test = () => {
 
   const saveToDatabase = async (formData: TestFormValues, responseData: ApiResponse) => {
     try {
-      // Check if record exists
-      const { data: existingRecord, error: checkError } = await supabase
-        .from('diy_notes')
-        .select('id')
-        .eq('ticker', formData.ticker)
-        .eq('expiration', formData.expiration)
-        .single()
+      if (!user) {
+        throw new Error('No authenticated user')
+      }
 
       const dbData = {
+        profile_id: user.id,
         ticker: formData.ticker,
         expiration: formData.expiration,
         strike_entry: formData.strike_entry,
@@ -94,6 +93,15 @@ const Test = () => {
         strike_protection_intrinsic_value: responseData.protection.marketData?.intrinsicValue,
         strike_protection_extrinsic_value: responseData.protection.marketData?.extrinsicValue,
       }
+
+      // Check if record exists
+      const { data: existingRecord } = await supabase
+        .from('diy_notes')
+        .select('id')
+        .eq('ticker', formData.ticker)
+        .eq('expiration', formData.expiration)
+        .eq('profile_id', user.id)
+        .single()
 
       if (existingRecord) {
         // Update existing record
@@ -152,14 +160,14 @@ const Test = () => {
         return
       }
 
-      // Store the parsed response data
-      const responseData = response as ApiResponse
+      // Parse the response once and store it
+      const parsedResponse = response as ApiResponse
       
       // Set state for UI display
-      setApiResponse(responseData)
+      setApiResponse(parsedResponse)
       
       // Save to database using the parsed data
-      await saveToDatabase(data, responseData)
+      await saveToDatabase(data, parsedResponse)
       
     } catch (error) {
       console.error("Error in symbol generation:", error)
