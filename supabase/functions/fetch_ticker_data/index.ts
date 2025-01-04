@@ -9,6 +9,7 @@ async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Pro
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const url = `https://api.marketdata.app/v1/options/quotes/${symbol}/`;
+      console.log(`[${new Date().toISOString()}] Making request to MarketData API for symbol: ${symbol}`);
       console.log(`[${new Date().toISOString()}] Attempting to fetch data from: ${url} (attempt ${attempt})`);
       
       const response = await fetch(url, {
@@ -24,9 +25,19 @@ async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Pro
       }
 
       const data = await response.json();
-      console.log(`[${new Date().toISOString()}] Raw API response:`, JSON.stringify(data));
+      console.log(`[${new Date().toISOString()}] Raw API response data:`, JSON.stringify(data, null, 2));
       
       if (data.s === 'ok' && data.mid && data.mid.length > 0) {
+        console.log(`[${new Date().toISOString()}] Processing data:`, {
+          status: data.s,
+          hasMid: !!data.mid,
+          midLength: data.mid?.length,
+          midValue: data.mid?.[0],
+          openInterest: data.openInterest?.[0],
+          iv: data.iv?.[0],
+          delta: data.delta?.[0]
+        });
+
         return {
           mid: Number(data.mid[0]).toFixed(2),
           openInterest: data.openInterest[0],
@@ -37,7 +48,11 @@ async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Pro
         };
       }
       
-      console.log(`[${new Date().toISOString()}] No data found for symbol: ${symbol}`);
+      console.log(`[${new Date().toISOString()}] No valid data found for symbol: ${symbol}. Data validation failed:`, {
+        status: data.s,
+        hasMid: !!data.mid,
+        midLength: data.mid?.length
+      });
       return null;
     } catch (error) {
       console.error(`[${new Date().toISOString()}] Error in attempt ${attempt}:`, error);
