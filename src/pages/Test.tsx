@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { TextField } from "@/components/test/form-fields/TextField"
 import { NumberField } from "@/components/test/form-fields/NumberField"
-import { useAuth } from "@/contexts/AuthContext"
 import Header from "@/components/Header"
 
 interface TestFormValues {
@@ -37,12 +36,10 @@ interface ApiResponse {
   entry: StrikeData
   target: StrikeData
   protection: StrikeData
-  underlyingPrice?: number
 }
 
 const Test = () => {
   const { toast } = useToast()
-  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null)
 
@@ -56,81 +53,6 @@ const Test = () => {
       strike_protection: 560
     }
   })
-
-  const saveToDatabase = async (formData: TestFormValues, responseData: ApiResponse) => {
-    try {
-      if (!user) {
-        throw new Error('No authenticated user')
-      }
-
-      const dbData = {
-        profile_id: user.id,
-        ticker: formData.ticker,
-        expiration: formData.expiration,
-        strike_entry: formData.strike_entry,
-        strike_target: formData.strike_target,
-        strike_protection: formData.strike_protection,
-        underlying_price: responseData.underlyingPrice,
-        // Entry strike data
-        strike_entry_mid: responseData.entry.marketData?.mid,
-        strike_entry_open_interest: responseData.entry.marketData?.openInterest,
-        strike_entry_iv: responseData.entry.marketData?.iv,
-        strike_entry_delta: responseData.entry.marketData?.delta,
-        strike_entry_intrinsic_value: responseData.entry.marketData?.intrinsicValue,
-        strike_entry_extrinsic_value: responseData.entry.marketData?.extrinsicValue,
-        // Target strike data
-        strike_target_mid: responseData.target.marketData?.mid,
-        strike_target_open_interest: responseData.target.marketData?.openInterest,
-        strike_target_iv: responseData.target.marketData?.iv,
-        strike_target_delta: responseData.target.marketData?.delta,
-        strike_target_intrinsic_value: responseData.target.marketData?.intrinsicValue,
-        strike_target_extrinsic_value: responseData.target.marketData?.extrinsicValue,
-        // Protection strike data
-        strike_protection_mid: responseData.protection.marketData?.mid,
-        strike_protection_open_interest: responseData.protection.marketData?.openInterest,
-        strike_protection_iv: responseData.protection.marketData?.iv,
-        strike_protection_delta: responseData.protection.marketData?.delta,
-        strike_protection_intrinsic_value: responseData.protection.marketData?.intrinsicValue,
-        strike_protection_extrinsic_value: responseData.protection.marketData?.extrinsicValue,
-      }
-
-      // Check if record exists
-      const { data: existingRecord } = await supabase
-        .from('diy_notes')
-        .select('id')
-        .eq('ticker', formData.ticker)
-        .eq('expiration', formData.expiration)
-        .eq('profile_id', user.id)
-        .single()
-
-      if (existingRecord) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('diy_notes')
-          .update(dbData)
-          .eq('id', existingRecord.id)
-
-        if (updateError) throw updateError
-      } else {
-        // Insert new record
-        const { error: insertError } = await supabase
-          .from('diy_notes')
-          .insert([dbData])
-
-        if (insertError) throw insertError
-      }
-
-      toast({
-        description: "API data successfully fetched and stored in the database"
-      })
-    } catch (error) {
-      console.error("Error in database operation:", error)
-      toast({
-        variant: "destructive",
-        description: "API data could not be fetched or stored in the database"
-      })
-    }
-  }
 
   const onSubmit = async (data: TestFormValues) => {
     console.log("Submitting test form with data:", data)
@@ -160,15 +82,11 @@ const Test = () => {
         return
       }
 
-      // Parse the response once and store it
-      const parsedResponse = response as ApiResponse
-      
-      // Set state for UI display
-      setApiResponse(parsedResponse)
-      
-      // Save to database using the parsed data
-      await saveToDatabase(data, parsedResponse)
-      
+      console.log("API response:", response)
+      setApiResponse(response)
+      toast({
+        description: "API data successfully fetched and stored in the database"
+      })
     } catch (error) {
       console.error("Error in symbol generation:", error)
       toast({
