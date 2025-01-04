@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { DateField } from "@/components/trade/form-fields/DateField"
 import { TextField } from "@/components/trade/form-fields/TextField"
 import { NumberField } from "@/components/trade/form-fields/NumberField"
+import { SelectField } from "@/components/allocations/form-fields/SelectField"
 import Header from "@/components/Header"
 
 interface TestFormValues {
@@ -15,6 +16,7 @@ interface TestFormValues {
   expiration: Date
   type: string
   strike: number | null
+  strike_position: string
 }
 
 interface MarketData {
@@ -37,7 +39,8 @@ const Test = () => {
       ticker: "SPY",
       expiration: new Date("2026-01-16"),
       type: "call",
-      strike: 585
+      strike: 585,
+      strike_position: "entry"
     }
   })
 
@@ -52,7 +55,8 @@ const Test = () => {
           ticker: data.ticker,
           expiration: data.expiration,
           type: data.type,
-          strike: data.strike
+          strike: data.strike,
+          strike_position: data.strike_position
         }
       })
 
@@ -60,8 +64,7 @@ const Test = () => {
         console.error("Error generating symbol:", error)
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Failed to generate symbol. Please try again."
+          description: "API data could not be fetched or stored in the database"
         })
         return
       }
@@ -69,12 +72,14 @@ const Test = () => {
       console.log("API response:", response)
       setGeneratedSymbol(response.symbol)
       setMarketData(response.marketData)
+      toast({
+        description: "API data successfully fetched and stored in the database"
+      })
     } catch (error) {
       console.error("Error in symbol generation:", error)
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred. Please try again."
+        description: "API data could not be fetched or stored in the database"
       })
     } finally {
       setIsLoading(false)
@@ -113,6 +118,17 @@ const Test = () => {
                 control={form.control}
                 name="strike"
                 label="Strike"
+              />
+
+              <SelectField
+                control={form.control}
+                name="strike_position"
+                label="Strike Position"
+                options={[
+                  { label: "Entry", value: "entry" },
+                  { label: "Target", value: "target" },
+                  { label: "Protection", value: "protection" }
+                ]}
               />
               
               <Button 
