@@ -4,12 +4,11 @@ export const corsHeaders = {
 };
 
 export function formatDateForPostgres(dateStr: string): string {
-  const [day, month, year] = dateStr.split('-');
-  return `${year}-${month}-${day}`;
+  return dateStr; // Already in YYYY-MM-DD format
 }
 
 export function generateOptionSymbol(ticker: string, expiration: string, type: 'C' | 'P', strike: number): string {
-  const [day, month, year] = expiration.split('-').map(Number);
+  const [year, month, day] = expiration.split('-').map(Number);
   const yearStr = year.toString().slice(-2);
   const monthStr = month.toString().padStart(2, '0');
   const dayStr = day.toString().padStart(2, '0');
