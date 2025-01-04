@@ -71,6 +71,24 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
         return
       }
 
+      const userId = (await supabase.auth.getUser()).data.user?.id
+
+      // Check if a note with same ticker and expiration already exists
+      if (!note) { // Only check for new notes
+        const { data: existingNote } = await supabase
+          .from('diy_notes')
+          .select('id')
+          .eq('profile_id', userId)
+          .eq('ticker', data.ticker)
+          .eq('expiration', data.expiration)
+          .single()
+
+        if (existingNote) {
+          toast.error('A note with this ticker and expiration date already exists')
+          return
+        }
+      }
+
       // First save the note
       if (note) {
         // Update existing note
@@ -92,7 +110,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             {
               ...data,
               expiration: data.expiration || null,
-              profile_id: (await supabase.auth.getUser()).data.user?.id
+              profile_id: userId
             }
           ])
 
@@ -115,7 +133,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             target: data.strike_target,
             protection: data.strike_protection
           },
-          profile_id: (await supabase.auth.getUser()).data.user?.id
+          profile_id: userId
         }
       })
 
