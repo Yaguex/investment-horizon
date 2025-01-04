@@ -18,6 +18,11 @@ export async function saveToDatabase(
       .eq('profile_id', userData.profile_id)
       .single();
 
+    // Get the underlying price from any of the strikes (they all have the same underlying)
+    const underlyingPrice = marketData.entry.marketData?.underlyingPrice || 
+                           marketData.target.marketData?.underlyingPrice || 
+                           marketData.protection.marketData?.underlyingPrice;
+
     const dbOperation = existingRecord ? 
       supabase
         .from('diy_notes')
@@ -43,6 +48,7 @@ export async function saveToDatabase(
           strike_protection_delta: marketData.protection.marketData?.delta,
           strike_protection_intrinsic_value: marketData.protection.marketData?.intrinsicValue,
           strike_protection_extrinsic_value: marketData.protection.marketData?.extrinsicValue,
+          underlying_price: underlyingPrice,
         })
         .eq('id', existingRecord.id) :
       supabase
@@ -72,6 +78,7 @@ export async function saveToDatabase(
           strike_protection_delta: marketData.protection.marketData?.delta,
           strike_protection_intrinsic_value: marketData.protection.marketData?.intrinsicValue,
           strike_protection_extrinsic_value: marketData.protection.marketData?.extrinsicValue,
+          underlying_price: underlyingPrice,
         }]);
 
     const { error } = await dbOperation;

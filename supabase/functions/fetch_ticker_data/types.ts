@@ -5,6 +5,7 @@ export interface MarketData {
   delta: number;
   intrinsicValue: number;
   extrinsicValue: number;
+  underlyingPrice: number;
 }
 
 export interface StrikeData {
