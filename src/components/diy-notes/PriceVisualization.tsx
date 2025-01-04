@@ -26,6 +26,9 @@ const calculateCirclePositions = (note: any) => {
 export function PriceVisualization({ note }: PriceVisualizationProps) {
   const { leftPosition, middlePosition, rightPosition } = calculateCirclePositions(note)
   
+  // Calculate the number of contracts for protection
+  const protectionContracts = Math.round(note.nominal / note.strike_protection / 100)
+  
   return (
     <div className="mt-12 mb-20 relative">
       {/* Strike Entry Circle (Middle) */}
@@ -95,7 +98,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${leftPosition}%` }}
         >
-          <span className="text-xs text-black"><span className="font-bold">-32P</span> at ${note.strike_protection_mid}</span>
+          <span className="text-xs text-black"><span className="font-bold">-{protectionContracts}P</span> at ${note.strike_protection_mid}</span>
           <span className="text-xs text-green-500">$7,450</span>
         </div>
       )}
