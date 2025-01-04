@@ -29,6 +29,21 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   // Calculate the number of contracts for protection
   const protectionContracts = Math.round(note.nominal / note.strike_protection / 100)
   
+  // Calculate days until expiration for bond yield
+  const today = new Date()
+  const expirationDate = note.expiration ? new Date(note.expiration) : today
+  const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  const yearsUntilExpiration = daysUntilExpiration / 365
+
+  // Calculate total bond yield
+  const totalBondYield = note.nominal * (note.bond_yield / 100) * yearsUntilExpiration
+
+  // Calculate entry contracts
+  const entryContracts = Math.round(
+    ((totalBondYield * -1) - (protectionContracts * note.strike_protection_mid * 100)) / 
+    ((note.strike_target_mid * 100) - (note.strike_entry_mid * 100))
+  )
+  
   return (
     <div className="mt-12 mb-20 relative">
       {/* Strike Entry Circle (Middle) */}
@@ -89,7 +104,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${middlePosition}%` }}
         >
-          <span className="text-xs text-black"><span className="font-bold">+46C</span> at ${note.strike_entry_mid}</span>
+          <span className="text-xs text-black"><span className="font-bold">+{entryContracts}C</span> at ${note.strike_entry_mid}</span>
           <span className="text-xs text-red-500">$-58,094</span>
         </div>
       )}
@@ -107,7 +122,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${rightPosition}%` }}
         >
-          <span className="text-xs text-black"><span className="font-bold">-46C</span> at ${note.strike_target_mid}</span>
+          <span className="text-xs text-black"><span className="font-bold">-{entryContracts}C</span> at ${note.strike_target_mid}</span>
           <span className="text-xs text-green-500">$32,622</span>
         </div>
       )}
