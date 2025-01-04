@@ -36,6 +36,7 @@ interface ApiResponse {
   entry: StrikeData
   target: StrikeData
   protection: StrikeData
+  underlying_price?: number
 }
 
 const Test = () => {
@@ -53,6 +54,92 @@ const Test = () => {
       strike_protection: 560
     }
   })
+
+  const saveToDatabase = async (data: TestFormValues, response: ApiResponse) => {
+    console.log("Attempting to save data to database...")
+    
+    try {
+      const { data: user, error: userError } = await supabase.auth.getUser()
+      if (userError || !user.user) throw userError
+
+      const profile_id = user.user.id
+      console.log("User profile_id:", profile_id)
+
+      // Check if record exists
+      const { data: existingRecord, error: queryError } = await supabase
+        .from('diy_notes')
+        .select('*')
+        .eq('profile_id', profile_id)
+        .eq('ticker', data.ticker)
+        .eq('expiration', data.expiration)
+        .single()
+
+      if (queryError && queryError.code !== 'PGRST116') {
+        console.error("Error checking existing record:", queryError)
+        throw queryError
+      }
+
+      const dbData = {
+        profile_id,
+        ticker: data.ticker,
+        expiration: data.expiration,
+        strike_entry: data.strike_entry,
+        strike_target: data.strike_target,
+        strike_protection: data.strike_protection,
+        underlying_price: response.underlying_price,
+        // Entry strike data
+        strike_entry_mid: response.entry.marketData?.mid,
+        strike_entry_open_interest: response.entry.marketData?.openInterest,
+        strike_entry_iv: response.entry.marketData?.iv,
+        strike_entry_delta: response.entry.marketData?.delta,
+        strike_entry_intrinsic_value: response.entry.marketData?.intrinsicValue,
+        strike_entry_extrinsic_value: response.entry.marketData?.extrinsicValue,
+        // Target strike data
+        strike_target_mid: response.target.marketData?.mid,
+        strike_target_open_interest: response.target.marketData?.openInterest,
+        strike_target_iv: response.target.marketData?.iv,
+        strike_target_delta: response.target.marketData?.delta,
+        strike_target_intrinsic_value: response.target.marketData?.intrinsicValue,
+        strike_target_extrinsic_value: response.target.marketData?.extrinsicValue,
+        // Protection strike data
+        strike_protection_mid: response.protection.marketData?.mid,
+        strike_protection_open_interest: response.protection.marketData?.openInterest,
+        strike_protection_iv: response.protection.marketData?.iv,
+        strike_protection_delta: response.protection.marketData?.delta,
+        strike_protection_intrinsic_value: response.protection.marketData?.intrinsicValue,
+        strike_protection_extrinsic_value: response.protection.marketData?.extrinsicValue,
+      }
+
+      let error
+      if (existingRecord) {
+        console.log("Updating existing record...")
+        const { error: updateError } = await supabase
+          .from('diy_notes')
+          .update(dbData)
+          .eq('profile_id', profile_id)
+          .eq('ticker', data.ticker)
+          .eq('expiration', data.expiration)
+        error = updateError
+      } else {
+        console.log("Inserting new record...")
+        const { error: insertError } = await supabase
+          .from('diy_notes')
+          .insert(dbData)
+        error = insertError
+      }
+
+      if (error) {
+        console.error("Error saving to database:", error)
+        throw error
+      }
+
+      console.log("Successfully saved data to database")
+      return true
+    } catch (error) {
+      console.error("Error in saveToDatabase:", error)
+      throw error
+    }
+  }
 
   const onSubmit = async (data: TestFormValues) => {
     console.log("Submitting test form with data:", data)
@@ -84,6 +171,10 @@ const Test = () => {
 
       console.log("API response:", response)
       setApiResponse(response)
+      
+      // Save to database after successful API response
+      await saveToDatabase(data, response)
+      
       toast({
         description: "API data successfully fetched and stored in the database"
       })
