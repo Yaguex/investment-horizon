@@ -1,5 +1,4 @@
 import { useForm } from "react-hook-form"
-import { format } from "date-fns"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -8,6 +7,8 @@ import { NumberField } from "@/components/diy-notes/form-fields/NumberField"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { Loader2 } from "lucide-react"
 
 interface DIYNoteFormValues {
   ticker: string
@@ -28,7 +29,7 @@ interface DIYNoteFormProps {
 }
 
 export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
-  console.log("DIYNoteForm mounted with note:", note) // Debug log
+  const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
   
   const form = useForm<DIYNoteFormValues>({
@@ -57,6 +58,10 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
 
   const onSubmit = async (data: DIYNoteFormValues) => {
     try {
+      setIsLoading(true)
+      onOpenChange(false)
+
+      // Save note
       if (note) {
         // Update existing note
         const { error } = await supabase
@@ -67,7 +72,10 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
           })
           .eq('id', note.id)
 
-        if (error) throw error
+        if (error) {
+          toast.error(`Failed to save note: ${error.message}`)
+          return
+        }
         toast.success('Note updated successfully')
       } else {
         // Create new note
@@ -81,19 +89,51 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             }
           ])
 
-        if (error) throw error
+        if (error) {
+          toast.error(`Failed to save note: ${error.message}`)
+          return
+        }
         toast.success('Note created successfully')
       }
-      
-      // Invalidate and refetch the notes query
+
+      // Fetch market data
+      const { error: marketDataError } = await supabase.functions.invoke('fetch_ticker_data', {
+        body: {
+          ticker: data.ticker,
+          expiration: data.expiration,
+          strikes: {
+            entry: data.strike_entry,
+            target: data.strike_target,
+            protection: data.strike_protection
+          },
+          profile_id: (await supabase.auth.getUser()).data.user?.id
+        }
+      })
+
+      if (marketDataError) {
+        toast.error(`Failed to fetch market data: ${marketDataError.message}`)
+      } else {
+        toast.success('Market data updated successfully')
+      }
+
+      // Refetch notes
       await queryClient.invalidateQueries({ queryKey: ['diy-notes'] })
       
-      onOpenChange(false)
       form.reset()
-    } catch (error) {
-      console.error('Error saving note:', error)
-      toast.error(`Error ${note ? 'updating' : 'creating'} note`)
+    } catch (error: any) {
+      console.error('Error in form submission:', error)
+      toast.error(`Error: ${error.message}`)
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
   }
 
   return (
