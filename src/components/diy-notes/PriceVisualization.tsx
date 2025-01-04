@@ -46,6 +46,9 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
 
   // Set target contracts equal to entry contracts
   const targetContracts = entryContracts
+
+  // Calculate protection fee
+  const protectionFee = protectionContracts * note.strike_protection_mid * 100
   
   return (
     <div className="mt-12 mb-20 relative">
@@ -117,7 +120,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           style={{ left: `${leftPosition}%` }}
         >
           <span className="text-xs text-black"><span className="font-bold">-{protectionContracts}P</span> at ${note.strike_protection_mid}</span>
-          <span className="text-xs text-green-500">$7,450</span>
+          <span className="text-xs text-green-500">${formatNumber(protectionFee, 0)}</span>
         </div>
       )}
       {note.strike_target !== 0 && (
