@@ -28,6 +28,13 @@ interface DIYNoteFormProps {
   note?: any
 }
 
+const isValidDate = (dateStr: string) => {
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(dateStr)) return false;
+  const date = new Date(dateStr);
+  return date instanceof Date && !isNaN(date.getTime());
+};
+
 export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
@@ -58,6 +65,12 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
 
   const onSubmit = async (data: DIYNoteFormValues) => {
     try {
+      // Validate date format
+      if (data.expiration && !isValidDate(data.expiration)) {
+        toast.error('Invalid date format. Please use YYYY-MM-DD format')
+        return
+      }
+
       // First save the note
       if (note) {
         // Update existing note
@@ -145,8 +158,8 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
                 control={form.control}
                 name="expiration"
                 label="Expiration"
-                placeholder="Example: 19-12-2025"
-                description="Use format: DD-MM-YYYY"
+                placeholder="Example: 2025-12-19"
+                description="Use format: YYYY-MM-DD"
               />
               <NumberField
                 control={form.control}
