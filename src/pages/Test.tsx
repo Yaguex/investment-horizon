@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { DateField } from "@/components/trade/form-fields/DateField"
 import { TextField } from "@/components/trade/form-fields/TextField"
 import { NumberField } from "@/components/trade/form-fields/NumberField"
-import { SelectField } from "@/components/allocations/form-fields/SelectField"
+import { SelectField } from "@/components/test/form-fields/SelectField"
 import Header from "@/components/Header"
 
 interface TestFormValues {
