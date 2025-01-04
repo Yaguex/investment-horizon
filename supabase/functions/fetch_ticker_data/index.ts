@@ -93,22 +93,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client with service role key
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get user profile_id from auth header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user) {
-      throw new Error('Invalid auth token');
-    }
-
     const { ticker, expiration, type, strikes } = await req.json();
     console.log(`[${new Date().toISOString()}] Input data:`, { ticker, expiration, type, strikes });
 
@@ -136,58 +120,11 @@ Deno.serve(async (req) => {
       })()
     ]);
 
-    // Prepare data for database
-    const dbData = {
-      profile_id: user.id,
-      ticker,
-      expiration,
-      strike_entry: strikes.entry,
-      strike_target: strikes.target,
-      strike_protection: strikes.protection,
-      // Entry strike data
-      ...(entryData.marketData && {
-        strike_entry_mid: parseFloat(entryData.marketData.mid),
-        strike_entry_open_interest: entryData.marketData.openInterest,
-        strike_entry_iv: entryData.marketData.iv,
-        strike_entry_delta: parseFloat(entryData.marketData.delta),
-        strike_entry_intrinsic_value: parseFloat(entryData.marketData.intrinsicValue),
-        strike_entry_extrinsic_value: parseFloat(entryData.marketData.extrinsicValue),
-      }),
-      // Target strike data
-      ...(targetData.marketData && {
-        strike_target_mid: parseFloat(targetData.marketData.mid),
-        strike_target_open_interest: targetData.marketData.openInterest,
-        strike_target_iv: targetData.marketData.iv,
-        strike_target_delta: parseFloat(targetData.marketData.delta),
-        strike_target_intrinsic_value: parseFloat(targetData.marketData.intrinsicValue),
-        strike_target_extrinsic_value: parseFloat(targetData.marketData.extrinsicValue),
-      }),
-      // Protection strike data
-      ...(protectionData.marketData && {
-        strike_protection_mid: parseFloat(protectionData.marketData.mid),
-        strike_protection_open_interest: protectionData.marketData.openInterest,
-        strike_protection_iv: protectionData.marketData.iv,
-        strike_protection_delta: parseFloat(protectionData.marketData.delta),
-        strike_protection_intrinsic_value: parseFloat(protectionData.marketData.intrinsicValue),
-        strike_protection_extrinsic_value: parseFloat(protectionData.marketData.extrinsicValue),
-      }),
-    };
-
-    console.log(`[${new Date().toISOString()}] Attempting to upsert data:`, dbData);
-
-    // Upsert data into diy_notes table
-    const { error: dbError } = await supabase
-      .from('diy_notes')
-      .upsert(dbData, {
-        onConflict: 'profile_id,ticker,expiration',
-      });
-
-    if (dbError) {
-      console.error(`[${new Date().toISOString()}] Database error:`, dbError);
-      throw dbError;
-    }
-
-    console.log(`[${new Date().toISOString()}] Data successfully stored in database`);
+    console.log(`[${new Date().toISOString()}] Response data:`, {
+      entry: entryData,
+      target: targetData,
+      protection: protectionData
+    });
 
     return new Response(
       JSON.stringify({
