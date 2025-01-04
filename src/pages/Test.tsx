@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { TextField } from "@/components/test/form-fields/TextField"
 import { NumberField } from "@/components/test/form-fields/NumberField"
@@ -33,13 +33,18 @@ interface StrikeData {
 }
 
 interface ApiResponse {
-  entry: StrikeData
-  target: StrikeData
-  protection: StrikeData
+  marketData: {
+    entry: StrikeData
+    target: StrikeData
+    protection: StrikeData
+  }
+  dbOperation: {
+    success: boolean
+    error?: any
+  }
 }
 
 const Test = () => {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null)
 
@@ -69,30 +74,24 @@ const Test = () => {
             entry: data.strike_entry,
             target: data.strike_target,
             protection: data.strike_protection
-          }
+          },
+          profile_id: (await supabase.auth.getUser()).data.user?.id
         }
       })
 
-      if (error) {
-        console.error("Error generating symbols:", error)
-        toast({
-          variant: "destructive",
-          description: "API data could not be fetched or stored in the database"
-        })
-        return
-      }
+      if (error) throw error;
 
       console.log("API response:", response)
       setApiResponse(response)
-      toast({
-        description: "API data successfully fetched and stored in the database"
-      })
+
+      if (response.dbOperation.success) {
+        toast.success('API data successfully fetched and stored in the database')
+      } else {
+        throw new Error(response.dbOperation.error || 'Database operation failed')
+      }
     } catch (error) {
-      console.error("Error in symbol generation:", error)
-      toast({
-        variant: "destructive",
-        description: "API data could not be fetched or stored in the database"
-      })
+      console.error("Error in API call:", error)
+      toast.error('API data could not be fetched or stored in the database')
     } finally {
       setIsLoading(false)
     }
@@ -184,9 +183,9 @@ const Test = () => {
 
           {apiResponse && (
             <div className="space-y-4">
-              {renderMarketDataCard("Strike Entry", apiResponse.entry, form.getValues("strike_entry"))}
-              {renderMarketDataCard("Strike Target", apiResponse.target, form.getValues("strike_target"))}
-              {renderMarketDataCard("Strike Protection", apiResponse.protection, form.getValues("strike_protection"))}
+              {renderMarketDataCard("Strike Entry", apiResponse.marketData.entry, form.getValues("strike_entry"))}
+              {renderMarketDataCard("Strike Target", apiResponse.marketData.target, form.getValues("strike_target"))}
+              {renderMarketDataCard("Strike Protection", apiResponse.marketData.protection, form.getValues("strike_protection"))}
             </div>
           )}
         </div>
