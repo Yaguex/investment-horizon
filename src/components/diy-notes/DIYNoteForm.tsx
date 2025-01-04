@@ -145,8 +145,8 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
                 control={form.control}
                 name="expiration"
                 label="Expiration"
-                placeholder="Example: 2025-12-19"
-                description="Use format: YYYY-MM-DD"
+                placeholder="Example: 19-12-2025"
+                description="Use format: DD-MM-YYYY"
               />
               <NumberField
                 control={form.control}

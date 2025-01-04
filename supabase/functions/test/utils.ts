@@ -5,14 +5,14 @@ export const corsHeaders = {
 
 export function formatExpirationDate(dateStr: string): string {
   try {
-    // Input format: "YYYY-MM-DD"
+    // Input format: "DD-MM-YYYY"
     // Required output format: "YYMMDD"
-    const [year, month, day] = dateStr.split('-');
+    const [day, month, year] = dateStr.split('-');
     
     // Take last 2 digits of year
     const shortYear = year.slice(2);
     
-    // Combine in required format: YYMMDD
+    // Combine in required format
     const formattedDate = `${shortYear}${month}${day}`;
     
     console.log(`[Utils] Formatted date ${dateStr} to ${formattedDate}`);
