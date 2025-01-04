@@ -80,7 +80,9 @@ function generateOptionSymbol(ticker: string, expiration: string, type: string, 
   const optionType = type.toUpperCase().charAt(0);
   const strikeStr = (strike * 1000).toString().padStart(8, '0');
   
-  return `${ticker.toUpperCase()}${yearStr}${monthStr}${dayStr}${optionType}${strikeStr}`;
+  const symbol = `${ticker.toUpperCase()}${yearStr}${monthStr}${dayStr}${optionType}${strikeStr}`;
+  console.log(`[${new Date().toISOString()}] Generated symbol: ${symbol} for strike: ${strike}`);
+  return symbol;
 }
 
 Deno.serve(async (req) => {
@@ -117,6 +119,12 @@ Deno.serve(async (req) => {
         return { symbol, marketData };
       })()
     ]);
+
+    console.log(`[${new Date().toISOString()}] Response data:`, {
+      entry: entryData,
+      target: targetData,
+      protection: protectionData
+    });
 
     return new Response(
       JSON.stringify({
