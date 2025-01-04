@@ -72,9 +72,28 @@ export type Database = {
           nominal: number | null
           profile_id: string | null
           strike_entry: number | null
+          strike_entry_delta: number | null
+          strike_entry_extrinsic_value: number | null
+          strike_entry_intrinsic_value: number | null
+          strike_entry_iv: number | null
+          strike_entry_mid: number | null
+          strike_entry_open_interest: number | null
           strike_protection: number | null
+          strike_protection_delta: number | null
+          strike_protection_extrinsic_value: number | null
+          strike_protection_intrinsic_value: number | null
+          strike_protection_iv: number | null
+          strike_protection_mid: number | null
+          strike_protection_open_interest: number | null
           strike_target: number | null
+          strike_target_delta: number | null
+          strike_target_extrinsic_value: number | null
+          strike_target_intrinsic_value: number | null
+          strike_target_iv: number | null
+          strike_target_mid: number | null
+          strike_target_open_interest: number | null
           ticker: string | null
+          underlying_price: number | null
           wiggle: number | null
         }
         Insert: {
@@ -85,9 +104,28 @@ export type Database = {
           nominal?: number | null
           profile_id?: string | null
           strike_entry?: number | null
+          strike_entry_delta?: number | null
+          strike_entry_extrinsic_value?: number | null
+          strike_entry_intrinsic_value?: number | null
+          strike_entry_iv?: number | null
+          strike_entry_mid?: number | null
+          strike_entry_open_interest?: number | null
           strike_protection?: number | null
+          strike_protection_delta?: number | null
+          strike_protection_extrinsic_value?: number | null
+          strike_protection_intrinsic_value?: number | null
+          strike_protection_iv?: number | null
+          strike_protection_mid?: number | null
+          strike_protection_open_interest?: number | null
           strike_target?: number | null
+          strike_target_delta?: number | null
+          strike_target_extrinsic_value?: number | null
+          strike_target_intrinsic_value?: number | null
+          strike_target_iv?: number | null
+          strike_target_mid?: number | null
+          strike_target_open_interest?: number | null
           ticker?: string | null
+          underlying_price?: number | null
           wiggle?: number | null
         }
         Update: {
@@ -98,9 +136,28 @@ export type Database = {
           nominal?: number | null
           profile_id?: string | null
           strike_entry?: number | null
+          strike_entry_delta?: number | null
+          strike_entry_extrinsic_value?: number | null
+          strike_entry_intrinsic_value?: number | null
+          strike_entry_iv?: number | null
+          strike_entry_mid?: number | null
+          strike_entry_open_interest?: number | null
           strike_protection?: number | null
+          strike_protection_delta?: number | null
+          strike_protection_extrinsic_value?: number | null
+          strike_protection_intrinsic_value?: number | null
+          strike_protection_iv?: number | null
+          strike_protection_mid?: number | null
+          strike_protection_open_interest?: number | null
           strike_target?: number | null
+          strike_target_delta?: number | null
+          strike_target_extrinsic_value?: number | null
+          strike_target_intrinsic_value?: number | null
+          strike_target_iv?: number | null
+          strike_target_mid?: number | null
+          strike_target_open_interest?: number | null
           ticker?: string | null
+          underlying_price?: number | null
           wiggle?: number | null
         }
         Relationships: []
