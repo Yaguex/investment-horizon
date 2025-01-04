@@ -67,6 +67,22 @@ async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Pro
   return null;
 }
 
+function generateOptionSymbol(ticker: string, expiration: string, type: string, strike: number): string {
+  // Parse the date string (DD-MM-YYYY) into parts
+  const [day, month, year] = expiration.split('-').map(Number);
+  
+  // Format the date parts for the symbol
+  const yearStr = year.toString().slice(-2);
+  const monthStr = month.toString().padStart(2, '0');
+  const dayStr = day.toString().padStart(2, '0');
+  
+  // Generate option symbol (Format: SPY260116C00585000)
+  const optionType = type.toUpperCase().charAt(0);
+  const strikeStr = (strike * 1000).toString().padStart(8, '0');
+  
+  return `${ticker.toUpperCase()}${yearStr}${monthStr}${dayStr}${optionType}${strikeStr}`;
+}
+
 Deno.serve(async (req) => {
   console.log(`[${new Date().toISOString()}] Received request`);
 
@@ -75,47 +91,38 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { ticker, expiration, type, strike } = await req.json();
-    console.log(`[${new Date().toISOString()}] Input data:`, { ticker, expiration, type, strike });
+    const { ticker, expiration, type, strikes } = await req.json();
+    console.log(`[${new Date().toISOString()}] Input data:`, { ticker, expiration, type, strikes });
 
-    // Parse the date string (DD-MM-YYYY) into parts
-    const [day, month, year] = expiration.split('-').map(Number);
-    console.log(`[${new Date().toISOString()}] Parsed date parts:`, { day, month, year });
-
-    // Format the date parts for the symbol
-    const yearStr = year.toString().slice(-2);
-    const monthStr = month.toString().padStart(2, '0');
-    const dayStr = day.toString().padStart(2, '0');
-    
-    // Generate option symbol (Format: SPY260116C00585000)
-    const optionType = type.toUpperCase().charAt(0);
-    const strikeStr = (strike * 1000).toString().padStart(8, '0');
-    
-    const symbol = `${ticker.toUpperCase()}${yearStr}${monthStr}${dayStr}${optionType}${strikeStr}`;
-    console.log(`[${new Date().toISOString()}] Generated symbol: ${symbol}`);
-
-    // Fetch market data
     const apiKey = Deno.env.get('MARKETDATA_API_KEY');
     if (!apiKey) {
       throw new Error('MARKETDATA_API_KEY not found');
     }
-    console.log(`[${new Date().toISOString()}] API Key found, length:`, apiKey.length);
 
-    const marketData = await fetchOptionData(symbol, apiKey);
-    console.log(`[${new Date().toISOString()}] Market data:`, marketData);
+    // Generate symbols and fetch data for all strikes in parallel
+    const [entryData, targetData, protectionData] = await Promise.all([
+      (async () => {
+        const symbol = generateOptionSymbol(ticker, expiration, type, strikes.entry);
+        const marketData = await fetchOptionData(symbol, apiKey);
+        return { symbol, marketData };
+      })(),
+      (async () => {
+        const symbol = generateOptionSymbol(ticker, expiration, type, strikes.target);
+        const marketData = await fetchOptionData(symbol, apiKey);
+        return { symbol, marketData };
+      })(),
+      (async () => {
+        const symbol = generateOptionSymbol(ticker, expiration, type, strikes.protection);
+        const marketData = await fetchOptionData(symbol, apiKey);
+        return { symbol, marketData };
+      })()
+    ]);
 
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        symbol,
-        marketData: marketData ? {
-          mid: marketData.mid,
-          openInterest: marketData.openInterest,
-          iv: marketData.iv,
-          delta: marketData.delta,
-          intrinsicValue: marketData.intrinsicValue,
-          extrinsicValue: marketData.extrinsicValue
-        } : null,
+      JSON.stringify({
+        entry: entryData,
+        target: targetData,
+        protection: protectionData,
         timestamp: new Date().toISOString()
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

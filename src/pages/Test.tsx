@@ -7,15 +7,15 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { TextField } from "@/components/test/form-fields/TextField"
 import { NumberField } from "@/components/test/form-fields/NumberField"
-import { SelectField } from "@/components/test/form-fields/SelectField"
 import Header from "@/components/Header"
 
 interface TestFormValues {
   ticker: string
   expiration: string
   type: string
-  strike: number | null
-  strike_position: string
+  strike_entry: number | null
+  strike_target: number | null
+  strike_protection: number | null
 }
 
 interface MarketData {
@@ -27,26 +27,37 @@ interface MarketData {
   extrinsicValue: number
 }
 
+interface StrikeData {
+  symbol: string
+  marketData: MarketData | null
+}
+
+interface ApiResponse {
+  entry: StrikeData
+  target: StrikeData
+  protection: StrikeData
+}
+
 const Test = () => {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
-  const [generatedSymbol, setGeneratedSymbol] = useState<string | null>(null)
-  const [marketData, setMarketData] = useState<MarketData | null>(null)
+  const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null)
 
   const form = useForm<TestFormValues>({
     defaultValues: {
       ticker: "SPY",
       expiration: "19-12-2025",
       type: "call",
-      strike: 585,
-      strike_position: "entry"
+      strike_entry: 590,
+      strike_target: 640,
+      strike_protection: 560
     }
   })
 
   const onSubmit = async (data: TestFormValues) => {
     console.log("Submitting test form with data:", data)
     setIsLoading(true)
-    setMarketData(null)
+    setApiResponse(null)
 
     try {
       const { data: response, error } = await supabase.functions.invoke('fetch_ticker_data', {
@@ -54,13 +65,16 @@ const Test = () => {
           ticker: data.ticker,
           expiration: data.expiration,
           type: data.type,
-          strike: data.strike,
-          strike_position: data.strike_position
+          strikes: {
+            entry: data.strike_entry,
+            target: data.strike_target,
+            protection: data.strike_protection
+          }
         }
       })
 
       if (error) {
-        console.error("Error generating symbol:", error)
+        console.error("Error generating symbols:", error)
         toast({
           variant: "destructive",
           description: "API data could not be fetched or stored in the database"
@@ -69,8 +83,7 @@ const Test = () => {
       }
 
       console.log("API response:", response)
-      setGeneratedSymbol(response.symbol)
-      setMarketData(response.marketData)
+      setApiResponse(response)
       toast({
         description: "API data successfully fetched and stored in the database"
       })
@@ -84,6 +97,34 @@ const Test = () => {
       setIsLoading(false)
     }
   }
+
+  const renderMarketDataCard = (title: string, data: StrikeData | undefined, strike: number | null) => {
+    if (!data) return null;
+    
+    return (
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <p><span className="font-semibold">Symbol:</span> {data.symbol}</p>
+            <p><span className="font-semibold">Strike:</span> {strike}</p>
+            {data.marketData && (
+              <>
+                <p><span className="font-semibold">Mid:</span> {data.marketData.mid}</p>
+                <p><span className="font-semibold">Open Interest:</span> {data.marketData.openInterest}</p>
+                <p><span className="font-semibold">IV:</span> {data.marketData.iv}</p>
+                <p><span className="font-semibold">Delta:</span> {data.marketData.delta}</p>
+                <p><span className="font-semibold">Intrinsic Value:</span> {data.marketData.intrinsicValue}</p>
+                <p><span className="font-semibold">Extrinsic Value:</span> {data.marketData.extrinsicValue}</p>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -115,19 +156,20 @@ const Test = () => {
               
               <NumberField
                 control={form.control}
-                name="strike"
-                label="Strike"
+                name="strike_entry"
+                label="Strike Entry"
               />
 
-              <SelectField
+              <NumberField
                 control={form.control}
-                name="strike_position"
-                label="Strike Position"
-                options={[
-                  { label: "Entry", value: "entry" },
-                  { label: "Target", value: "target" },
-                  { label: "Protection", value: "protection" }
-                ]}
+                name="strike_target"
+                label="Strike Target"
+              />
+
+              <NumberField
+                control={form.control}
+                name="strike_protection"
+                label="Strike Protection"
               />
               
               <Button 
@@ -135,38 +177,17 @@ const Test = () => {
                 disabled={isLoading}
                 className="w-full"
               >
-                Generate Symbol
+                Generate Symbols
               </Button>
             </form>
           </Form>
 
-          {generatedSymbol && (
-            <Card className="mt-8">
-              <CardHeader>
-                <CardTitle>MarketData.app symbol</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-lg font-mono">{generatedSymbol}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {marketData && (
-            <Card className="mt-8">
-              <CardHeader>
-                <CardTitle>Market Data</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p><span className="font-semibold">Mid:</span> {marketData.mid}</p>
-                  <p><span className="font-semibold">Open Interest:</span> {marketData.openInterest}</p>
-                  <p><span className="font-semibold">IV:</span> {marketData.iv}</p>
-                  <p><span className="font-semibold">Delta:</span> {marketData.delta}</p>
-                  <p><span className="font-semibold">Intrinsic Value:</span> {marketData.intrinsicValue}</p>
-                  <p><span className="font-semibold">Extrinsic Value:</span> {marketData.extrinsicValue}</p>
-                </div>
-              </CardContent>
-            </Card>
+          {apiResponse && (
+            <div className="space-y-4">
+              {renderMarketDataCard("Strike Entry", apiResponse.entry, form.getValues("strike_entry"))}
+              {renderMarketDataCard("Strike Target", apiResponse.target, form.getValues("strike_target"))}
+              {renderMarketDataCard("Strike Protection", apiResponse.protection, form.getValues("strike_protection"))}
+            </div>
           )}
         </div>
       </main>
