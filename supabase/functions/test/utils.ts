@@ -12,7 +12,7 @@ export function formatExpirationDate(dateStr: string): string {
     // Take last 2 digits of year
     const shortYear = year.slice(2);
     
-    // Combine in required format
+    // Combine in required format: YYMMDD
     const formattedDate = `${shortYear}${month}${day}`;
     
     console.log(`[Utils] Formatted date ${dateStr} to ${formattedDate}`);
