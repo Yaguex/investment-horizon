@@ -5,33 +5,14 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-export function formatExpirationDate(dateStr: string | Date): string {
+export function formatExpirationDate(dateStr: string): string {
   try {
-    let date: Date;
+    // Parse the input date string (yyyy-MM-dd) into a Date object
+    const parsedDate = parse(dateStr, 'yyyy-MM-dd', new Date());
     
-    if (dateStr instanceof Date) {
-      // If it's already a Date object, use it directly
-      date = dateStr;
-      console.log('[Utils] Input date is Date object:', date);
-    } else {
-      // Parse the ISO string to get the local date components
-      date = new Date(dateStr);
-      console.log('[Utils] Parsed date from string:', date);
-    }
-    
-    // Extract local date components
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // getMonth() returns 0-11
-    const year = date.getFullYear();
-    
-    // Format to YYMMDD with leading zeros
-    const formattedYear = year.toString().slice(-2);
-    const formattedMonth = month.toString().padStart(2, '0');
-    const formattedDay = day.toString().padStart(2, '0');
-    
-    const result = `${formattedYear}${formattedMonth}${formattedDay}`;
-    console.log('[Utils] Formatted expiration date:', result);
-    return result;
+    // Format it to exactly match the API's expected format (YYMMDD)
+    // Using date-fns format with explicit formatting to ensure leading zeros
+    return format(parsedDate, 'yyMMdd');
   } catch (error) {
     console.error('[Utils] Error formatting date:', error);
     throw error;
