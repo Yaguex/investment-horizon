@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Generate symbols and fetch data for all strikes in parallel
+    // Generate symbols and fetch data for all strikes in parallel with hardcoded types
     const [entryData, targetData, protectionData] = await Promise.all([
       (async () => {
         const symbol = generateOptionSymbol(ticker, expiration, 'C', strikes.entry);
