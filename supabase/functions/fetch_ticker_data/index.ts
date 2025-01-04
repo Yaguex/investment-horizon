@@ -78,16 +78,20 @@ Deno.serve(async (req) => {
     const { ticker, expiration, type, strike } = await req.json();
     console.log(`[${new Date().toISOString()}] Input data:`, { ticker, expiration, type, strike });
 
-    // Generate option symbol (placeholder implementation)
-    // Format: SPY260116C00585000
-    const expirationDate = new Date(expiration);
-    const year = expirationDate.getFullYear().toString().slice(-2);
-    const month = (expirationDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = expirationDate.getDate().toString().padStart(2, '0');
+    // Parse the date string (DD-MM-YYYY) into parts
+    const [day, month, year] = expiration.split('-').map(Number);
+    console.log(`[${new Date().toISOString()}] Parsed date parts:`, { day, month, year });
+
+    // Format the date parts for the symbol
+    const yearStr = year.toString().slice(-2);
+    const monthStr = month.toString().padStart(2, '0');
+    const dayStr = day.toString().padStart(2, '0');
+    
+    // Generate option symbol (Format: SPY260116C00585000)
     const optionType = type.toUpperCase().charAt(0);
     const strikeStr = (strike * 1000).toString().padStart(8, '0');
     
-    const symbol = `${ticker.toUpperCase()}${year}${month}${day}${optionType}${strikeStr}`;
+    const symbol = `${ticker.toUpperCase()}${yearStr}${monthStr}${dayStr}${optionType}${strikeStr}`;
     console.log(`[${new Date().toISOString()}] Generated symbol: ${symbol}`);
 
     // Fetch market data
