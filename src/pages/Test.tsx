@@ -9,6 +9,7 @@ import { NumberField } from "@/components/test/form-fields/NumberField"
 import Header from "@/components/Header"
 import { MarketDataCard } from "./test/MarketDataCard"
 import type { TestFormValues, ApiResponse } from "./test/types"
+import { format, parse } from "date-fns"
 
 const Test = () => {
   const { toast } = useToast()
@@ -32,21 +33,7 @@ const Test = () => {
     setApiResponse(null)
 
     try {
-      // Use count() instead of select() to check for existing records
-      const { count, error: countError } = await supabase
-        .from('diy_notes')
-        .select('*', { count: 'exact', head: true })
-        .eq('ticker', data.ticker)
-        .eq('expiration', data.expiration)
-
-      if (countError) {
-        console.error("Error checking existing record:", countError)
-        throw countError
-      }
-
-      const isUpdate = count && count > 0
-      console.log(isUpdate ? "Updating existing record" : "Creating new record")
-
+      // First get the market data from the API
       const { data: response, error } = await supabase.functions.invoke('fetch_ticker_data', {
         body: { 
           ticker: data.ticker,
@@ -64,18 +51,70 @@ const Test = () => {
         console.error("Error generating symbols:", error)
         toast({
           variant: "destructive",
-          description: "API data could not be fetched or stored in the database"
+          description: "API data could not be fetched"
         })
         return
       }
 
       console.log("API response:", response)
       setApiResponse(response)
-      toast({
-        description: isUpdate 
-          ? "Record updated successfully" 
-          : "New record created successfully"
-      })
+
+      // After getting market data, check if record exists
+      // Parse the DD-MM-YYYY date to a Date object and format as YYYY-MM-DD
+      const formattedDate = format(
+        parse(data.expiration, 'dd-MM-yyyy', new Date()),
+        'yyyy-MM-dd'
+      )
+
+      const { count, error: countError } = await supabase
+        .from('diy_notes')
+        .select('*', { count: 'exact', head: true })
+        .eq('ticker', data.ticker)
+        .eq('expiration', formattedDate)
+
+      if (countError) {
+        console.error("Error checking existing record:", countError)
+        throw countError
+      }
+
+      const isUpdate = count && count > 0
+      console.log(isUpdate ? "Updating existing record" : "Creating new record")
+
+      // Store the data in the database
+      if (isUpdate) {
+        const { error: updateError } = await supabase
+          .from('diy_notes')
+          .update({
+            strike_entry: data.strike_entry,
+            strike_target: data.strike_target,
+            strike_protection: data.strike_protection,
+            // Add other fields as needed
+          })
+          .eq('ticker', data.ticker)
+          .eq('expiration', formattedDate)
+
+        if (updateError) throw updateError
+        toast({
+          description: "Record updated successfully"
+        })
+      } else {
+        const { error: insertError } = await supabase
+          .from('diy_notes')
+          .insert([{
+            ticker: data.ticker,
+            expiration: formattedDate,
+            strike_entry: data.strike_entry,
+            strike_target: data.strike_target,
+            strike_protection: data.strike_protection,
+            // Add other fields as needed
+          }])
+
+        if (insertError) throw insertError
+        toast({
+          description: "New record created successfully"
+        })
+      }
+
     } catch (error) {
       console.error("Error in symbol generation:", error)
       toast({
