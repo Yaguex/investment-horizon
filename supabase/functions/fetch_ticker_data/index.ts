@@ -5,6 +5,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function formatDateForPostgres(dateStr: string): string {
+  // Convert from DD-MM-YYYY to YYYY-MM-DD
+  const [day, month, year] = dateStr.split('-');
+  return `${year}-${month}-${day}`;
+}
+
 async function fetchOptionData(symbol: string, apiKey: string, retries = 3): Promise<any> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -87,14 +93,17 @@ function generateOptionSymbol(ticker: string, expiration: string, type: string, 
 
 async function saveToDatabase(supabase: any, marketData: any, userData: any) {
   const { ticker, expiration, profile_id } = userData;
+  const formattedExpiration = formatDateForPostgres(expiration);
   
   try {
+    console.log(`[${new Date().toISOString()}] Attempting database operation with formatted date: ${formattedExpiration}`);
+    
     // Check if record exists
     const { data: existingRecord } = await supabase
       .from('diy_notes')
       .select('id')
       .eq('ticker', ticker)
-      .eq('expiration', expiration)
+      .eq('expiration', formattedExpiration)
       .eq('profile_id', profile_id)
       .single();
 
@@ -132,7 +141,7 @@ async function saveToDatabase(supabase: any, marketData: any, userData: any) {
         .insert([{
           profile_id,
           ticker,
-          expiration,
+          expiration: formattedExpiration,
           strike_entry: userData.strikes.entry,
           strike_target: userData.strikes.target,
           strike_protection: userData.strikes.protection,
@@ -157,9 +166,12 @@ async function saveToDatabase(supabase: any, marketData: any, userData: any) {
         }]);
 
     const { error } = await dbOperation;
+    console.log(`[${new Date().toISOString()}] Database operation completed:`, error ? 'Error' : 'Success');
+    if (error) console.error(`[${new Date().toISOString()}] Database error:`, error);
+    
     return { success: !error, error };
   } catch (error) {
-    console.error('Database operation failed:', error);
+    console.error(`[${new Date().toISOString()}] Database operation failed:`, error);
     return { success: false, error };
   }
 }
