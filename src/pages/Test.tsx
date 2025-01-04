@@ -12,7 +12,6 @@ import Header from "@/components/Header"
 interface TestFormValues {
   ticker: string
   expiration: string
-  type: string
   strike_entry: number | null
   strike_target: number | null
   strike_protection: number | null
@@ -52,7 +51,6 @@ const Test = () => {
     defaultValues: {
       ticker: "SPY",
       expiration: "19-12-2025",
-      type: "call",
       strike_entry: 590,
       strike_target: 640,
       strike_protection: 560
@@ -69,7 +67,6 @@ const Test = () => {
         body: { 
           ticker: data.ticker,
           expiration: data.expiration,
-          type: data.type,
           strikes: {
             entry: data.strike_entry,
             target: data.strike_target,
@@ -145,12 +142,6 @@ const Test = () => {
                 control={form.control}
                 name="expiration"
                 label="Expiration (DD-MM-YYYY)"
-              />
-              
-              <TextField
-                control={form.control}
-                name="type"
-                label="Type"
               />
               
               <NumberField
