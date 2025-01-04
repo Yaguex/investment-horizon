@@ -1,4 +1,4 @@
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
+import { FormControl, FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Control, FieldValues, Path } from "react-hook-form"
 
@@ -6,9 +6,17 @@ interface TextFieldProps<T extends FieldValues> {
   control: Control<T>
   name: Path<T>
   label: string
+  placeholder?: string
+  description?: string
 }
 
-export function TextField<T extends FieldValues>({ control, name, label }: TextFieldProps<T>) {
+export function TextField<T extends FieldValues>({ 
+  control, 
+  name, 
+  label,
+  placeholder,
+  description
+}: TextFieldProps<T>) {
   return (
     <FormField
       control={control}
@@ -17,8 +25,9 @@ export function TextField<T extends FieldValues>({ control, name, label }: TextF
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Input {...field} value={field.value || ''} />
+            <Input {...field} placeholder={placeholder} value={field.value || ''} />
           </FormControl>
+          {description && <FormDescription>{description}</FormDescription>}
         </FormItem>
       )}
     />
