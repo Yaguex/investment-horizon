@@ -26,7 +26,7 @@ export const MarketDataCard = ({ title, data, strike }: MarketDataCardProps) => 
               <p><span className="font-semibold">IV:</span> {data.marketData.iv}</p>
               <p><span className="font-semibold">Delta:</span> {data.marketData.delta}</p>
               <p><span className="font-semibold">Intrinsic Value:</span> {data.marketData.intrinsicValue}</p>
-              <p><span className="font-semibold">Extrinsic Value:</span> {data.marketData.extrinsic}</p>
+              <p><span className="font-semibold">Extrinsic Value:</span> {data.marketData.extrinsicValue}</p>
             </>
           )}
         </div>
