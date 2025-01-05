@@ -44,9 +44,6 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   // Calculate max gain percentage
   const maxGainPercentage = (maxGainDollars / (note.nominal + totalFee - noteNet + (totalFee * (note.wiggle/100)))) * 100
 
-  // Calculate max annual ROI
-  const maxAnnualROI = maxGainDollars * (365 / daysUntilExpiration)
-
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
     if (value > 0) return "text-green-600"
@@ -69,7 +66,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
       </div>
       <div className="flex gap-8 items-start">
         <div className="text-center">
-          <p className="text-red-600 text-xl font-bold">{formatNumber(maxAnnualROI, 1)}%</p>
+          <p className="text-red-600 text-xl font-bold">8.3%</p>
           <p className="text-xs text-black">Max ROI<br />annualized</p>
         </div>
         <div className="text-center">
