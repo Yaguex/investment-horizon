@@ -60,6 +60,10 @@ const calculateCirclePositions = (note: any) => {
 export function PriceVisualization({ note }: PriceVisualizationProps) {
   const { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike } = calculateCirclePositions(note)
   
+  // Calculate OTM percentages
+  const protectionOTM = ((note.strike_protection - note.strike_entry) * -1) / note.strike_entry * 100
+  const targetOTM = (note.strike_target - note.strike_entry) / note.strike_entry * 100
+  
   // Calculate the number of contracts for protection
   const protectionContracts = Math.round(note.nominal / note.strike_protection / 100)
   
@@ -97,7 +101,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.strike_entry}</span>
+                <span className="text-sm text-black mb-1"><strong>${note.strike_entry}</strong></span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
                 Entry strike: ${formatNumber(note.strike_entry, 2)}
@@ -115,13 +119,19 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.strike_target}</span>
+                <span className="text-sm text-black mb-1"><strong>${note.strike_target}</strong></span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
                 Target strike: ${formatNumber(note.strike_target, 2)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
+            <span 
+              className="absolute text-gray-500 -left-[120px] top-[2px] z-20"
+              style={{ fontSize: '10px' }}
+            >
+              ({formatNumber(targetOTM, 1)}% OTM)
+            </span>
           </div>
         )}
         
@@ -133,13 +143,19 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.strike_protection}</span>
+                <span className="text-sm text-black mb-1"><strong>${note.strike_protection}</strong></span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
                 Protection strike: ${formatNumber(note.strike_protection, 2)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
+            <span 
+              className="absolute text-gray-500 left-[20px] top-[2px] z-20"
+              style={{ fontSize: '10px' }}
+            >
+              ({formatNumber(protectionOTM, 1)}% OTM)
+            </span>
           </div>
         )}
 
