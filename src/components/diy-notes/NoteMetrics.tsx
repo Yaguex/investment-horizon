@@ -47,8 +47,8 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   // Calculate max annual ROI
   const maxAnnualROI = maxGainPercentage * (365 / daysUntilExpiration)
 
-  // Calculate convexity ratio
-  const convexity = maxGainDollars / (noteNet - (totalFee * (note.wiggle/100)) + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365))))
+  // Calculate leverage ratio
+  const leverage = (entryContracts / ((1000000 + totalDividend) / note.strike_entry / 100))
 
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
@@ -64,11 +64,11 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     return "text-orange-500"  // for values between 12 and 15 (inclusive)
   }
 
-  // Determine the color based on convexity value
-  const getConvexityColor = (value: number) => {
-    if (value > 4) return "text-green-600"
-    if (value < 3) return "text-red-600"
-    return "text-orange-500"  // for values between 3 and 4 (inclusive)
+  // Determine the color based on leverage value
+  const getLeverageColor = (value: number) => {
+    if (value > 50) return "text-green-600"
+    if (value < 20) return "text-red-600"
+    return "text-orange-500"  // for values between 20 and 50 (inclusive)
   }
 
   return (
@@ -90,11 +90,11 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-xs text-black">Max ROI<br />annualized</p>
         </div>
         <div className="text-center">
-          <p className="text-green-600 text-xl font-bold">58%</p>
+          <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x{formatNumber(leverage, 2)}</p>
           <p className="text-xs text-black">Leverage<br />ratio</p>
         </div>
         <div className="text-center">
-          <p className={`${getConvexityColor(convexity)} text-xl font-bold`}>{formatNumber(convexity, 1)}</p>
+          <p className="text-green-600 text-xl font-bold">2.0</p>
           <p className="text-xs text-black">Convexity<br />ratio</p>
         </div>
       </div>
