@@ -35,6 +35,21 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const targetFee = targetContracts * note.strike_target_mid * 100
   const totalFee = entryFee + targetFee + protectionFee
 
+  console.log('SPY Note Fee Calculation:', {
+    protectionContracts,
+    entryContracts,
+    targetContracts,
+    protectionFee,
+    entryFee,
+    targetFee,
+    totalFee,
+    note: {
+      strike_protection_mid: note.strike_protection_mid,
+      strike_entry_mid: note.strike_entry_mid,
+      strike_target_mid: note.strike_target_mid
+    }
+  })
+
   // Calculate note's net
   const noteNet = totalBondYield + totalFee
 
