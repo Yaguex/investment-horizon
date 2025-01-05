@@ -83,7 +83,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   }
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={100}>
       <div className="text-sm space-y-2 flex justify-between">
         <div>
           <p className="text-black">
@@ -91,7 +91,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 Dividend yield: {note.dividend_yield}% annual
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Annual dividend yield of the underlying
               </TooltipContent>
             </Tooltip>
@@ -100,7 +100,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 (${formatNumber(totalDividend, 0)} total)
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total money we would have earned in dividend throughout the entire lifespan of the note
               </TooltipContent>
             </Tooltip>
@@ -110,7 +110,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 Bond yield: {note.bond_yield}% annual
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Annual interest rate of a risk free bond with a maturity similar to the note expiration
               </TooltipContent>
             </Tooltip>
@@ -119,7 +119,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 (${formatNumber(totalBondYield, 0)} total)
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total money we will earn from the bond interests throughout the entire lifespan of the note
               </TooltipContent>
             </Tooltip>
@@ -129,7 +129,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 Max gain: {formatNumber(maxGainPercentage, 2)}% total
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total ROI if our target is reached at expiration
               </TooltipContent>
             </Tooltip>
@@ -138,7 +138,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 (${formatNumber(maxGainDollars, 0)} total)
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total money earned if our target is reached at expiration
               </TooltipContent>
             </Tooltip>
@@ -149,7 +149,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 <span className={getNetColor(noteNet)}>${formatNumber(noteNet, 0)}</span>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Cost of the option structure minus what we will recoup through bond interests. Ideally, you should be aiming for a costless note
               </TooltipContent>
             </Tooltip>
@@ -160,7 +160,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Outlay in premiums to enter the trade today
               </TooltipContent>
             </Tooltip>
@@ -176,7 +176,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x {formatNumber(leverage, 2)}</p>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 Dollar-per-dollar gain over just buying the underlying outright. The idea of Leverage comes from being able to afford to buy more Deltas (more calls) than I should have been able to afford had I not financed part of those calls through bond interests plus selling calls+puts. This allows me to kick up my exposure to the position without locking up more than the originally intended nominal (the amount I'm putting in to buy the bonds). Remember though that you have also given up on the dividend yield, so that needs to be subtracted from the nominal to properly calculate the true leverage you get. Also, you give up on the possibility or writing covered calls, but that is hard to quantify
               </TooltipContent>
             </Tooltip>
@@ -187,7 +187,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               <TooltipTrigger>
                 <p className={`${getConvexityColor(convexity)} text-xl font-bold`}>{formatNumber(convexity, 1)}</p>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
                 How many dollars can I potentially earn for every dollar I give up at the risk-free rate. Anything above 4-to-1 is a pretty good convexity bet
               </TooltipContent>
             </Tooltip>
