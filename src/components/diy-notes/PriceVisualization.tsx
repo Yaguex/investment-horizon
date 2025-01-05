@@ -1,6 +1,7 @@
-import { Circle } from "lucide-react"
+import { StrikeCircle } from "./visualization/StrikeCircle"
+import { PositionIndicator } from "./visualization/PositionIndicator"
+import { PriceRectangle } from "./visualization/PriceRectangle"
 import { formatNumber } from "./utils/formatters"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface PriceVisualizationProps {
   note: any
@@ -77,133 +78,93 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   // Set target contracts equal to entry contracts
   const targetContracts = entryContracts
 
-  // Calculate protection fee
+  // Calculate fees
   const protectionFee = protectionContracts * note.strike_protection_mid * 100
-
-  // Calculate entry fee
   const entryFee = entryContracts * note.strike_entry_mid * 100 * -1
-
-  // Calculate target fee
   const targetFee = targetContracts * note.strike_target_mid * 100
   
   return (
-    <TooltipProvider delayDuration={100}>
-      <div className="mt-12 mb-20 relative">
-        {/* Strike Entry Circle (Middle) */}
-        {note.strike_entry !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${middlePosition}%` }}
-          >
-            <span className="text-sm text-black mb-1">${note.strike_entry}</span>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
-        
-        {/* Strike Target Circle (Right) */}
-        {note.strike_target !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${rightPosition}%` }}
-          >
-            <span className="text-sm text-black mb-1">${note.strike_target}</span>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
-        
-        {/* Strike Protection Circle (Left) */}
-        {note.strike_protection !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${leftPosition}%` }}
-          >
-            <span className="text-sm text-black mb-1">${note.strike_protection}</span>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
+    <div className="mt-12 mb-20 relative">
+      {/* Strike Entry Circle (Middle) */}
+      {note.strike_entry !== 0 && (
+        <StrikeCircle 
+          position={middlePosition}
+          strike={note.strike_entry}
+          className="fill-black text-black"
+        />
+      )}
+      
+      {/* Strike Target Circle (Right) */}
+      {note.strike_target !== 0 && (
+        <StrikeCircle 
+          position={rightPosition}
+          strike={note.strike_target}
+          className="fill-black text-black"
+        />
+      )}
+      
+      {/* Strike Protection Circle (Left) */}
+      {note.strike_protection !== 0 && (
+        <StrikeCircle 
+          position={leftPosition}
+          strike={note.strike_protection}
+          className="fill-black text-black"
+        />
+      )}
 
-        {/* BE1 Circle */}
-        {note.strike_entry !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be1Position}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
-              </TooltipTrigger>
-              <TooltipContent>
-                BE1: ${formatNumber(strike_be1, 2)}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+      {/* BE1 Circle */}
+      {note.strike_entry !== 0 && (
+        <StrikeCircle 
+          position={be1Position}
+          strike={formatNumber(strike_be1, 2)}
+          style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }}
+        />
+      )}
 
-        {/* BE2 Circle */}
-        {note.strike_entry !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be2Position}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
-              </TooltipTrigger>
-              <TooltipContent>
-                BE2: ${formatNumber(strike_be2, 2)}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
-        
-        {/* Price rectangles */}
-        <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
-          {/* Red rectangle - only show if strike_protection exists */}
-          {note.strike_protection !== 0 && (
-            <div 
-              className="absolute left-0 top-0 bottom-0 bg-red-500"
-              style={{ width: `${leftPosition}%` }}
-            />
-          )}
-          {/* Green rectangle */}
-          <div 
-            className="absolute top-0 bottom-0 bg-green-500"
-            style={{ 
-              left: `${middlePosition}%`,
-              width: `${rightPosition - middlePosition}%`
-            }}
-          />
-        </div>
-        
-        {/* Position indicators aligned with circles */}
-        {note.strike_entry !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${middlePosition}%` }}
-          >
-            <span className="text-xs text-black"><span className="font-bold">+{entryContracts}C</span> at ${note.strike_entry_mid}</span>
-            <span className="text-xs text-red-500">${formatNumber(entryFee, 0)}</span>
-          </div>
-        )}
-        {note.strike_protection !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${leftPosition}%` }}
-          >
-            <span className="text-xs text-black"><span className="font-bold">-{protectionContracts}P</span> at ${note.strike_protection_mid}</span>
-            <span className="text-xs text-green-500">${formatNumber(protectionFee, 0)}</span>
-          </div>
-        )}
-        {note.strike_target !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${rightPosition}%` }}
-          >
-            <span className="text-xs text-black"><span className="font-bold">-{targetContracts}C</span> at ${note.strike_target_mid}</span>
-            <span className="text-xs text-green-500">${formatNumber(targetFee, 0)}</span>
-          </div>
-        )}
-      </div>
-    </TooltipProvider>
+      {/* BE2 Circle */}
+      {note.strike_entry !== 0 && (
+        <StrikeCircle 
+          position={be2Position}
+          strike={formatNumber(strike_be2, 2)}
+          style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }}
+        />
+      )}
+      
+      {/* Price rectangles */}
+      <PriceRectangle 
+        leftPosition={leftPosition}
+        middlePosition={middlePosition}
+        rightPosition={rightPosition}
+        showProtection={note.strike_protection !== 0}
+      />
+      
+      {/* Position indicators */}
+      {note.strike_entry !== 0 && (
+        <PositionIndicator
+          position={middlePosition}
+          contracts={entryContracts}
+          strike={note.strike_entry_mid}
+          fee={entryFee}
+        />
+      )}
+      {note.strike_protection !== 0 && (
+        <PositionIndicator
+          position={leftPosition}
+          contracts={protectionContracts}
+          strike={note.strike_protection_mid}
+          fee={protectionFee}
+          prefix="-"
+        />
+      )}
+      {note.strike_target !== 0 && (
+        <PositionIndicator
+          position={rightPosition}
+          contracts={targetContracts}
+          strike={note.strike_target_mid}
+          fee={targetFee}
+          prefix="-"
+        />
+      )}
+    </div>
   )
 }
