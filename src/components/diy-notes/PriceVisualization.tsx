@@ -60,12 +60,6 @@ const calculateCirclePositions = (note: any) => {
 export function PriceVisualization({ note }: PriceVisualizationProps) {
   const { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike } = calculateCirclePositions(note)
   
-  // Calculate OTM percentages
-  const protectionOTM = note.strike_protection !== 0 ? 
-    ((note.strike_protection - note.strike_entry) / note.strike_entry * 100).toFixed(2) : 0
-  const targetOTM = note.strike_target !== 0 ? 
-    ((note.strike_target - note.strike_entry) / note.strike_entry * 100).toFixed(2) : 0
-  
   // Calculate the number of contracts for protection
   const protectionContracts = Math.round(note.nominal / note.strike_protection / 100)
   
@@ -121,10 +115,10 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.strike_target} ({targetOTM}% OTM)</span>
+                <span className="text-sm text-black mb-1">${note.strike_target}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Target strike: ${formatNumber(note.strike_target, 2)} ({targetOTM}% OTM)
+                Target strike: ${formatNumber(note.strike_target, 2)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -139,10 +133,10 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.strike_protection} ({protectionOTM}% OTM)</span>
+                <span className="text-sm text-black mb-1">${note.strike_protection}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Protection strike: ${formatNumber(note.strike_protection, 2)} ({protectionOTM}% OTM)
+                Protection strike: ${formatNumber(note.strike_protection, 2)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
