@@ -92,7 +92,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
                 Dividend yield: {note.dividend_yield}% annual
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Annual interest rate of a risk free bond with a maturity similar to the note expiration. This is net dividend, meaning after withholding tax
+                Net annual dividend yield, meaning after withholding tax
               </TooltipContent>
             </Tooltip>
             {" "}
@@ -101,7 +101,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
                 (${formatNumber(totalDividend, 0)} total)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the note
+                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the note if we had bought the underlying
               </TooltipContent>
             </Tooltip>
           </p>
