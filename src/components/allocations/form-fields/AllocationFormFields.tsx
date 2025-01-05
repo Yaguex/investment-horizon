@@ -61,7 +61,7 @@ export function AllocationFormFields({ control }: AllocationFormFieldsProps) {
       <TextField 
         control={control} 
         name="dividend_%" 
-        label="Dividend %"
+        label="Dividend Yield (after withholding tax)"
         type="number"
       />
     </div>
