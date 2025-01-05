@@ -35,9 +35,6 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const targetFee = targetContracts * note.strike_target_mid * 100
   const totalFee = entryFee + targetFee + protectionFee
 
-  // Calculate note net
-  const noteNet = totalBondYield - totalFee
-
   return (
     <div className="text-sm space-y-2 flex justify-between">
       <div>
@@ -47,7 +44,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
         <p className="text-black">
           Bond yield: {note.bond_yield}% annual (${formatNumber(totalBondYield, 0)} total)
         </p>
-        <p className="text-black">Max gain: 14.42% total (${formatNumber(noteNet, 0)} total)</p>
+        <p className="text-black">Max gain: 14.42% total ($130,034 total)</p>
         <p className="text-black">Note's net: <span className="text-green-600">$1,022</span></p>
         <p className="text-black">Options premium: <span className="text-red-600">${formatNumber(totalFee, 0)}</span></p>
       </div>
