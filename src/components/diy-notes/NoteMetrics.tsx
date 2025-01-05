@@ -168,7 +168,14 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
         </div>
         <div className="flex gap-8 items-start">
           <div className="text-center">
-            <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
+            <Tooltip>
+              <TooltipTrigger>
+                <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Annualized ROI should we reach our target by expiration
+              </TooltipContent>
+            </Tooltip>
             <p className="text-xs text-black">Max ROI<br />annualized</p>
           </div>
           <div className="text-center">
