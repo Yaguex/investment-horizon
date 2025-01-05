@@ -162,7 +162,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             <NumberField
               control={form.control}
               name="dividend_yield"
-              label="Dividend Yield"
+              label="Dividend Yield (after withholding tax)"
             />
             <NumberField
               control={form.control}
