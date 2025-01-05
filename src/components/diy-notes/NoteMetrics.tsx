@@ -50,6 +50,9 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   // Calculate convexity ratio
   const convexity = maxGainDollars / (noteNet - (totalFee * (note.wiggle/100)) + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365))))
 
+  // Calculate leverage ratio
+  const leverage = entryContracts / ((1000000 + totalDividend - noteNet + (totalFee * (note.wiggle/100))) / note.strike_entry / 100)
+
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
     if (value > 0) return "text-green-600"
@@ -71,6 +74,13 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     return "text-orange-500"  // for values between 3 and 4 (inclusive)
   }
 
+  // Determine the color based on leverage value
+  const getLeverageColor = (value: number) => {
+    if (value > 1.50) return "text-green-600"
+    if (value < 1.20) return "text-red-600"
+    return "text-orange-500"  // for values between 1.20 and 1.50 (inclusive)
+  }
+
   return (
     <div className="text-sm space-y-2 flex justify-between">
       <div>
@@ -90,7 +100,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-xs text-black">Max ROI<br />annualized</p>
         </div>
         <div className="text-center">
-          <p className="text-green-600 text-xl font-bold">58%</p>
+          <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x {formatNumber(leverage, 2)}</p>
           <p className="text-xs text-black">Leverage<br />ratio</p>
         </div>
         <div className="text-center">
