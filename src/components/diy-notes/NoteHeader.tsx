@@ -50,13 +50,16 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
     }
   }
 
+  const protectionOTM = note.strike_entry ? Math.round(((note.strike_protection - note.strike_entry) * -1) / note.strike_entry * 100) : 0
+  const targetOTM = note.strike_entry ? Math.round((note.strike_target - note.strike_entry) / note.strike_entry * 100) : 0
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center">
         <span className="font-bold text-lg mr-8">{note.ticker}</span>
         <span className="text-sm text-gray-500 mr-8">{formatDate(note.expiration)}</span>
         <span className="text-sm text-gray-500 mr-8">${formatNumber(note.nominal, 0)}</span>
-        <span className="text-sm text-gray-500">IV {note.strike_entry_iv}% | IVP 72%</span>
+        <span className="text-sm text-gray-500">Protection {protectionOTM}% OTM | Target {targetOTM}% OTM</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
