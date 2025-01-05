@@ -38,6 +38,9 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   // Calculate note's net
   const noteNet = totalBondYield + totalFee
 
+  // Calculate max gain in dollars
+  const maxGainDollars = ((note.strike_target - note.strike_entry) * entryContracts * 100) + noteNet - (totalFee * (1 + note.wiggle))
+
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
     if (value > 0) return "text-green-600"
@@ -54,7 +57,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
         <p className="text-black">
           Bond yield: {note.bond_yield}% annual (${formatNumber(totalBondYield, 0)} total)
         </p>
-        <p className="text-black">Max gain: 14.42% total ($130,034 total)</p>
+        <p className="text-black">Max gain: 14.42% total (${formatNumber(maxGainDollars, 0)} total)</p>
         <p className="text-black">Note's net: <span className={getNetColor(noteNet)}>${formatNumber(noteNet, 0)}</span></p>
         <p className="text-black">Options premium: <span className="text-red-600">${formatNumber(totalFee, 0)}</span></p>
       </div>
