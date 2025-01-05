@@ -1,9 +1,5 @@
 import { formatNumber } from "../trade/utils/formatters"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { YieldMetrics } from "./metrics/YieldMetrics"
-import { GainMetrics } from "./metrics/GainMetrics"
-import { RatioMetrics } from "./metrics/RatioMetrics"
-import { MetricTooltip } from "./metrics/MetricTooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface NoteMetricsProps {
   note: any
@@ -90,30 +86,121 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     <TooltipProvider delayDuration={100}>
       <div className="text-sm space-y-2 flex justify-between">
         <div>
-          <MetricTooltip description="IV for calls for the designated expiration">
-            <p className="text-black">IV: {note.strike_entry_iv}%</p>
-          </MetricTooltip>
-          <YieldMetrics 
-            note={note}
-            totalDividend={totalDividend}
-            totalBondYield={totalBondYield}
-          />
-          <GainMetrics 
-            maxGainPercentage={maxGainPercentage}
-            maxGainDollars={maxGainDollars}
-            noteNet={noteNet}
-            totalFee={totalFee}
-            getNetColor={getNetColor}
-          />
+          <p className="text-black">
+            <Tooltip>
+              <TooltipTrigger>
+                Dividend yield: {note.dividend_yield}% annual
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Annual dividend yield of the underlying
+              </TooltipContent>
+            </Tooltip>
+            {" "}
+            <Tooltip>
+              <TooltipTrigger>
+                (${formatNumber(totalDividend, 0)} total)
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Total money we would have earned in dividend throughout the entire lifespan of the note
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            <Tooltip>
+              <TooltipTrigger>
+                Bond yield: {note.bond_yield}% annual
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Annual interest rate of a risk free bond with a maturity similar to the note expiration
+              </TooltipContent>
+            </Tooltip>
+            {" "}
+            <Tooltip>
+              <TooltipTrigger>
+                (${formatNumber(totalBondYield, 0)} total)
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Total money we will earn from the bond interests throughout the entire lifespan of the note
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            <Tooltip>
+              <TooltipTrigger>
+                Max gain: {formatNumber(maxGainPercentage, 2)}% total
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Total ROI if our target is reached at expiration
+              </TooltipContent>
+            </Tooltip>
+            {" "}
+            <Tooltip>
+              <TooltipTrigger>
+                (${formatNumber(maxGainDollars, 0)} total)
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Total money earned if our target is reached at expiration
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            Note's net: {" "}
+            <Tooltip>
+              <TooltipTrigger>
+                <span className={getNetColor(noteNet)}>${formatNumber(noteNet, 0)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Cost of the option structure minus what we will recoup through bond interests. Ideally, you should be aiming for a costless note
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            Options premium: {" "}
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Outlay in premiums to enter the trade today
+              </TooltipContent>
+            </Tooltip>
+          </p>
         </div>
-        <RatioMetrics 
-          maxAnnualROI={maxAnnualROI}
-          leverage={leverage}
-          convexity={convexity}
-          getROIColor={getROIColor}
-          getLeverageColor={getLeverageColor}
-          getConvexityColor={getConvexityColor}
-        />
+        <div className="flex gap-8 items-start">
+          <div className="text-center">
+            <Tooltip>
+              <TooltipTrigger>
+                <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Annualized ROI should we reach our target by expiration
+              </TooltipContent>
+            </Tooltip>
+            <p className="text-xs text-black">Max ROI<br />annualized</p>
+          </div>
+          <div className="text-center">
+            <Tooltip>
+              <TooltipTrigger>
+                <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x {formatNumber(leverage, 2)}</p>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Dollar-per-dollar gain over just buying the underlying outright. The idea of Leverage comes from being able to afford to buy more Deltas (more calls) than I should have been able to afford had I not financed part of those calls through bond interests plus selling calls+puts. This allows me to kick up my exposure to the position without locking up more than the originally intended nominal (the amount I'm putting in to buy the bonds). Remember though that you have also given up on the dividend yield, so that needs to be subtracted from the nominal to properly calculate the true leverage you get. Also, you give up on the possibility or writing covered calls, but that is hard to quantify
+              </TooltipContent>
+            </Tooltip>
+            <p className="text-xs text-black">Leverage<br />ratio</p>
+          </div>
+          <div className="text-center">
+            <Tooltip>
+              <TooltipTrigger>
+                <p className={`${getConvexityColor(convexity)} text-xl font-bold`}>{formatNumber(convexity, 1)}</p>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                How many dollars can I potentially earn for every dollar I give up at the risk-free rate. Anything above 4-to-1 is a pretty good convexity bet
+              </TooltipContent>
+            </Tooltip>
+            <p className="text-xs text-black">Convexity<br />ratio</p>
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   )
