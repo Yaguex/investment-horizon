@@ -54,6 +54,13 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     return "text-black"
   }
 
+  // Determine the color based on maxAnnualROI value
+  const getROIColor = (value: number) => {
+    if (value > 15) return "text-green-600"
+    if (value < 12) return "text-red-600"
+    return "text-orange-500"  // for values between 12 and 15 (inclusive)
+  }
+
   return (
     <div className="text-sm space-y-2 flex justify-between">
       <div>
@@ -69,7 +76,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
       </div>
       <div className="flex gap-8 items-start">
         <div className="text-center">
-          <p className="text-red-600 text-xl font-bold">{formatNumber(maxAnnualROI, 1)}%</p>
+          <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
           <p className="text-xs text-black">Max ROI<br />annualized</p>
         </div>
         <div className="text-center">
