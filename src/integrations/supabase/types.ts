@@ -290,6 +290,57 @@ export type Database = {
           },
         ]
       }
+      position_size: {
+        Row: {
+          action: string | null
+          delta: number | null
+          expiration: string | null
+          exposure: number | null
+          id: number
+          iv: number | null
+          iv_percentile: number | null
+          premium: number | null
+          profile_id: string | null
+          risk_free_yield: number | null
+          stock_price: number | null
+          strike_entry: number | null
+          strike_exit: number | null
+          ticker: string | null
+        }
+        Insert: {
+          action?: string | null
+          delta?: number | null
+          expiration?: string | null
+          exposure?: number | null
+          id?: number
+          iv?: number | null
+          iv_percentile?: number | null
+          premium?: number | null
+          profile_id?: string | null
+          risk_free_yield?: number | null
+          stock_price?: number | null
+          strike_entry?: number | null
+          strike_exit?: number | null
+          ticker?: string | null
+        }
+        Update: {
+          action?: string | null
+          delta?: number | null
+          expiration?: string | null
+          exposure?: number | null
+          id?: number
+          iv?: number | null
+          iv_percentile?: number | null
+          premium?: number | null
+          profile_id?: string | null
+          risk_free_yield?: number | null
+          stock_price?: number | null
+          strike_entry?: number | null
+          strike_exit?: number | null
+          ticker?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
