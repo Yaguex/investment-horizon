@@ -298,14 +298,13 @@ export type Database = {
           exposure: number | null
           id: number
           iv: number | null
-          iv_percentile: number | null
           premium: number | null
           profile_id: string | null
           risk_free_yield: number | null
-          stock_price: number | null
           strike_entry: number | null
           strike_exit: number | null
           ticker: string | null
+          underlying_price: number | null
         }
         Insert: {
           action?: string | null
@@ -314,14 +313,13 @@ export type Database = {
           exposure?: number | null
           id?: number
           iv?: number | null
-          iv_percentile?: number | null
           premium?: number | null
           profile_id?: string | null
           risk_free_yield?: number | null
-          stock_price?: number | null
           strike_entry?: number | null
           strike_exit?: number | null
           ticker?: string | null
+          underlying_price?: number | null
         }
         Update: {
           action?: string | null
@@ -330,14 +328,13 @@ export type Database = {
           exposure?: number | null
           id?: number
           iv?: number | null
-          iv_percentile?: number | null
           premium?: number | null
           profile_id?: string | null
           risk_free_yield?: number | null
-          stock_price?: number | null
           strike_entry?: number | null
           strike_exit?: number | null
           ticker?: string | null
+          underlying_price?: number | null
         }
         Relationships: []
       }
