@@ -8,6 +8,9 @@ import { SelectField } from "@/components/position-size/form-fields/SelectField"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface PositionSizeFormValues {
   ticker: string
@@ -38,6 +41,8 @@ const actionOptions = [
 
 export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
   
   const form = useForm<PositionSizeFormValues>({
     defaultValues: note ? {
@@ -62,8 +67,26 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
   const onSubmit = async (data: PositionSizeFormValues) => {
     try {
       setIsLoading(true)
+      console.log('Submitting position size data:', data)
+
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      const { error } = await supabase
+        .from('position_size')
+        .insert([
+          {
+            profile_id: user.id,
+            ...data
+          }
+        ])
+
+      if (error) throw error
+
+      console.log('Position size saved successfully')
+      queryClient.invalidateQueries({ queryKey: ['position-size'] })
       onOpenChange(false)
-      // We'll implement the actual submission logic later
       toast.success('Position size saved')
       form.reset()
     } catch (error: any) {
