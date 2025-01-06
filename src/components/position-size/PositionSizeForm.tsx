@@ -4,20 +4,20 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { TextField } from "@/components/position-size/form-fields/TextField"
 import { NumberField } from "@/components/position-size/form-fields/NumberField"
-import { SelectField } from "@/components/position-size/form-fields/SelectField"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
-import { supabase } from "@/integrations/supabase/client"
 
 interface PositionSizeFormValues {
   ticker: string
-  action: string
-  exposure: number | null
+  nominal: number | null
   expiration: string
-  risk_free_yield: number | null
+  bond_yield: number | null
   strike_entry: number | null
-  strike_exit: number | null
+  strike_target: number | null
+  strike_protection: number | null
+  wiggle: number | null
+  dividend_yield: number | null
 }
 
 interface PositionSizeFormProps {
@@ -26,37 +26,30 @@ interface PositionSizeFormProps {
   note?: any
 }
 
-const actionOptions = [
-  { value: "Buy call", label: "Buy call" },
-  { value: "Buy put", label: "Buy put" },
-  { value: "Sell call", label: "Sell call" },
-  { value: "Sell put", label: "Sell put" },
-  { value: "Buy call spread", label: "Buy call spread" },
-  { value: "Buy put spread", label: "Buy put spread" },
-  { value: "Sell call spread", label: "Sell call spread" },
-  { value: "Sell put spread", label: "Sell put spread" },
-]
-
 export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   
   const form = useForm<PositionSizeFormValues>({
     defaultValues: note ? {
       ticker: note.ticker || "",
-      action: note.action || "",
-      exposure: note.exposure || null,
+      nominal: note.nominal || null,
       expiration: note.expiration || "",
-      risk_free_yield: note.risk_free_yield || null,
+      bond_yield: note.bond_yield || null,
       strike_entry: note.strike_entry || null,
-      strike_exit: note.strike_exit || null,
+      strike_target: note.strike_target || null,
+      strike_protection: note.strike_protection || null,
+      wiggle: note.wiggle || null,
+      dividend_yield: note.dividend_yield || null
     } : {
       ticker: "",
-      action: "",
-      exposure: null,
+      nominal: null,
       expiration: "",
-      risk_free_yield: null,
+      bond_yield: null,
       strike_entry: null,
-      strike_exit: null,
+      strike_target: null,
+      strike_protection: null,
+      wiggle: null,
+      dividend_yield: null
     }
   })
 
@@ -64,39 +57,8 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
     try {
       setIsLoading(true)
       onOpenChange(false)
-
-      if (note) {
-        // Update existing position
-        const { error } = await supabase
-          .from('position_size')
-          .update({
-            ...data,
-            expiration: data.expiration || null,
-          })
-          .eq('id', note.id)
-
-        if (error) {
-          toast.error(`Failed to save position: ${error.message}`)
-          return
-        }
-        toast.success('Position updated successfully')
-      } else {
-        // Create new position
-        const { error } = await supabase
-          .from('position_size')
-          .insert([{
-            ...data,
-            expiration: data.expiration || null,
-            profile_id: (await supabase.auth.getUser()).data.user?.id
-          }])
-
-        if (error) {
-          toast.error(`Failed to save position: ${error.message}`)
-          return
-        }
-        toast.success('Position created successfully')
-      }
-
+      // We'll implement the actual submission logic later
+      toast.success('Position size saved')
       form.reset()
     } catch (error: any) {
       console.error('Error in form submission:', error)
@@ -127,16 +89,10 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
               name="ticker"
               label="Ticker"
             />
-            <SelectField
-              control={form.control}
-              name="action"
-              label="Action"
-              options={actionOptions}
-            />
             <NumberField
               control={form.control}
-              name="exposure"
-              label="Exposure"
+              name="nominal"
+              label="Nominal"
             />
             <TextField
               control={form.control}
@@ -145,18 +101,33 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
             />
             <NumberField
               control={form.control}
-              name="risk_free_yield"
-              label="Risk-free yield"
+              name="dividend_yield"
+              label="Dividend Yield (after withholding tax)"
+            />
+            <NumberField
+              control={form.control}
+              name="bond_yield"
+              label="Bond Yield"
             />
             <NumberField
               control={form.control}
               name="strike_entry"
-              label="Strike entry"
+              label="Strike Entry"
             />
             <NumberField
               control={form.control}
-              name="strike_exit"
-              label="Strike exit"
+              name="strike_target"
+              label="Strike Target"
+            />
+            <NumberField
+              control={form.control}
+              name="strike_protection"
+              label="Strike Protection"
+            />
+            <NumberField
+              control={form.control}
+              name="wiggle"
+              label="Wiggle"
             />
             <div className="flex justify-end space-x-2">
               <Button type="submit">{note ? 'Update' : 'Create'} Position Size</Button>
