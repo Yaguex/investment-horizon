@@ -9,15 +9,17 @@ import { useState } from "react"
 import { Loader2 } from "lucide-react"
 
 interface PositionSizeFormValues {
-  ticker: string
-  nominal: number | null
-  expiration: string
-  bond_yield: number | null
+  ticker: string | null
+  exposure: number | null
+  expiration: string | null
+  risk_free_yield: number | null
   strike_entry: number | null
-  strike_target: number | null
-  strike_protection: number | null
-  wiggle: number | null
-  dividend_yield: number | null
+  strike_exit: number | null
+  premium: number | null
+  action: string | null
+  underlying_price: number | null
+  delta: number | null
+  iv: number | null
 }
 
 interface PositionSizeFormProps {
@@ -31,25 +33,29 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
   
   const form = useForm<PositionSizeFormValues>({
     defaultValues: note ? {
-      ticker: note.ticker || "",
-      nominal: note.nominal || null,
-      expiration: note.expiration || "",
-      bond_yield: note.bond_yield || null,
+      ticker: note.ticker || null,
+      exposure: note.exposure || null,
+      expiration: note.expiration || null,
+      risk_free_yield: note.risk_free_yield || null,
       strike_entry: note.strike_entry || null,
-      strike_target: note.strike_target || null,
-      strike_protection: note.strike_protection || null,
-      wiggle: note.wiggle || null,
-      dividend_yield: note.dividend_yield || null
+      strike_exit: note.strike_exit || null,
+      premium: note.premium || null,
+      action: note.action || null,
+      underlying_price: note.underlying_price || null,
+      delta: note.delta || null,
+      iv: note.iv || null
     } : {
-      ticker: "",
-      nominal: null,
-      expiration: "",
-      bond_yield: null,
+      ticker: null,
+      exposure: null,
+      expiration: null,
+      risk_free_yield: null,
       strike_entry: null,
-      strike_target: null,
-      strike_protection: null,
-      wiggle: null,
-      dividend_yield: null
+      strike_exit: null,
+      premium: null,
+      action: null,
+      underlying_price: null,
+      delta: null,
+      iv: null
     }
   })
 
@@ -89,10 +95,15 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
               name="ticker"
               label="Ticker"
             />
+            <TextField
+              control={form.control}
+              name="action"
+              label="Action"
+            />
             <NumberField
               control={form.control}
-              name="nominal"
-              label="Nominal"
+              name="exposure"
+              label="Exposure"
             />
             <TextField
               control={form.control}
@@ -101,13 +112,8 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
             />
             <NumberField
               control={form.control}
-              name="dividend_yield"
-              label="Dividend Yield (after withholding tax)"
-            />
-            <NumberField
-              control={form.control}
-              name="bond_yield"
-              label="Bond Yield"
+              name="risk_free_yield"
+              label="Risk Free Yield"
             />
             <NumberField
               control={form.control}
@@ -116,18 +122,28 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
             />
             <NumberField
               control={form.control}
-              name="strike_target"
-              label="Strike Target"
+              name="strike_exit"
+              label="Strike Exit"
             />
             <NumberField
               control={form.control}
-              name="strike_protection"
-              label="Strike Protection"
+              name="premium"
+              label="Premium"
             />
             <NumberField
               control={form.control}
-              name="wiggle"
-              label="Wiggle"
+              name="underlying_price"
+              label="Underlying Price"
+            />
+            <NumberField
+              control={form.control}
+              name="delta"
+              label="Delta"
+            />
+            <NumberField
+              control={form.control}
+              name="iv"
+              label="IV"
             />
             <div className="flex justify-end space-x-2">
               <Button type="submit">{note ? 'Update' : 'Create'} Position Size</Button>
