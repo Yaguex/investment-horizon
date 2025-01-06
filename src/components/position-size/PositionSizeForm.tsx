@@ -75,12 +75,15 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
 
       const { error } = await supabase
         .from('position_size')
-        .insert([
-          {
-            profile_id: user.id,
-            ...data
-          }
-        ])
+        .insert([{
+          profile_id: user.id,
+          ...data,
+          expiration: data.expiration || null,
+          exposure: data.exposure || null,
+          risk_free_yield: data.risk_free_yield || null,
+          strike_entry: data.strike_entry || null,
+          strike_exit: data.strike_exit || null
+        }])
 
       if (error) throw error
 
