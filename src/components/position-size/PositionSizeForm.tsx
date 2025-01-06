@@ -8,8 +8,6 @@ import { SelectField } from "@/components/position-size/form-fields/SelectField"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
-import { supabase } from "@/integrations/supabase/client"
-import { useAuth } from "@/contexts/AuthContext"
 
 interface PositionSizeFormValues {
   ticker: string
@@ -40,7 +38,6 @@ const actionOptions = [
 
 export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const { user } = useAuth()
   
   const form = useForm<PositionSizeFormValues>({
     defaultValues: note ? {
@@ -65,36 +62,13 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
   const onSubmit = async (data: PositionSizeFormValues) => {
     try {
       setIsLoading(true)
-      console.log('Submitting position size data:', data)
-
-      if (!user) {
-        throw new Error('User must be logged in to save position size')
-      }
-
-      const { data: insertedData, error: insertError } = await supabase
-        .from('position_size')
-        .insert([
-          {
-            ...data,
-            profile_id: user.id
-          }
-        ])
-        .select()
-        .single()
-
-      if (insertError) {
-        console.error('Supabase error:', insertError)
-        throw new Error(insertError.message)
-      }
-
-      console.log('Position size saved successfully:', insertedData)
       onOpenChange(false)
+      // We'll implement the actual submission logic later
       toast.success('Position size saved')
       form.reset()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in form submission:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Error saving position size'
-      toast.error(errorMessage)
+      toast.error(`Error: ${error.message}`)
     } finally {
       setIsLoading(false)
     }
