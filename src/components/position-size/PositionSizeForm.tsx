@@ -71,7 +71,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         throw new Error('User must be logged in to save position size')
       }
 
-      const { error } = await supabase
+      const { data: insertedData, error: insertError } = await supabase
         .from('position_size')
         .insert([
           {
@@ -79,16 +79,22 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
             profile_id: user.id
           }
         ])
+        .select()
+        .single()
 
-      if (error) throw error
+      if (insertError) {
+        console.error('Supabase error:', insertError)
+        throw new Error(insertError.message)
+      }
 
-      console.log('Position size saved successfully')
+      console.log('Position size saved successfully:', insertedData)
       onOpenChange(false)
       toast.success('Position size saved')
       form.reset()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in form submission:', error)
-      toast.error(error.message || 'Error saving position size')
+      const errorMessage = error instanceof Error ? error.message : 'Error saving position size'
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
