@@ -13,11 +13,11 @@ import { supabase } from "@/integrations/supabase/client"
 interface PositionSizeFormValues {
   ticker: string
   action: string
-  exposure: number
+  exposure: number | null
   expiration: string
-  risk_free_yield: number
-  strike_entry: number
-  strike_exit: number
+  risk_free_yield: number | null
+  strike_entry: number | null
+  strike_exit: number | null
 }
 
 interface PositionSizeFormProps {
