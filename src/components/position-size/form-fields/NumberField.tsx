@@ -20,7 +20,7 @@ export function NumberField<T extends FieldValues>({ control, name, label }: Num
             <Input 
               type="number" 
               {...field}
-              value={field.value === null ? '' : field.value} 
+              value={field.value === null ? '' : typeof field.value === 'number' ? field.value : ''} 
               onChange={e => {
                 const value = e.target.value ? Number(e.target.value) : null;
                 field.onChange(value);
