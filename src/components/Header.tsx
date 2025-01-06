@@ -22,6 +22,10 @@ const Header = () => {
       onClick: () => navigate("/allocations")
     },
     {
+      label: "Position Size",
+      onClick: () => navigate("/position-size")
+    },
+    {
       label: "Economic Calendar",
       onClick: () => navigate("/economic-calendar")
     },

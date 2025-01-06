@@ -13,6 +13,7 @@ import TradeLog from "./pages/TradeLog"
 import Allocations from "./pages/Allocations"
 import EconomicCalendar from "./pages/EconomicCalendar"
 import DIYNotes from "./pages/DIYNotes"
+import PositionSize from "./pages/PositionSize"
 import Test from "./pages/Test"
 
 const queryClient = new QueryClient()
@@ -49,6 +50,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Allocations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/position-size"
+              element={
+                <ProtectedRoute>
+                  <PositionSize />
                 </ProtectedRoute>
               }
             />
