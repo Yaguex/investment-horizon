@@ -4,20 +4,19 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { TextField } from "@/components/position-size/form-fields/TextField"
 import { NumberField } from "@/components/position-size/form-fields/NumberField"
+import { SelectField } from "@/components/position-size/form-fields/SelectField"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
 
 interface PositionSizeFormValues {
   ticker: string
-  nominal: number | null
+  action: string
+  exposure: number | null
   expiration: string
-  bond_yield: number | null
+  risk_free_yield: number | null
   strike_entry: number | null
-  strike_target: number | null
-  strike_protection: number | null
-  wiggle: number | null
-  dividend_yield: number | null
+  strike_exit: number | null
 }
 
 interface PositionSizeFormProps {
@@ -26,30 +25,37 @@ interface PositionSizeFormProps {
   note?: any
 }
 
+const actionOptions = [
+  { label: "Buy call", value: "Buy call" },
+  { label: "Buy put", value: "Buy put" },
+  { label: "Sell call", value: "Sell call" },
+  { label: "Sell put", value: "Sell put" },
+  { label: "Buy call spread", value: "Buy call spread" },
+  { label: "Buy put spread", value: "Buy put spread" },
+  { label: "Sell call spread", value: "Sell call spread" },
+  { label: "Sell put spread", value: "Sell put spread" },
+]
+
 export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   
   const form = useForm<PositionSizeFormValues>({
     defaultValues: note ? {
       ticker: note.ticker || "",
-      nominal: note.nominal || null,
+      action: note.action || "",
+      exposure: note.exposure || null,
       expiration: note.expiration || "",
-      bond_yield: note.bond_yield || null,
+      risk_free_yield: note.risk_free_yield || null,
       strike_entry: note.strike_entry || null,
-      strike_target: note.strike_target || null,
-      strike_protection: note.strike_protection || null,
-      wiggle: note.wiggle || null,
-      dividend_yield: note.dividend_yield || null
+      strike_exit: note.strike_exit || null,
     } : {
       ticker: "",
-      nominal: null,
+      action: "",
+      exposure: null,
       expiration: "",
-      bond_yield: null,
+      risk_free_yield: null,
       strike_entry: null,
-      strike_target: null,
-      strike_protection: null,
-      wiggle: null,
-      dividend_yield: null
+      strike_exit: null,
     }
   })
 
@@ -89,10 +95,16 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
               name="ticker"
               label="Ticker"
             />
+            <SelectField
+              control={form.control}
+              name="action"
+              label="Action"
+              options={actionOptions}
+            />
             <NumberField
               control={form.control}
-              name="nominal"
-              label="Nominal"
+              name="exposure"
+              label="Exposure"
             />
             <TextField
               control={form.control}
@@ -101,33 +113,18 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
             />
             <NumberField
               control={form.control}
-              name="dividend_yield"
-              label="Dividend Yield (after withholding tax)"
-            />
-            <NumberField
-              control={form.control}
-              name="bond_yield"
-              label="Bond Yield"
+              name="risk_free_yield"
+              label="Risk-free yield"
             />
             <NumberField
               control={form.control}
               name="strike_entry"
-              label="Strike Entry"
+              label="Strike entry"
             />
             <NumberField
               control={form.control}
-              name="strike_target"
-              label="Strike Target"
-            />
-            <NumberField
-              control={form.control}
-              name="strike_protection"
-              label="Strike Protection"
-            />
-            <NumberField
-              control={form.control}
-              name="wiggle"
-              label="Wiggle"
+              name="strike_exit"
+              label="Strike exit"
             />
             <div className="flex justify-end space-x-2">
               <Button type="submit">{note ? 'Update' : 'Create'} Position Size</Button>
