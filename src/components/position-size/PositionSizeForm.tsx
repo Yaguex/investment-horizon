@@ -63,10 +63,14 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
   const onSubmit = async (data: PositionSizeFormValues) => {
     try {
       setIsLoading(true)
-      onOpenChange(false)
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        toast.error('User not authenticated')
+        return
+      }
 
       if (note) {
-        // Update existing position size
         const { error } = await supabase
           .from('position_size')
           .update({
@@ -83,7 +87,6 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         }
         toast.success('Position size updated successfully')
       } else {
-        // Create new position size
         const { error } = await supabase
           .from('position_size')
           .insert([{
@@ -91,7 +94,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
             expiration: data.expiration || null,
             action: data.action || null,
             ticker: data.ticker || null,
-            profile_id: (await supabase.auth.getUser()).data.user?.id
+            profile_id: user.id
           }])
 
         if (error) {
@@ -101,6 +104,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         toast.success('Position size saved successfully')
       }
 
+      onOpenChange(false)
       form.reset()
     } catch (error: any) {
       console.error('Error in form submission:', error)
