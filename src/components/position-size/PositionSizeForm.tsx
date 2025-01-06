@@ -77,12 +77,13 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         .from('position_size')
         .insert([{
           profile_id: user.id,
-          ...data,
+          ticker: data.ticker || null,
+          action: data.action || null,
+          exposure: data.exposure,
           expiration: data.expiration || null,
-          exposure: data.exposure || null,
-          risk_free_yield: data.risk_free_yield || null,
-          strike_entry: data.strike_entry || null,
-          strike_exit: data.strike_exit || null
+          risk_free_yield: data.risk_free_yield,
+          strike_entry: data.strike_entry,
+          strike_exit: data.strike_exit
         }])
 
       if (error) throw error
