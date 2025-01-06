@@ -8,6 +8,7 @@ import { SelectField } from "@/components/position-size/form-fields/SelectField"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
+import { supabase } from "@/integrations/supabase/client"
 
 const ACTION_OPTIONS = [
   { value: "Buy call", label: "Buy call" },
@@ -63,12 +64,43 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
     try {
       setIsLoading(true)
       onOpenChange(false)
-      // We'll implement the actual submission logic later
-      // When we do, we'll convert empty strings to null like this:
-      // expiration: data.expiration || null,
-      // action: data.action || null,
-      // ticker: data.ticker || null,
-      toast.success('Position size saved')
+
+      if (note) {
+        // Update existing position size
+        const { error } = await supabase
+          .from('position_size')
+          .update({
+            ...data,
+            expiration: data.expiration || null,
+            action: data.action || null,
+            ticker: data.ticker || null,
+          })
+          .eq('id', note.id)
+
+        if (error) {
+          toast.error(`Failed to update position size: ${error.message}`)
+          return
+        }
+        toast.success('Position size updated successfully')
+      } else {
+        // Create new position size
+        const { error } = await supabase
+          .from('position_size')
+          .insert([{
+            ...data,
+            expiration: data.expiration || null,
+            action: data.action || null,
+            ticker: data.ticker || null,
+            profile_id: (await supabase.auth.getUser()).data.user?.id
+          }])
+
+        if (error) {
+          toast.error(`Failed to save position size: ${error.message}`)
+          return
+        }
+        toast.success('Position size saved successfully')
+      }
+
       form.reset()
     } catch (error: any) {
       console.error('Error in form submission:', error)
