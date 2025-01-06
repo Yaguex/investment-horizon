@@ -9,14 +9,14 @@ import { useState } from "react"
 import { Loader2 } from "lucide-react"
 
 interface PositionSizeFormValues {
-  ticker: string | null
+  ticker: string
   exposure: number | null
-  expiration: string | null
+  expiration: string
   risk_free_yield: number | null
   strike_entry: number | null
   strike_exit: number | null
   premium: number | null
-  action: string | null
+  action: string
   underlying_price: number | null
   delta: number | null
   iv: number | null
@@ -33,26 +33,26 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
   
   const form = useForm<PositionSizeFormValues>({
     defaultValues: note ? {
-      ticker: note.ticker || null,
+      ticker: note.ticker || "",
       exposure: note.exposure || null,
-      expiration: note.expiration || null,
+      expiration: note.expiration || "",
       risk_free_yield: note.risk_free_yield || null,
       strike_entry: note.strike_entry || null,
       strike_exit: note.strike_exit || null,
       premium: note.premium || null,
-      action: note.action || null,
+      action: note.action || "",
       underlying_price: note.underlying_price || null,
       delta: note.delta || null,
       iv: note.iv || null
     } : {
-      ticker: null,
+      ticker: "",
       exposure: null,
-      expiration: null,
+      expiration: "",
       risk_free_yield: null,
       strike_entry: null,
       strike_exit: null,
       premium: null,
-      action: null,
+      action: "",
       underlying_price: null,
       delta: null,
       iv: null
@@ -64,6 +64,10 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
       setIsLoading(true)
       onOpenChange(false)
       // We'll implement the actual submission logic later
+      // When we do, we'll convert empty strings to null like this:
+      // expiration: data.expiration || null,
+      // action: data.action || null,
+      // ticker: data.ticker || null,
       toast.success('Position size saved')
       form.reset()
     } catch (error: any) {
