@@ -61,73 +61,24 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
       setIsLoading(true)
       onOpenChange(false)
 
-      // Save note
-      if (note) {
-        // Update existing note
-        const { error } = await supabase
-          .from('diy_notes')
-          .update({
-            ...data,
-            expiration: data.expiration || null,
-          })
-          .eq('id', note.id)
-
-        if (error) {
-          toast.error(`Failed to save note: ${error.message}`)
-          return
-        }
-        toast.success('Note updated successfully')
-      } else {
-        // Create new note
-        const { error } = await supabase
-          .from('diy_notes')
-          .insert([
-            {
-              ...data,
-              expiration: data.expiration || null,
-              profile_id: (await supabase.auth.getUser()).data.user?.id
-            }
-          ])
-
-        if (error) {
-          toast.error(`Failed to save note: ${error.message}`)
-          return
-        }
-        toast.success('Note created successfully')
-      }
-
-      // Fetch market data
-      const { error: marketDataError } = await supabase.functions.invoke('fetch_ticker_data', {
+      const { error } = await supabase.functions.invoke('submit_diy_notes', {
         body: {
-          ticker: data.ticker,
-          expiration: data.expiration,
-          strikes: {
-            entry: {
-              strike: data.strike_entry,
-              type: 'call'
-            },
-            target: {
-              strike: data.strike_target,
-              type: 'call'
-            },
-            protection: {
-              strike: data.strike_protection,
-              type: 'put'
-            }
+          note: {
+            ...data,
+            id: note?.id,
+            expiration: data.expiration || null,
           },
           profile_id: (await supabase.auth.getUser()).data.user?.id
         }
       })
 
-      if (marketDataError) {
-        toast.error(`Failed to fetch market data: ${marketDataError.message}`)
-      } else {
-        toast.success('Market data updated successfully')
+      if (error) {
+        toast.error(`Failed to save note: ${error.message}`)
+        return
       }
 
-      // Refetch notes
+      toast.success(note ? 'Note updated successfully' : 'Note created successfully')
       await queryClient.invalidateQueries({ queryKey: ['diy-notes'] })
-      
       form.reset()
     } catch (error: any) {
       console.error('Error in form submission:', error)
