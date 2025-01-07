@@ -5,10 +5,21 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { PositionSizeForm } from "@/components/position-size/PositionSizeForm"
 import { useQuery } from "@tanstack/react-query"
-import { supabase } from "@/integrations/supabase/client"
 import { NoteHeader } from "@/components/position-size/NoteHeader"
 import { PriceVisualization } from "@/components/position-size/PriceVisualization"
 import { NoteMetrics } from "@/components/position-size/NoteMetrics"
+
+const dummyNote = {
+  id: 1,
+  ticker: "SPY",
+  expiration: "2024-06-21",
+  nominal: 100000,
+  exposure: 50000,
+  risk_free_yield: 5.5,
+  strike_entry: 480,
+  strike_exit: 500,
+  action: "buy_call"
+}
 
 const PositionSize = () => {
   const [editNote, setEditNote] = useState<any>(null)
@@ -18,7 +29,7 @@ const PositionSize = () => {
   const { data: notes, isLoading } = useQuery({
     queryKey: ['position-size'],
     queryFn: async () => {
-      return []
+      return [dummyNote]
     }
   })
 
