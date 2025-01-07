@@ -17,10 +17,16 @@ const PositionSize = () => {
   const { data: notes, isLoading } = useQuery({
     queryKey: ['position-sizes'],
     queryFn: async () => {
+      console.log('Fetching position sizes...')
+      const { data: userData } = await supabase.auth.getUser()
+      console.log('Current user ID:', userData.user?.id)
+      
       const { data, error } = await supabase
         .from('position_size')
         .select('*')
-        .order('created_at', { ascending: false })
+      
+      console.log('Position sizes data:', data)
+      console.log('Position sizes error:', error)
       
       if (error) throw error
       return data
