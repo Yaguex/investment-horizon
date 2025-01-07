@@ -8,28 +8,28 @@ import { useQuery } from "@tanstack/react-query"
 import { NoteHeader } from "@/components/position-size/NoteHeader"
 import { PriceVisualization } from "@/components/position-size/PriceVisualization"
 import { NoteMetrics } from "@/components/position-size/NoteMetrics"
-
-const dummyNote = {
-  id: 1,
-  ticker: "SPY",
-  expiration: "2024-06-21",
-  nominal: 100000,
-  exposure: 50000,
-  risk_free_yield: 5.5,
-  strike_entry: 480,
-  strike_exit: 500,
-  action: "buy_call"
-}
+import { supabase } from "@/integrations/supabase/client"
 
 const PositionSize = () => {
   const [editNote, setEditNote] = useState<any>(null)
   const [isNewNoteOpen, setIsNewNoteOpen] = useState(false)
 
-  // Temporarily return empty array since we don't have a table yet
   const { data: notes, isLoading } = useQuery({
     queryKey: ['position-size'],
     queryFn: async () => {
-      return [dummyNote]
+      console.log('Fetching position size with ID 18')
+      const { data, error } = await supabase
+        .from('position_size')
+        .select('*')
+        .eq('id', 18)
+        
+      if (error) {
+        console.error('Error fetching position size:', error)
+        throw error
+      }
+
+      console.log('Position size data:', data)
+      return data || []
     }
   })
 
