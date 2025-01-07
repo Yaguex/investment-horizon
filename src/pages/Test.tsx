@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client"
 import { TextField } from "@/components/test/form-fields/TextField"
 import { NumberField } from "@/components/test/form-fields/NumberField"
 import Header from "@/components/Header"
+import { Loader } from "lucide-react"
+import MetricCard from "@/components/MetricCard"
 
 interface TestFormValues {
   ticker: string
@@ -32,15 +34,7 @@ interface StrikeData {
 }
 
 interface ApiResponse {
-  marketData: {
-    entry: StrikeData
-    target: StrikeData
-    protection: StrikeData
-  }
-  dbOperation: {
-    success: boolean
-    error?: any
-  }
+  responses: StrikeData[]
 }
 
 const Test = () => {
@@ -63,64 +57,50 @@ const Test = () => {
     setApiResponse(null)
 
     try {
-      const { data: response, error } = await supabase.functions.invoke('fetch_ticker_data', {
-        body: { 
+      // Prepare the strikes array for the API
+      const strikes = [
+        {
           ticker: data.ticker,
           expiration: data.expiration,
-          strikes: {
-            entry: data.strike_entry,
-            target: data.strike_target,
-            protection: data.strike_protection
-          },
-          profile_id: (await supabase.auth.getUser()).data.user?.id
+          type: 'call',
+          strike: data.strike_entry
+        },
+        {
+          ticker: data.ticker,
+          expiration: data.expiration,
+          type: 'call',
+          strike: data.strike_target
+        },
+        {
+          ticker: data.ticker,
+          expiration: data.expiration,
+          type: 'put',
+          strike: data.strike_protection
         }
+      ]
+
+      console.log("Calling fetch_marketdata_api with strikes:", strikes)
+      const { data: response, error } = await supabase.functions.invoke('fetch_marketdata_api', {
+        body: { strikes }
       })
 
-      if (error) throw error;
+      if (error) throw error
 
       console.log("API response:", response)
       setApiResponse(response)
-
-      if (response.dbOperation.success) {
-        toast.success('API data successfully fetched and stored in the database')
-      } else {
-        throw new Error(response.dbOperation.error || 'Database operation failed')
-      }
+      toast.success('Market data successfully fetched')
     } catch (error) {
       console.error("Error in API call:", error)
-      toast.error('API data could not be fetched or stored in the database')
+      toast.error('Could not fetch market data')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const renderMarketDataCard = (title: string, data: StrikeData | undefined, strike: number | null) => {
-    if (!data) return null;
-    
-    return (
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <p><span className="font-semibold">Symbol:</span> {data.symbol}</p>
-            <p><span className="font-semibold">Strike:</span> {strike}</p>
-            {data.marketData && (
-              <>
-                <p><span className="font-semibold">Mid:</span> {data.marketData.mid}</p>
-                <p><span className="font-semibold">Open Interest:</span> {data.marketData.openInterest}</p>
-                <p><span className="font-semibold">IV:</span> {data.marketData.iv}</p>
-                <p><span className="font-semibold">Delta:</span> {data.marketData.delta}</p>
-                <p><span className="font-semibold">Intrinsic Value:</span> {data.marketData.intrinsicValue}</p>
-                <p><span className="font-semibold">Extrinsic Value:</span> {data.marketData.extrinsicValue}</p>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
+  const formatValue = (value: number | undefined | null) => {
+    if (value === undefined || value === null) return "N/A"
+    return value.toFixed(2)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -167,16 +147,93 @@ const Test = () => {
                 disabled={isLoading}
                 className="w-full"
               >
-                Generate Symbols
+                {isLoading ? (
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  "Generate Symbols"
+                )}
               </Button>
             </form>
           </Form>
 
           {apiResponse && (
-            <div className="space-y-4">
-              {renderMarketDataCard("Strike Entry", apiResponse.marketData.entry, form.getValues("strike_entry"))}
-              {renderMarketDataCard("Strike Target", apiResponse.marketData.target, form.getValues("strike_target"))}
-              {renderMarketDataCard("Strike Protection", apiResponse.marketData.protection, form.getValues("strike_protection"))}
+            <div className="mt-8 grid gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Entry Strike Card */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Entry Strike</h3>
+                  <MetricCard
+                    title="Mid"
+                    value={formatValue(apiResponse.responses[0]?.marketData?.mid)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="Open Interest"
+                    value={formatValue(apiResponse.responses[0]?.marketData?.openInterest)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="IV"
+                    value={formatValue(apiResponse.responses[0]?.marketData?.iv)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="Delta"
+                    value={formatValue(apiResponse.responses[0]?.marketData?.delta)}
+                    isNumeric
+                  />
+                </div>
+
+                {/* Target Strike Card */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Target Strike</h3>
+                  <MetricCard
+                    title="Mid"
+                    value={formatValue(apiResponse.responses[1]?.marketData?.mid)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="Open Interest"
+                    value={formatValue(apiResponse.responses[1]?.marketData?.openInterest)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="IV"
+                    value={formatValue(apiResponse.responses[1]?.marketData?.iv)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="Delta"
+                    value={formatValue(apiResponse.responses[1]?.marketData?.delta)}
+                    isNumeric
+                  />
+                </div>
+
+                {/* Protection Strike Card */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Protection Strike</h3>
+                  <MetricCard
+                    title="Mid"
+                    value={formatValue(apiResponse.responses[2]?.marketData?.mid)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="Open Interest"
+                    value={formatValue(apiResponse.responses[2]?.marketData?.openInterest)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="IV"
+                    value={formatValue(apiResponse.responses[2]?.marketData?.iv)}
+                    isNumeric
+                  />
+                  <MetricCard
+                    title="Delta"
+                    value={formatValue(apiResponse.responses[2]?.marketData?.delta)}
+                    isNumeric
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>
