@@ -59,7 +59,6 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   const onSubmit = async (data: DIYNoteFormValues) => {
     try {
       setIsLoading(true)
-      onOpenChange(false)
 
       const { error } = await supabase.functions.invoke('submit_diy_notes', {
         body: {
@@ -80,20 +79,14 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
       toast.success(note ? 'Note updated successfully' : 'Note created successfully')
       await queryClient.invalidateQueries({ queryKey: ['diy-notes'] })
       form.reset()
+      setIsLoading(false)
+      onOpenChange(false)
     } catch (error: any) {
       console.error('Error in form submission:', error)
       toast.error(`Error: ${error.message}`)
     } finally {
       setIsLoading(false)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    )
   }
 
   return (
@@ -150,7 +143,12 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
               label="Wiggle"
             />
             <div className="flex justify-end space-x-2">
-              <Button type="submit">{note ? 'Update' : 'Create'} Note</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                {note ? 'Update' : 'Create'} Note
+              </Button>
             </div>
           </form>
         </Form>
