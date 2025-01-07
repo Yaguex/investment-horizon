@@ -1,8 +1,16 @@
 export interface MarketData {
+  ask: number;
+  bid: number;
   mid: number;
+  last: number;
+  volume: number;
   openInterest: number;
   iv: number;
   delta: number;
+  gamma: number;
+  theta: number;
+  vega: number;
+  rho: number;
   intrinsicValue: number;
   extrinsicValue: number;
   underlyingPrice: number;
