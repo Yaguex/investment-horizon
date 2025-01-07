@@ -8,44 +8,55 @@ interface PriceVisualizationProps {
 
 const calculateCirclePositions = (note: any) => {
   const middlePosition = 50
-  let leftPosition, rightPosition
+  let entryPosition, exitPosition
 
-  // Calculate positions based on entry and exit strikes
-  const strikeDiff = note.strike_exit - note.strike_entry
-  
-  // For a call option purchase
-  if (note.action === 'buy_call') {
-    leftPosition = middlePosition
-    rightPosition = 90
-  } 
-  // For a put option purchase
-  else if (note.action === 'buy_put') {
-    leftPosition = 10
-    rightPosition = middlePosition
-  }
-  // Default to middle if no action specified
-  else {
-    leftPosition = middlePosition
-    rightPosition = middlePosition
+  if (!note.underlying_price_entry || !note.strike_entry || !note.strike_exit) {
+    return { middlePosition, entryPosition: middlePosition, exitPosition: middlePosition }
   }
 
-  return { leftPosition, middlePosition, rightPosition }
+  // Calculate the range of prices
+  const minPrice = Math.min(note.underlying_price_entry, note.strike_entry, note.strike_exit)
+  const maxPrice = Math.max(note.underlying_price_entry, note.strike_entry, note.strike_exit)
+  const priceRange = maxPrice - minPrice
+
+  // Calculate positions based on price values
+  entryPosition = priceRange === 0 ? middlePosition : 
+    ((note.strike_entry - minPrice) / priceRange) * 80 + 10 // 10-90 range
+  exitPosition = priceRange === 0 ? middlePosition : 
+    ((note.strike_exit - minPrice) / priceRange) * 80 + 10 // 10-90 range
+
+  return { middlePosition, entryPosition, exitPosition }
 }
 
 export function PriceVisualization({ note }: PriceVisualizationProps) {
-  const { leftPosition, middlePosition, rightPosition } = calculateCirclePositions(note)
-  
-  // Calculate number of contracts based on exposure
-  const contracts = Math.round(note.exposure / (note.strike_entry * 100))
+  const { middlePosition, entryPosition, exitPosition } = calculateCirclePositions(note)
   
   return (
     <TooltipProvider delayDuration={100}>
       <div className="mt-12 mb-20 relative">
-        {/* Strike Entry Circle */}
-        {note.strike_entry !== 0 && (
+        {/* Underlying Price Circle (Middle) */}
+        {note.underlying_price_entry && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
             style={{ left: `${middlePosition}%` }}
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="text-sm text-black mb-1">${note.underlying_price_entry}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white">
+                Current price: ${formatNumber(note.underlying_price_entry, 2)}
+              </TooltipContent>
+            </Tooltip>
+            <Circle className="h-4 w-4 fill-black text-black" />
+          </div>
+        )}
+        
+        {/* Strike Entry Circle */}
+        {note.strike_entry && (
+          <div 
+            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+            style={{ left: `${entryPosition}%` }}
           >
             <Tooltip>
               <TooltipTrigger>
@@ -60,10 +71,10 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         )}
         
         {/* Strike Exit Circle */}
-        {note.strike_exit !== 0 && (
+        {note.strike_exit && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${rightPosition}%` }}
+            style={{ left: `${exitPosition}%` }}
           >
             <Tooltip>
               <TooltipTrigger>
@@ -83,44 +94,44 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           <div 
             className="absolute top-0 bottom-0 bg-green-500"
             style={{ 
-              left: `${middlePosition}%`,
-              width: `${rightPosition - middlePosition}%`
+              left: `${entryPosition}%`,
+              width: `${exitPosition - entryPosition}%`
             }}
           />
         </div>
         
-        {/* Position indicators aligned with circles */}
-        {note.strike_entry !== 0 && (
+        {/* Position indicators */}
+        {note.strike_entry && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${middlePosition}%` }}
+            style={{ left: `${entryPosition}%` }}
           >
             <span className="text-xs text-black">
               <span className="font-bold">
-                {note.action === 'buy_call' ? '+' : '-'}{contracts}
+                {note.action === 'buy_call' ? '+' : '-'}{note.contracts || 0}
                 {note.action?.includes('call') ? 'C' : 'P'}
               </span> 
-              at ${note.premium_entry}
+              at ${note.premium_entry || 0}
             </span>
             <span className="text-xs text-red-500">
-              ${formatNumber(contracts * note.premium_entry * 100, 0)}
+              ${formatNumber((note.contracts || 0) * (note.premium_entry || 0) * 100, 0)}
             </span>
           </div>
         )}
-        {note.strike_exit !== 0 && (
+        {note.strike_exit && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${rightPosition}%` }}
+            style={{ left: `${exitPosition}%` }}
           >
             <span className="text-xs text-black">
               <span className="font-bold">
-                {note.action === 'buy_call' ? '-' : '+'}{contracts}
+                {note.action === 'buy_call' ? '-' : '+'}{note.contracts || 0}
                 {note.action?.includes('call') ? 'C' : 'P'}
               </span> 
               at ${note.premium_exit || '?'}
             </span>
             <span className="text-xs text-green-500">
-              ${formatNumber((contracts * (note.premium_exit || 0) * 100), 0)}
+              ${formatNumber((note.contracts || 0) * (note.premium_exit || 0) * 100, 0)}
             </span>
           </div>
         )}

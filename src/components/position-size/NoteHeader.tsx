@@ -1,6 +1,6 @@
 import { Copy, Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { formatDate, formatNumber } from "./utils/formatters"
+import { formatDate } from "../diy-notes/utils/formatters"
 import { toast } from "sonner"
 
 interface NoteHeaderProps {
@@ -22,7 +22,7 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
       <div className="flex items-center">
         <span className="font-bold text-lg mr-8">{note.ticker}</span>
         <span className="text-sm text-gray-500 mr-8">{formatDate(note.expiration)}</span>
-        <span className="text-sm text-gray-500 mr-8">${formatNumber(note.nominal, 0)}</span>
+        <span className="text-sm text-gray-500 mr-8">${note.exposure}</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
