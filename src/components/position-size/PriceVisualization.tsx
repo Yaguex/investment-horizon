@@ -22,21 +22,34 @@ const calculateCirclePositions = (note: any) => {
     return { middlePosition, entryPosition: middlePosition, exitPosition: middlePosition }
   }
 
-  // Calculate positions relative to the underlying price
   const underlyingPrice = testNote.underlying_price_entry
-  const maxDiff = 100 // Maximum price difference to consider for scaling
-  
-  // Calculate relative positions (negative = left, positive = right)
-  const entryDiff = ((testNote.strike_entry - underlyingPrice) / maxDiff)
-  const exitDiff = ((testNote.strike_exit - underlyingPrice) / maxDiff)
-  
-  // Convert to screen positions (40% range on each side)
-  entryPosition = middlePosition + (entryDiff * 40)
-  exitPosition = middlePosition + (exitDiff * 40)
+  const strikes = [testNote.strike_entry, testNote.strike_exit].sort((a, b) => 
+    Math.abs(b - underlyingPrice) - Math.abs(a - underlyingPrice)
+  )
 
-  // Ensure positions stay within bounds
-  entryPosition = Math.max(10, Math.min(90, entryPosition))
-  exitPosition = Math.max(10, Math.min(90, exitPosition))
+  // The strike furthest from underlying price
+  const furthestStrike = strikes[0]
+  // The other strike
+  const otherStrike = strikes[1]
+
+  // Determine if furthest strike is above or below underlying
+  const furthestPosition = furthestStrike > underlyingPrice ? 90 : 10
+
+  // Calculate the position of the other strike proportionally
+  const totalPriceRange = Math.abs(furthestStrike - underlyingPrice)
+  const otherStrikeDistance = Math.abs(otherStrike - underlyingPrice)
+  const otherPosition = middlePosition + 
+    ((otherStrikeDistance / totalPriceRange) * (furthestPosition - middlePosition)) * 
+    (otherStrike > underlyingPrice ? 1 : -1)
+
+  // Map the positions back to entry and exit strikes
+  if (testNote.strike_entry === furthestStrike) {
+    entryPosition = furthestPosition
+    exitPosition = otherPosition
+  } else {
+    entryPosition = otherPosition
+    exitPosition = furthestPosition
+  }
 
   return { middlePosition, entryPosition, exitPosition }
 }
