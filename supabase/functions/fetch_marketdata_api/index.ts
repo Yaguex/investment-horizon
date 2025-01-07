@@ -5,6 +5,34 @@ import { StrikeRequest, StrikeResponse } from './types.ts';
 
 console.log("Fetch marketdata API function initialized");
 
+async function processStrikeWithRetry(strike: StrikeRequest, retryAttempts = 3): Promise<StrikeResponse | null> {
+  for (let attempt = 1; attempt <= retryAttempts; attempt++) {
+    try {
+      const symbol = generateOptionSymbol(
+        strike.ticker,
+        strike.expiration,
+        strike.type === 'call' ? 'C' : 'P',
+        strike.strike
+      );
+      console.log(`[${new Date().toISOString()}] Attempt ${attempt}: Processing symbol ${symbol}`);
+
+      const marketData = await fetchOptionData(symbol);
+      return { symbol, marketData };
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Attempt ${attempt} failed:`, error);
+      
+      if (attempt === retryAttempts) {
+        console.error(`[${new Date().toISOString()}] All retry attempts exhausted for strike:`, strike);
+        return null;
+      }
+      
+      // Wait 1 second before next attempt
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -19,26 +47,27 @@ Deno.serve(async (req) => {
       throw new Error('Invalid request: strikes array is required');
     }
 
-    // Process all strikes in parallel
-    const responses: StrikeResponse[] = await Promise.all(
-      strikes.map(async (strike): Promise<StrikeResponse> => {
-        const symbol = generateOptionSymbol(
-          strike.ticker,
-          strike.expiration,
-          strike.type === 'call' ? 'C' : 'P',
-          strike.strike
-        );
-        console.log(`[${new Date().toISOString()}] Generated symbol: ${symbol} for strike:`, strike);
-
-        const marketData = await fetchOptionData(symbol);
-        return { symbol, marketData };
-      })
+    // Process all strikes with retry logic
+    const responses = await Promise.all(
+      strikes.map(strike => processStrikeWithRetry(strike))
     );
 
-    console.log(`[${new Date().toISOString()}] Processed ${responses.length} strikes successfully`);
+    // Check if any strike processing failed completely
+    if (responses.some(response => response === null)) {
+      console.error(`[${new Date().toISOString()}] API failure: Some strikes could not be processed after all retries`);
+      return new Response(
+        JSON.stringify({ error: "API failure" }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    console.log(`[${new Date().toISOString()}] Successfully processed ${responses.length} strikes`);
     
     return new Response(
-      JSON.stringify({ responses }),
+      JSON.stringify({ responses: responses.filter(Boolean) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
