@@ -17,14 +17,13 @@ const PositionSize = () => {
   const { data: notes, isLoading } = useQuery({
     queryKey: ['position-size'],
     queryFn: async () => {
-      console.log('Fetching position size with ID 18')
+      console.log('Fetching all position sizes')
       const { data, error } = await supabase
         .from('position_size')
         .select('*')
-        .eq('id', 18)
         
       if (error) {
-        console.error('Error fetching position size:', error)
+        console.error('Error fetching position sizes:', error)
         throw error
       }
 
