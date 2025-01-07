@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client"
 import Header from "@/components/Header"
 import TestForm, { TestFormValues } from "@/components/test/TestForm"
 import StrikeDataCard from "@/components/test/StrikeDataCard"
-import { ApiResponse } from "@/integrations/supabase/types"
+import { ApiResponse } from "@/components/test/types"
 
 const Test = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -16,7 +16,6 @@ const Test = () => {
     setApiResponse(null)
 
     try {
-      // Prepare the strikes array for the API
       const strikes = [
         {
           ticker: data.ticker,
@@ -67,17 +66,20 @@ const Test = () => {
           <TestForm onSubmit={onSubmit} isLoading={isLoading} />
 
           {apiResponse && (
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="mt-8">
               <StrikeDataCard 
                 title="Entry Strike"
+                symbol={apiResponse.responses[0]?.symbol}
                 marketData={apiResponse.responses[0]?.marketData}
               />
               <StrikeDataCard 
                 title="Target Strike"
+                symbol={apiResponse.responses[1]?.symbol}
                 marketData={apiResponse.responses[1]?.marketData}
               />
               <StrikeDataCard 
                 title="Protection Strike"
+                symbol={apiResponse.responses[2]?.symbol}
                 marketData={apiResponse.responses[2]?.marketData}
               />
             </div>
