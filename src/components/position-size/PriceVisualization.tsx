@@ -22,21 +22,36 @@ const calculateCirclePositions = (note: any) => {
     return { middlePosition, entryPosition: middlePosition, exitPosition: middlePosition }
   }
 
-  // Calculate positions relative to the underlying price
-  const underlyingPrice = testNote.underlying_price_entry
-  const maxDiff = 100 // Maximum price difference to consider for scaling
-  
-  // Calculate relative positions (negative = left, positive = right)
-  const entryDiff = ((testNote.strike_entry - underlyingPrice) / maxDiff)
-  const exitDiff = ((testNote.strike_exit - underlyingPrice) / maxDiff)
-  
-  // Convert to screen positions (40% range on each side)
-  entryPosition = middlePosition + (entryDiff * 40)
-  exitPosition = middlePosition + (exitDiff * 40)
+  // Get the absolute differences from underlying price
+  const entryDiff = Math.abs(testNote.strike_entry - testNote.underlying_price_entry)
+  const exitDiff = Math.abs(testNote.strike_exit - testNote.underlying_price_entry)
 
-  // Ensure positions stay within bounds
-  entryPosition = Math.max(10, Math.min(90, entryPosition))
-  exitPosition = Math.max(10, Math.min(90, exitPosition))
+  // Determine which strike is furthest from underlying price
+  if (exitDiff > entryDiff) {
+    // Exit strike is furthest
+    exitPosition = testNote.strike_exit < testNote.underlying_price_entry ? 10 : 90
+    
+    // Calculate entry position proportionally between underlying and exit
+    const totalRange = Math.abs(testNote.underlying_price_entry - testNote.strike_exit)
+    const entryRange = Math.abs(testNote.underlying_price_entry - testNote.strike_entry)
+    const proportion = entryRange / totalRange
+    
+    entryPosition = testNote.strike_entry < testNote.underlying_price_entry
+      ? middlePosition - (40 * proportion)
+      : middlePosition + (40 * proportion)
+  } else {
+    // Entry strike is furthest
+    entryPosition = testNote.strike_entry < testNote.underlying_price_entry ? 10 : 90
+    
+    // Calculate exit position proportionally between underlying and entry
+    const totalRange = Math.abs(testNote.underlying_price_entry - testNote.strike_entry)
+    const exitRange = Math.abs(testNote.underlying_price_entry - testNote.strike_exit)
+    const proportion = exitRange / totalRange
+    
+    exitPosition = testNote.strike_exit < testNote.underlying_price_entry
+      ? middlePosition - (40 * proportion)
+      : middlePosition + (40 * proportion)
+  }
 
   return { middlePosition, entryPosition, exitPosition }
 }
