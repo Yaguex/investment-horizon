@@ -10,20 +10,26 @@ const calculateCirclePositions = (note: any) => {
   const middlePosition = 50
   let entryPosition, exitPosition
 
-  if (!note.underlying_price_entry || !note.strike_entry || !note.strike_exit) {
+  // For testing purposes, we'll use the hardcoded values
+  const testNote = {
+    ...note,
+    strike_entry: 580,
+    strike_exit: 540,
+    underlying_price_entry: 590
+  }
+
+  if (!testNote.underlying_price_entry || !testNote.strike_entry || !testNote.strike_exit) {
     return { middlePosition, entryPosition: middlePosition, exitPosition: middlePosition }
   }
 
   // Calculate the range of prices
-  const minPrice = Math.min(note.underlying_price_entry, note.strike_entry, note.strike_exit)
-  const maxPrice = Math.max(note.underlying_price_entry, note.strike_entry, note.strike_exit)
+  const minPrice = Math.min(testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit)
+  const maxPrice = Math.max(testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit)
   const priceRange = maxPrice - minPrice
 
   // Calculate positions based on price values
-  entryPosition = priceRange === 0 ? middlePosition : 
-    ((note.strike_entry - minPrice) / priceRange) * 80 + 10 // 10-90 range
-  exitPosition = priceRange === 0 ? middlePosition : 
-    ((note.strike_exit - minPrice) / priceRange) * 80 + 10 // 10-90 range
+  entryPosition = ((testNote.strike_entry - minPrice) / priceRange) * 80 + 10 // 10-90 range
+  exitPosition = ((testNote.strike_exit - minPrice) / priceRange) * 80 + 10 // 10-90 range
 
   return { middlePosition, entryPosition, exitPosition }
 }
@@ -35,58 +41,52 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
     <TooltipProvider delayDuration={100}>
       <div className="mt-12 mb-20 relative">
         {/* Underlying Price Circle (Middle) */}
-        {note.underlying_price_entry && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${middlePosition}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.underlying_price_entry}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Current price: ${formatNumber(note.underlying_price_entry, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
+        <div 
+          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+          style={{ left: `${middlePosition}%` }}
+        >
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="text-sm text-black mb-1">$590</span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-black text-white">
+              Current price: $590
+            </TooltipContent>
+          </Tooltip>
+          <Circle className="h-4 w-4 fill-black text-black" />
+        </div>
         
         {/* Strike Entry Circle */}
-        {note.strike_entry && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${entryPosition}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.strike_entry}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Entry strike: ${formatNumber(note.strike_entry, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
+        <div 
+          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+          style={{ left: `${entryPosition}%` }}
+        >
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="text-sm text-black mb-1">$580</span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-black text-white">
+              Entry strike: $580
+            </TooltipContent>
+          </Tooltip>
+          <Circle className="h-4 w-4 fill-black text-black" />
+        </div>
         
         {/* Strike Exit Circle */}
-        {note.strike_exit && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${exitPosition}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${note.strike_exit}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Exit strike: ${formatNumber(note.strike_exit, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
+        <div 
+          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+          style={{ left: `${exitPosition}%` }}
+        >
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="text-sm text-black mb-1">$540</span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-black text-white">
+              Exit strike: $540
+            </TooltipContent>
+          </Tooltip>
+          <Circle className="h-4 w-4 fill-black text-black" />
+        </div>
         
         {/* Price rectangles */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
