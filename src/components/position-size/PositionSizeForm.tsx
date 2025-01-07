@@ -2,13 +2,13 @@ import { useForm } from "react-hook-form"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
-import { TextField } from "@/components/position-size/form-fields/TextField"
-import { NumberField } from "@/components/position-size/form-fields/NumberField"
-import { SelectField } from "@/components/position-size/form-fields/SelectField"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
+import { PositionSizeFormFields } from "./PositionSizeFormFields"
+import { PositionSizeFormValues } from "./types"
+import { getOptionTypes } from "./utils/optionTypes"
 
 const ACTION_OPTIONS = [
   { value: "Buy call", label: "Buy call" },
@@ -20,16 +20,6 @@ const ACTION_OPTIONS = [
   { value: "Sell call spread", label: "Sell call spread" },
   { value: "Sell put spread", label: "Sell put spread" },
 ]
-
-interface PositionSizeFormValues {
-  ticker: string
-  exposure: number | null
-  expiration: string
-  risk_free_yield: number | null
-  strike_entry: number | null
-  strike_exit: number | null
-  action: string
-}
 
 interface PositionSizeFormProps {
   open: boolean
@@ -64,7 +54,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
     console.log('Fetching market data for:', data)
     
     const isSpread = data.action.includes('spread')
-    const optionType = data.action.toLowerCase().includes('call') ? 'C' : 'P'
+    const optionTypes = getOptionTypes(data.action)
     
     try {
       const { data: marketData, error } = await supabase.functions.invoke('fetch_ticker_data', {
@@ -72,9 +62,18 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
           ticker: data.ticker,
           expiration: data.expiration,
           strikes: {
-            entry: data.strike_entry,
-            target: isSpread ? data.strike_exit : data.strike_entry,
-            protection: data.strike_entry
+            entry: {
+              strike: data.strike_entry,
+              type: optionTypes.entry
+            },
+            target: {
+              strike: isSpread ? data.strike_exit : data.strike_entry,
+              type: optionTypes.target
+            },
+            protection: {
+              strike: data.strike_entry,
+              type: optionTypes.protection
+            }
           },
           profile_id: (await supabase.auth.getUser()).data.user?.id
         }
@@ -103,7 +102,6 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         return
       }
 
-      // Only fetch market data if we have all required fields
       let marketData
       if (data.ticker && data.expiration && data.strike_entry) {
         try {
@@ -199,41 +197,9 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            <TextField
+            <PositionSizeFormFields 
               control={form.control}
-              name="ticker"
-              label="Ticker"
-            />
-            <SelectField
-              control={form.control}
-              name="action"
-              label="Action"
-              options={ACTION_OPTIONS}
-            />
-            <NumberField
-              control={form.control}
-              name="exposure"
-              label="Exposure"
-            />
-            <TextField
-              control={form.control}
-              name="expiration"
-              label="Expiration (YYYY-MM-DD)"
-            />
-            <NumberField
-              control={form.control}
-              name="risk_free_yield"
-              label="Risk Free Yield"
-            />
-            <NumberField
-              control={form.control}
-              name="strike_entry"
-              label="Strike Entry"
-            />
-            <NumberField
-              control={form.control}
-              name="strike_exit"
-              label="Strike Exit"
+              actionOptions={ACTION_OPTIONS}
             />
             <div className="flex justify-end space-x-2">
               <Button type="submit">{note ? 'Update' : 'Create'} Position Size</Button>
