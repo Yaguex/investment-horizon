@@ -1,40 +1,41 @@
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { PriceCircle } from "./PriceCircle";
-import { PositionIndicator } from "./PositionIndicator";
-import { calculateCirclePositions } from "./utils/calculations";
+import { calculateCirclePositions } from "./utils/calculations"
+import { PriceCircle } from "./components/PriceCircle"
+import { PositionIndicator } from "./components/PositionIndicator"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 interface PriceVisualizationProps {
-  note: any;
+  note: any
 }
 
 export function PriceVisualization({ note }: PriceVisualizationProps) {
-  const { middlePosition, entryPosition, exitPosition } = calculateCirclePositions(note);
+  const { middlePosition, entryPosition, exitPosition } = calculateCirclePositions(note)
+  
+  // Calculate fees
+  const entryFee = (note.contracts || 0) * (note.premium_entry || 0) * 100
+  const exitFee = (note.contracts || 0) * (note.premium_exit || 0) * 100
   
   return (
     <TooltipProvider delayDuration={100}>
       <div className="mt-12 mb-20 relative">
-        {/* Underlying Price Circle */}
+        {/* Underlying Price Circle (Middle) */}
         <PriceCircle 
           position={middlePosition}
           price={590}
-          label="Current Price"
-          description="Current price"
+          label="Current price"
         />
         
         {/* Strike Entry Circle */}
         <PriceCircle 
           position={entryPosition}
           price={580}
-          label="Entry Strike"
-          description="Entry strike"
+          label="Entry strike"
         />
         
         {/* Strike Exit Circle */}
         <PriceCircle 
           position={exitPosition}
           price={540}
-          label="Exit Strike"
-          description="Exit strike"
+          label="Exit strike"
         />
         
         {/* Price rectangles */}
@@ -54,21 +55,23 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           <PositionIndicator 
             position={entryPosition}
             contracts={note.contracts || 0}
-            premium={note.premium_entry || 0}
+            price={note.premium_entry || 0}
             isEntry={true}
             action={note.action}
+            fee={entryFee}
           />
         )}
         {note.strike_exit && (
           <PositionIndicator 
             position={exitPosition}
             contracts={note.contracts || 0}
-            premium={note.premium_exit || 0}
+            price={note.premium_exit || 0}
             isEntry={false}
             action={note.action}
+            fee={exitFee}
           />
         )}
       </div>
     </TooltipProvider>
-  );
+  )
 }
