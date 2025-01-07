@@ -46,10 +46,12 @@ const DIYNotes = () => {
           </Button>
         </div>
         
-        <DIYNoteForm 
-          open={isNewNoteOpen}
-          onOpenChange={setIsNewNoteOpen}
-        />
+        {isNewNoteOpen && (
+          <DIYNoteForm 
+            open={true}
+            onOpenChange={setIsNewNoteOpen}
+          />
+        )}
 
         {editNote && (
           <DIYNoteForm 
