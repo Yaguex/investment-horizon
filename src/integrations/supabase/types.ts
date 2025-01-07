@@ -293,48 +293,60 @@ export type Database = {
       position_size: {
         Row: {
           action: string | null
-          delta: number | null
+          delta_entry: number | null
+          delta_exit: number | null
           expiration: string | null
           exposure: number | null
           id: number
-          iv: number | null
-          premium: number | null
+          iv_entry: number | null
+          iv_exit: number | null
+          premium_entry: number | null
+          premium_exit: number | null
           profile_id: string | null
           risk_free_yield: number | null
           strike_entry: number | null
           strike_exit: number | null
           ticker: string | null
-          underlying_price: number | null
+          underlying_price_entry: number | null
+          underlying_price_exit: number | null
         }
         Insert: {
           action?: string | null
-          delta?: number | null
+          delta_entry?: number | null
+          delta_exit?: number | null
           expiration?: string | null
           exposure?: number | null
           id?: number
-          iv?: number | null
-          premium?: number | null
+          iv_entry?: number | null
+          iv_exit?: number | null
+          premium_entry?: number | null
+          premium_exit?: number | null
           profile_id?: string | null
           risk_free_yield?: number | null
           strike_entry?: number | null
           strike_exit?: number | null
           ticker?: string | null
-          underlying_price?: number | null
+          underlying_price_entry?: number | null
+          underlying_price_exit?: number | null
         }
         Update: {
           action?: string | null
-          delta?: number | null
+          delta_entry?: number | null
+          delta_exit?: number | null
           expiration?: string | null
           exposure?: number | null
           id?: number
-          iv?: number | null
-          premium?: number | null
+          iv_entry?: number | null
+          iv_exit?: number | null
+          premium_entry?: number | null
+          premium_exit?: number | null
           profile_id?: string | null
           risk_free_yield?: number | null
           strike_entry?: number | null
           strike_exit?: number | null
           ticker?: string | null
-          underlying_price?: number | null
+          underlying_price_entry?: number | null
+          underlying_price_exit?: number | null
         }
         Relationships: []
       }
