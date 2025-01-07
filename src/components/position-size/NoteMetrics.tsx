@@ -6,6 +6,26 @@ interface NoteMetricsProps {
 }
 
 export function NoteMetrics({ note }: NoteMetricsProps) {
+  const getROIColor = (value: number) => {
+    if (value >= 10) return "text-green-600"
+    if (value > 6 && value < 10) return "text-orange-500"
+    if (value > 0 && value <= 6) return "text-red-600"
+    if (value < 0 && value > -6) return "text-green-600"
+    if (value <= -6 && value > -10) return "text-orange-500"
+    if (value <= -10) return "text-red-600"
+    return "text-black"
+  }
+
+  const getDeltaColor = (value: number) => {
+    if (value >= 0.6) return "text-green-600"
+    if (value > 0.3 && value < 0.6) return "text-orange-500"
+    if (value > 0 && value <= 0.3) return "text-red-600"
+    if (value < 0 && value > -0.3) return "text-green-600"
+    if (value <= -0.3 && value > -0.6) return "text-orange-500"
+    if (value <= -0.6) return "text-red-600"
+    return "text-black"
+  }
+
   return (
     <TooltipProvider delayDuration={100}>
       <div className="text-sm space-y-2 flex justify-between">
@@ -13,10 +33,20 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Exposure: {note.exposure || 0}%
+                Exposure: 3% (${formatNumber(730000, 0)})
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Percentage of portfolio at risk
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            <Tooltip>
+              <TooltipTrigger>
+                Premium: ${formatNumber(18394, 0)}
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Total net premium paid
               </TooltipContent>
             </Tooltip>
           </p>
@@ -33,10 +63,10 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Net premium: ${formatNumber(18394, 0)}
+                Max gain: ${formatNumber(16564, 0)}
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total net premium paid
+                Maximum potential gain
               </TooltipContent>
             </Tooltip>
           </p>
@@ -45,7 +75,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className="text-green-600 text-xl font-bold">9.71%</p>
+                <p className={`${getROIColor(9.71)} text-xl font-bold`}>9.71%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Premium Annual ROI
@@ -56,7 +86,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className="text-green-600 text-xl font-bold">0.49</p>
+                <p className={`${getDeltaColor(0.49)} text-xl font-bold`}>0.49</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Delta normalized for position size
@@ -67,7 +97,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className="text-orange-500 text-xl font-bold">240</p>
+                <p className="text-black text-xl font-bold">240</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Number of contracts in the position
