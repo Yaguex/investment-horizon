@@ -17,9 +17,18 @@ export interface RequestBody {
   ticker: string;
   expiration: string;
   strikes: {
-    entry: number;
-    target: number;
-    protection: number;
+    entry: {
+      strike: number;
+      type: string;
+    };
+    target: {
+      strike: number;
+      type: string;
+    };
+    protection: {
+      strike: number;
+      type: string;
+    };
   };
   profile_id: string;
 }

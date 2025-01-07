@@ -102,9 +102,18 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
           ticker: data.ticker,
           expiration: data.expiration,
           strikes: {
-            entry: data.strike_entry,
-            target: data.strike_target,
-            protection: data.strike_protection
+            entry: {
+              strike: data.strike_entry,
+              type: 'call'
+            },
+            target: {
+              strike: data.strike_target,
+              type: 'call'
+            },
+            protection: {
+              strike: data.strike_protection,
+              type: 'put'
+            }
           },
           profile_id: (await supabase.auth.getUser()).data.user?.id
         }

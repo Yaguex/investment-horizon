@@ -28,20 +28,20 @@ Deno.serve(async (req) => {
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Generate symbols and fetch data for all strikes in parallel with hardcoded types
+    // Generate symbols and fetch data for all strikes in parallel
     const [entryData, targetData, protectionData] = await Promise.all([
       (async () => {
-        const symbol = generateOptionSymbol(ticker, expiration, 'C', strikes.entry);
+        const symbol = generateOptionSymbol(ticker, expiration, strikes.entry.type === 'call' ? 'C' : 'P', strikes.entry.strike);
         const marketData = await fetchOptionData(symbol, apiKey);
         return { symbol, marketData };
       })(),
       (async () => {
-        const symbol = generateOptionSymbol(ticker, expiration, 'C', strikes.target);
+        const symbol = generateOptionSymbol(ticker, expiration, strikes.target.type === 'call' ? 'C' : 'P', strikes.target.strike);
         const marketData = await fetchOptionData(symbol, apiKey);
         return { symbol, marketData };
       })(),
       (async () => {
-        const symbol = generateOptionSymbol(ticker, expiration, 'P', strikes.protection);
+        const symbol = generateOptionSymbol(ticker, expiration, strikes.protection.type === 'call' ? 'C' : 'P', strikes.protection.strike);
         const marketData = await fetchOptionData(symbol, apiKey);
         return { symbol, marketData };
       })()
@@ -58,7 +58,11 @@ Deno.serve(async (req) => {
       ticker, 
       expiration, 
       profile_id,
-      strikes 
+      strikes: {
+        entry: strikes.entry.strike,
+        target: strikes.target.strike,
+        protection: strikes.protection.strike
+      }
     });
 
     return new Response(
