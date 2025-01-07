@@ -1,3 +1,0 @@
-project_id = "zdqoxjyicrczlzazgyae"
-[functions.fetch_marketdata_api]
-verify_jwt = true
