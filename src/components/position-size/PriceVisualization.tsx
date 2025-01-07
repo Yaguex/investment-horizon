@@ -22,15 +22,21 @@ const calculateCirclePositions = (note: any) => {
     return { middlePosition, entryPosition: middlePosition, exitPosition: middlePosition }
   }
 
-  // Calculate the range of prices
-  const minPrice = Math.min(testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit)
-  const maxPrice = Math.max(testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit)
-  const priceRange = maxPrice - minPrice
+  // Calculate positions relative to the underlying price
+  const underlyingPrice = testNote.underlying_price_entry
+  const maxDiff = 100 // Maximum price difference to consider for scaling
+  
+  // Calculate relative positions (negative = left, positive = right)
+  const entryDiff = ((testNote.strike_entry - underlyingPrice) / maxDiff)
+  const exitDiff = ((testNote.strike_exit - underlyingPrice) / maxDiff)
+  
+  // Convert to screen positions (40% range on each side)
+  entryPosition = middlePosition + (entryDiff * 40)
+  exitPosition = middlePosition + (exitDiff * 40)
 
-  // Calculate positions based on price values relative to the range
-  // This will ensure that lower values are positioned to the left
-  entryPosition = ((testNote.strike_entry - minPrice) / priceRange) * 80 + 10 // 10-90 range
-  exitPosition = ((testNote.strike_exit - minPrice) / priceRange) * 80 + 10 // 10-90 range
+  // Ensure positions stay within bounds
+  entryPosition = Math.max(10, Math.min(90, entryPosition))
+  exitPosition = Math.max(10, Math.min(90, exitPosition))
 
   return { middlePosition, entryPosition, exitPosition }
 }
@@ -95,8 +101,8 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           <div 
             className="absolute top-0 bottom-0 bg-green-500"
             style={{ 
-              left: `${entryPosition}%`,
-              width: `${exitPosition - entryPosition}%`
+              left: `${Math.min(entryPosition, exitPosition)}%`,
+              width: `${Math.abs(exitPosition - entryPosition)}%`
             }}
           />
         </div>
