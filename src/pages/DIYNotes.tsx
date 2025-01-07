@@ -12,7 +12,7 @@ import { NoteMetrics } from "@/components/diy-notes/NoteMetrics"
 
 const DIYNotes = () => {
   const [editNote, setEditNote] = useState<any>(null)
-  const [isNewNoteOpen, setIsNewNoteOpen] = useState(false)
+  const [newNote, setNewNote] = useState<any>(null)
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ['diy-notes'],
@@ -41,15 +41,15 @@ const DIYNotes = () => {
       <main className="container mx-auto px-6 pt-24 pb-8">
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-foreground">DIY Notes</h1>
-          <Button size="lg" className="px-6" onClick={() => setIsNewNoteOpen(true)}>
+          <Button size="lg" className="px-6" onClick={() => setNewNote({})}>
             New Note
           </Button>
         </div>
         
-        {isNewNoteOpen && (
+        {newNote && (
           <DIYNoteForm 
             open={true}
-            onOpenChange={setIsNewNoteOpen}
+            onOpenChange={() => setNewNote(null)}
           />
         )}
 
