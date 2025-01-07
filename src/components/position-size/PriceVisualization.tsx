@@ -27,8 +27,7 @@ const calculateCirclePositions = (note: any) => {
   const maxPrice = Math.max(testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit)
   const priceRange = maxPrice - minPrice
 
-  // Calculate positions based on price values relative to the range
-  // This will ensure that lower values are positioned to the left
+  // Calculate positions based on price values
   entryPosition = ((testNote.strike_entry - minPrice) / priceRange) * 80 + 10 // 10-90 range
   exitPosition = ((testNote.strike_exit - minPrice) / priceRange) * 80 + 10 // 10-90 range
 
