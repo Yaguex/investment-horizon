@@ -197,6 +197,30 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
             }}
           />
         </div>
+        
+        {/* Bottom information area */}
+        <div className="mt-8 flex justify-between items-start">
+          {/* Left side information */}
+          <div className="space-y-1">
+            <p className="text-sm">Exposure: 3% (${formatNumber(730000)})</p>
+            <p className="text-sm">Premium: ${formatNumber(18394)}</p>
+            <p className="text-sm">Commission: ${formatNumber(1830)}</p>
+            <p className="text-sm">Max gain: ${formatNumber(16564)}</p>
+          </div>
+          
+          {/* Right side information */}
+          <div className="space-y-1 text-right">
+            <p className="text-sm">
+              Premium Annual ROI: <span className={getColorForPremiumROI(12)}>12%</span>
+            </p>
+            <p className="text-sm">
+              Delta Normalized: <span className={getColorForDeltaNormalized(0.7)}>0.7</span>
+            </p>
+            <p className="text-sm">
+              Contracts: <span className="text-black">42</span>
+            </p>
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   )
