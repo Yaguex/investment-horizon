@@ -22,87 +22,27 @@ const calculateCirclePositions = (note: any) => {
     return { middlePosition, entryPosition: middlePosition, exitPosition: middlePosition }
   }
 
-  // Get the absolute differences from underlying price
-  const entryDiff = Math.abs(testNote.strike_entry - testNote.underlying_price_entry)
-  const exitDiff = Math.abs(testNote.strike_exit - testNote.underlying_price_entry)
+  // Calculate positions relative to the underlying price
+  const underlyingPrice = testNote.underlying_price_entry
+  const maxDiff = 100 // Maximum price difference to consider for scaling
+  
+  // Calculate relative positions (negative = left, positive = right)
+  const entryDiff = ((testNote.strike_entry - underlyingPrice) / maxDiff)
+  const exitDiff = ((testNote.strike_exit - underlyingPrice) / maxDiff)
+  
+  // Convert to screen positions (40% range on each side)
+  entryPosition = middlePosition + (entryDiff * 40)
+  exitPosition = middlePosition + (exitDiff * 40)
 
-  // Determine which strike is furthest from underlying price
-  if (exitDiff > entryDiff) {
-    // Exit strike is furthest
-    exitPosition = testNote.strike_exit < testNote.underlying_price_entry ? 10 : 90
-    
-    // Calculate entry position proportionally between underlying and exit
-    const totalRange = Math.abs(testNote.underlying_price_entry - testNote.strike_exit)
-    const entryRange = Math.abs(testNote.underlying_price_entry - testNote.strike_entry)
-    const proportion = entryRange / totalRange
-    
-    entryPosition = testNote.strike_entry < testNote.underlying_price_entry
-      ? middlePosition - (40 * proportion)
-      : middlePosition + (40 * proportion)
-  } else {
-    // Entry strike is furthest
-    entryPosition = testNote.strike_entry < testNote.underlying_price_entry ? 10 : 90
-    
-    // Calculate exit position proportionally between underlying and entry
-    const totalRange = Math.abs(testNote.underlying_price_entry - testNote.strike_entry)
-    const exitRange = Math.abs(testNote.underlying_price_entry - testNote.strike_exit)
-    const proportion = exitRange / totalRange
-    
-    exitPosition = testNote.strike_exit < testNote.underlying_price_entry
-      ? middlePosition - (40 * proportion)
-      : middlePosition + (40 * proportion)
-  }
+  // Ensure positions stay within bounds
+  entryPosition = Math.max(10, Math.min(90, entryPosition))
+  exitPosition = Math.max(10, Math.min(90, exitPosition))
 
-  // Calculate positions for semi-transparent circles (594, 609, 613)
-  const calculateSemiTransparentPosition = (strike: number) => {
-    const strikeDiff = Math.abs(strike - testNote.underlying_price_entry)
-    const proportion = strikeDiff / Math.max(entryDiff, exitDiff)
-    return strike < testNote.underlying_price_entry
-      ? middlePosition - (40 * proportion)
-      : middlePosition + (40 * proportion)
-  }
-
-  const position594 = calculateSemiTransparentPosition(594)
-  const position609 = calculateSemiTransparentPosition(609)
-  const position613 = calculateSemiTransparentPosition(613)
-
-  return { 
-    middlePosition, 
-    entryPosition, 
-    exitPosition,
-    position594,
-    position609,
-    position613
-  }
-}
-
-const getColorForPremiumROI = (value: number) => {
-  if (value >= 10) return 'text-green-500'
-  if (value > 6) return 'text-orange-500'
-  if (value > 0) return 'text-red-500'
-  if (value > -6) return 'text-green-500'
-  if (value > -10) return 'text-orange-500'
-  return 'text-red-500'
-}
-
-const getColorForDeltaNormalized = (value: number) => {
-  if (value >= 0.6) return 'text-green-500'
-  if (value > 0.3) return 'text-orange-500'
-  if (value > 0) return 'text-red-500'
-  if (value > -0.3) return 'text-green-500'
-  if (value > -0.6) return 'text-orange-500'
-  return 'text-red-500'
+  return { middlePosition, entryPosition, exitPosition }
 }
 
 export function PriceVisualization({ note }: PriceVisualizationProps) {
-  const { 
-    middlePosition, 
-    entryPosition, 
-    exitPosition,
-    position594,
-    position609,
-    position613
-  } = calculateCirclePositions(note)
+  const { middlePosition, entryPosition, exitPosition } = calculateCirclePositions(note)
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -130,11 +70,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         >
           <Tooltip>
             <TooltipTrigger>
-              <div className="flex flex-col items-center">
-                <span className="text-sm text-black mb-1">$580</span>
-                <span className="text-xs text-gray-600">-42P for $2.03</span>
-                <span className="text-xs text-gray-600">8% OTM</span>
-              </div>
+              <span className="text-sm text-black mb-1">$580</span>
             </TooltipTrigger>
             <TooltipContent className="bg-black text-white">
               Entry strike: $580
@@ -150,11 +86,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         >
           <Tooltip>
             <TooltipTrigger>
-              <div className="flex flex-col items-center">
-                <span className="text-sm text-black mb-1">$540</span>
-                <span className="text-xs text-gray-600">+42P for $20.74</span>
-                <span className="text-xs text-gray-600">15% OTM</span>
-              </div>
+              <span className="text-sm text-black mb-1">$540</span>
             </TooltipTrigger>
             <TooltipContent className="bg-black text-white">
               Exit strike: $540
@@ -162,29 +94,6 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           </Tooltip>
           <Circle className="h-4 w-4 fill-black text-black" />
         </div>
-
-        {/* Semi-transparent circles */}
-        {[
-          { position: position594, strike: 594 },
-          { position: position609, strike: 609 },
-          { position: position613, strike: 613 }
-        ].map(({ position, strike }) => (
-          <div 
-            key={strike}
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-5"
-            style={{ left: `${position}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-gray-300 mb-1">${strike}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Strike: ${strike}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
-          </div>
-        ))}
         
         {/* Price rectangles */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
@@ -198,29 +107,41 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           />
         </div>
         
-        {/* Bottom information area */}
-        <div className="mt-8 flex justify-between items-start">
-          {/* Left side information */}
-          <div className="space-y-1">
-            <p className="text-sm">Exposure: 3% (${formatNumber(730000)})</p>
-            <p className="text-sm">Premium: ${formatNumber(18394)}</p>
-            <p className="text-sm">Commission: ${formatNumber(1830)}</p>
-            <p className="text-sm">Max gain: ${formatNumber(16564)}</p>
+        {/* Position indicators */}
+        {note.strike_entry && (
+          <div 
+            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+            style={{ left: `${entryPosition}%` }}
+          >
+            <span className="text-xs text-black">
+              <span className="font-bold">
+                {note.action === 'buy_call' ? '+' : '-'}{note.contracts || 0}
+                {note.action?.includes('call') ? 'C' : 'P'}
+              </span> 
+              at ${note.premium_entry || 0}
+            </span>
+            <span className="text-xs text-red-500">
+              ${formatNumber((note.contracts || 0) * (note.premium_entry || 0) * 100, 0)}
+            </span>
           </div>
-          
-          {/* Right side information */}
-          <div className="space-y-1 text-right">
-            <p className="text-sm">
-              Premium Annual ROI: <span className={getColorForPremiumROI(12)}>12%</span>
-            </p>
-            <p className="text-sm">
-              Delta Normalized: <span className={getColorForDeltaNormalized(0.7)}>0.7</span>
-            </p>
-            <p className="text-sm">
-              Contracts: <span className="text-black">42</span>
-            </p>
+        )}
+        {note.strike_exit && (
+          <div 
+            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+            style={{ left: `${exitPosition}%` }}
+          >
+            <span className="text-xs text-black">
+              <span className="font-bold">
+                {note.action === 'buy_call' ? '-' : '+'}{note.contracts || 0}
+                {note.action?.includes('call') ? 'C' : 'P'}
+              </span> 
+              at ${note.premium_exit || '?'}
+            </span>
+            <span className="text-xs text-green-500">
+              ${formatNumber((note.contracts || 0) * (note.premium_exit || 0) * 100, 0)}
+            </span>
           </div>
-        </div>
+        )}
       </div>
     </TooltipProvider>
   )
