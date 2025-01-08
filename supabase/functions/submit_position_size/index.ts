@@ -68,6 +68,11 @@ Deno.serve(async (req) => {
     const type = isCall ? 'call' : 'put';
 
     // New safeguard logic for API calls
+    console.log('[submit_position_size] Preparing strikes for market data fetch:', {
+      strike_entry: note.strike_entry,
+      strike_exit: note.strike_exit
+    });
+
     if (note.strike_entry && note.strike_exit) {
       // Both strikes present - add them in a single array
       console.log('[submit_position_size] Both strikes present, preparing single API call');
