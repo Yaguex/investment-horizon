@@ -1,11 +1,27 @@
 import { formatNumber } from "./utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
 
 interface NoteMetricsProps {
   note: any
 }
 
 export function NoteMetrics({ note }: NoteMetricsProps) {
+  const { data: latestBalance } = useQuery({
+    queryKey: ['latest-balance'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('portfolio_data')
+        .select('balance')
+        .order('month', { ascending: false })
+        .limit(1)
+      return data?.[0]?.balance || 0
+    }
+  })
+
+  const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
+
   const getROIColor = (value: number) => {
     if (value >= 10) return "text-green-600"
     if (value > 6 && value < 10) return "text-orange-500"
@@ -33,7 +49,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Exposure: 3% (${formatNumber(730000, 0)})
+                Exposure: {note.exposure}% (${formatNumber(exposureAmount, 0)})
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Percentage of portfolio at risk

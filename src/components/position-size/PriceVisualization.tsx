@@ -10,53 +10,47 @@ const calculateCirclePositions = (note: any) => {
   const middlePosition = 50
   let entryPosition, exitPosition
 
-  // For testing purposes, we'll use the hardcoded values
-  const testNote = {
-    ...note,
-    strike_entry: 580,
-    strike_exit: 540,
-    underlying_price_entry: 590
-  }
-
-  if (!testNote.underlying_price_entry || !testNote.strike_entry || !testNote.strike_exit) {
+  if (!note.underlying_price_entry || !note.strike_entry) {
     return { middlePosition, entryPosition: middlePosition, exitPosition: middlePosition }
   }
 
   // Get the absolute differences from underlying price
-  const entryDiff = Math.abs(testNote.strike_entry - testNote.underlying_price_entry)
-  const exitDiff = Math.abs(testNote.strike_exit - testNote.underlying_price_entry)
+  const entryDiff = Math.abs(note.strike_entry - note.underlying_price_entry)
+  const exitDiff = note.strike_exit ? Math.abs(note.strike_exit - note.underlying_price_entry) : 0
 
   // Determine which strike is furthest from underlying price
-  if (exitDiff > entryDiff) {
+  if (exitDiff > entryDiff && note.strike_exit) {
     // Exit strike is furthest
-    exitPosition = testNote.strike_exit < testNote.underlying_price_entry ? 10 : 90
+    exitPosition = note.strike_exit < note.underlying_price_entry ? 10 : 90
     
     // Calculate entry position proportionally between underlying and exit
-    const totalRange = Math.abs(testNote.underlying_price_entry - testNote.strike_exit)
-    const entryRange = Math.abs(testNote.underlying_price_entry - testNote.strike_entry)
+    const totalRange = Math.abs(note.underlying_price_entry - note.strike_exit)
+    const entryRange = Math.abs(note.underlying_price_entry - note.strike_entry)
     const proportion = entryRange / totalRange
     
-    entryPosition = testNote.strike_entry < testNote.underlying_price_entry
+    entryPosition = note.strike_entry < note.underlying_price_entry
       ? middlePosition - (40 * proportion)
       : middlePosition + (40 * proportion)
   } else {
     // Entry strike is furthest
-    entryPosition = testNote.strike_entry < testNote.underlying_price_entry ? 10 : 90
+    entryPosition = note.strike_entry < note.underlying_price_entry ? 10 : 90
     
-    // Calculate exit position proportionally between underlying and entry
-    const totalRange = Math.abs(testNote.underlying_price_entry - testNote.strike_entry)
-    const exitRange = Math.abs(testNote.underlying_price_entry - testNote.strike_exit)
-    const proportion = exitRange / totalRange
-    
-    exitPosition = testNote.strike_exit < testNote.underlying_price_entry
-      ? middlePosition - (40 * proportion)
-      : middlePosition + (40 * proportion)
+    if (note.strike_exit) {
+      // Calculate exit position proportionally between underlying and entry
+      const totalRange = Math.abs(note.underlying_price_entry - note.strike_entry)
+      const exitRange = Math.abs(note.underlying_price_entry - note.strike_exit)
+      const proportion = exitRange / totalRange
+      
+      exitPosition = note.strike_exit < note.underlying_price_entry
+        ? middlePosition - (40 * proportion)
+        : middlePosition + (40 * proportion)
+    }
   }
 
   // Calculate positions for BE circles using the same formula
-  const be1Position = calculateBEPosition(594, testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit, middlePosition)
-  const be2Position = calculateBEPosition(609, testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit, middlePosition)
-  const be3Position = calculateBEPosition(613, testNote.underlying_price_entry, testNote.strike_entry, testNote.strike_exit, middlePosition)
+  const be1Position = calculateBEPosition(594, note.underlying_price_entry, note.strike_entry, note.strike_exit, middlePosition)
+  const be2Position = calculateBEPosition(609, note.underlying_price_entry, note.strike_entry, note.strike_exit, middlePosition)
+  const be3Position = calculateBEPosition(613, note.underlying_price_entry, note.strike_entry, note.strike_exit, middlePosition)
 
   return { 
     middlePosition, 
@@ -68,7 +62,7 @@ const calculateCirclePositions = (note: any) => {
   }
 }
 
-const calculateBEPosition = (beStrike: number, underlyingPrice: number, strikeEntry: number, strikeExit: number, middlePosition: number) => {
+const calculateBEPosition = (beStrike: number, underlyingPrice: number, strikeEntry: number, strikeExit: number | null, middlePosition: number) => {
   const entryDiff = Math.abs(strikeEntry - underlyingPrice)
   const exitDiff = Math.abs(strikeExit - underlyingPrice)
   const beDiff = Math.abs(beStrike - underlyingPrice)
@@ -101,6 +95,11 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
     be2Position,
     be3Position
   } = calculateCirclePositions(note)
+
+  const calculateOTMPercentage = (strike: number) => {
+    if (!note.underlying_price_entry) return 0
+    return Math.abs(Math.round(((strike - note.underlying_price_entry) / note.underlying_price_entry) * 100))
+  }
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -112,10 +111,10 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         >
           <Tooltip>
             <TooltipTrigger>
-              <span className="text-sm text-black mb-1">$590</span>
+              <span className="text-sm text-black mb-1">${formatNumber(note.underlying_price_entry, 0)}</span>
             </TooltipTrigger>
             <TooltipContent className="bg-black text-white">
-              Current price: $590
+              Current price: ${formatNumber(note.underlying_price_entry, 0)}
             </TooltipContent>
           </Tooltip>
           <Circle className="h-4 w-4 fill-black text-black" />
@@ -128,30 +127,32 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         >
           <Tooltip>
             <TooltipTrigger>
-              <span className="text-sm text-black mb-1">$580</span>
+              <span className="text-sm text-black mb-1">${formatNumber(note.strike_entry, 0)}</span>
             </TooltipTrigger>
             <TooltipContent className="bg-black text-white">
-              Entry strike: $580
+              Entry strike: ${formatNumber(note.strike_entry, 0)}
             </TooltipContent>
           </Tooltip>
           <Circle className="h-4 w-4 fill-black text-black" />
         </div>
         
         {/* Strike Exit Circle */}
-        <div 
-          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-          style={{ left: `${exitPosition}%` }}
-        >
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="text-sm text-black mb-1">$540</span>
-            </TooltipTrigger>
-            <TooltipContent className="bg-black text-white">
-              Exit strike: $540
-            </TooltipContent>
-          </Tooltip>
-          <Circle className="h-4 w-4 fill-black text-black" />
-        </div>
+        {note.strike_exit && (
+          <div 
+            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+            style={{ left: `${exitPosition}%` }}
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="text-sm text-black mb-1">${formatNumber(note.strike_exit, 0)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white">
+                Exit strike: ${formatNumber(note.strike_exit, 0)}
+              </TooltipContent>
+            </Tooltip>
+            <Circle className="h-4 w-4 fill-black text-black" />
+          </div>
+        )}
 
         {/* BE Circles */}
         {[
@@ -179,13 +180,15 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         {/* Price rectangles */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
           {/* Green rectangle for potential profit zone */}
-          <div 
-            className="absolute top-0 bottom-0 bg-green-500"
-            style={{ 
-              left: `${Math.min(entryPosition, exitPosition)}%`,
-              width: `${Math.abs(exitPosition - entryPosition)}%`
-            }}
-          />
+          {note.strike_exit && (
+            <div 
+              className="absolute top-0 bottom-0 bg-green-500"
+              style={{ 
+                left: `${Math.min(entryPosition, exitPosition)}%`,
+                width: `${Math.abs(exitPosition - entryPosition)}%`
+              }}
+            />
+          )}
         </div>
         
         {/* Position indicators */}
@@ -193,16 +196,22 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${entryPosition}%` }}
         >
-          <span className="text-xs text-black"><span class="font-bold">-42P</span> for $2.03</span>
-          <span className="text-xs text-black">8% OTM</span>
+          <span className="text-xs text-black">
+            <span className="font-bold">-42P</span> for ${formatNumber(note.premium_entry, 2)}
+          </span>
+          <span className="text-xs text-black">{calculateOTMPercentage(note.strike_entry)}% OTM</span>
         </div>
-        <div 
-          className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-          style={{ left: `${exitPosition}%` }}
-        >
-          <span className="text-xs text-black"><span class="font-bold">+42P</span> for $20.74</span>
-          <span className="text-xs text-black">15% OTM</span>
-        </div>
+        {note.strike_exit && (
+          <div 
+            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+            style={{ left: `${exitPosition}%` }}
+          >
+            <span className="text-xs text-black">
+              <span className="font-bold">+42P</span> for ${formatNumber(note.premium_exit, 2)}
+            </span>
+            <span className="text-xs text-black">{calculateOTMPercentage(note.strike_exit)}% OTM</span>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   )
