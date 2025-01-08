@@ -115,7 +115,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="mt-12 mb-20 relative">
+      <div className="mt-12 mb-10 relative">
         {/* Underlying Price Circle (Middle) */}
         <PriceCircle 
           price={note.underlying_price_entry}
