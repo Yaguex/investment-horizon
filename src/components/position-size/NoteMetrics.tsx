@@ -87,7 +87,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   }
 
   const roi = calculateROI()
-  const normalizedDelta = note.delta_entry ? Math.round((roi / note.delta_entry) * 100) / 100 : 0
+  const normalizedDelta = note.delta_entry ? Math.round((roi / note.delta_entry / 100) * 100) / 100 : 0
 
   return (
     <TooltipProvider delayDuration={100}>
