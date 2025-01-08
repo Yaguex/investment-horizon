@@ -1,6 +1,10 @@
 import { Circle } from "lucide-react"
 import { formatNumber } from "./utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { PriceCircle } from "./components/PriceCircle"
+import { PositionIndicator } from "./components/PositionIndicator"
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
 
 interface PriceVisualizationProps {
   note: any
@@ -96,62 +100,50 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
     be3Position
   } = calculateCirclePositions(note)
 
-  const calculateOTMPercentage = (strike: number) => {
-    if (!note.underlying_price_entry) return 0
-    return Math.abs(Math.round(((strike - note.underlying_price_entry) / note.underlying_price_entry) * 100))
+  const { data: latestBalance } = useQuery({
+    queryKey: ['latest-balance'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('portfolio_data')
+        .select('balance')
+        .order('month', { ascending: false })
+        .limit(1)
+      return data?.[0]?.balance || 0
+    }
+  })
+
+  const calculateContracts = (strike: number) => {
+    if (!latestBalance || !note.strike_entry) return 0
+    return Math.round((latestBalance * (note.exposure / 100)) / (strike) / 100)
   }
-  
+
   return (
     <TooltipProvider delayDuration={100}>
       <div className="mt-12 mb-20 relative">
-        {/* Underlying Price Circle (Middle) */}
-        <div 
-          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-          style={{ left: `${middlePosition}%` }}
-        >
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="text-sm text-black mb-1">${formatNumber(note.underlying_price_entry, 0)}</span>
-            </TooltipTrigger>
-            <TooltipContent className="bg-black text-white">
-              Current price: ${formatNumber(note.underlying_price_entry, 0)}
-            </TooltipContent>
-          </Tooltip>
-          <Circle className="h-4 w-4 fill-black text-black" />
-        </div>
+        {/* Underlying Price Circle */}
+        <PriceCircle 
+          price={note.underlying_price_entry}
+          label="Current price"
+          tooltipText="Current price"
+          position={middlePosition}
+        />
         
         {/* Strike Entry Circle */}
-        <div 
-          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-          style={{ left: `${entryPosition}%` }}
-        >
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="text-sm text-black mb-1">${formatNumber(note.strike_entry, 0)}</span>
-            </TooltipTrigger>
-            <TooltipContent className="bg-black text-white">
-              Entry strike: ${formatNumber(note.strike_entry, 0)}
-            </TooltipContent>
-          </Tooltip>
-          <Circle className="h-4 w-4 fill-black text-black" />
-        </div>
+        <PriceCircle 
+          price={note.strike_entry}
+          label="Entry strike"
+          tooltipText="Entry strike"
+          position={entryPosition}
+        />
         
         {/* Strike Exit Circle */}
         {note.strike_exit && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${exitPosition}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${formatNumber(note.strike_exit, 0)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Exit strike: ${formatNumber(note.strike_exit, 0)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
+          <PriceCircle 
+            price={note.strike_exit}
+            label="Exit strike"
+            tooltipText="Exit strike"
+            position={exitPosition}
+          />
         )}
 
         {/* BE Circles */}
@@ -160,21 +152,14 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           { position: be2Position, strike: 609 },
           { position: be3Position, strike: 613 }
         ].map((be, index) => (
-          <div 
+          <PriceCircle 
             key={index}
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be.position}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-gray-300 mb-1">${be.strike}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                BE{index + 1}: ${be.strike}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
-          </div>
+            price={be.strike}
+            label={`BE${index + 1}`}
+            tooltipText={`BE${index + 1}`}
+            position={be.position}
+            style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }}
+          />
         ))}
         
         {/* Price rectangles */}
@@ -192,25 +177,22 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         </div>
         
         {/* Position indicators */}
-        <div 
-          className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-          style={{ left: `${entryPosition}%` }}
-        >
-          <span className="text-xs text-black">
-            <span className="font-bold">-42P</span> for ${formatNumber(note.premium_entry, 2)}
-          </span>
-          <span className="text-xs text-black">{calculateOTMPercentage(note.strike_entry)}% OTM</span>
-        </div>
+        <PositionIndicator 
+          strike={note.strike_entry}
+          premium={note.premium_entry}
+          position={entryPosition}
+          isEntry={true}
+          note={note}
+        />
+        
         {note.strike_exit && (
-          <div 
-            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${exitPosition}%` }}
-          >
-            <span className="text-xs text-black">
-              <span className="font-bold">+42P</span> for ${formatNumber(note.premium_exit, 2)}
-            </span>
-            <span className="text-xs text-black">{calculateOTMPercentage(note.strike_exit)}% OTM</span>
-          </div>
+          <PositionIndicator 
+            strike={note.strike_exit}
+            premium={note.premium_exit}
+            position={exitPosition}
+            isEntry={false}
+            note={note}
+          />
         )}
       </div>
     </TooltipProvider>
