@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { PriceCircle } from "./visualization/PriceCircle"
 import { PriceRangeBar } from "./visualization/PriceRangeBar"
 import { PositionIndicator } from "./visualization/PositionIndicator"
+import { BECircle } from "./visualization/BECircle"
 
 interface PriceVisualizationProps {
   note: any
@@ -41,8 +42,22 @@ const calculatePositions = (note: any) => {
   return { leftPosition, middlePosition, rightPosition }
 }
 
+const calculateBEPosition = (beStrike: number, note: any, positions: any) => {
+  const { leftPosition, middlePosition, rightPosition } = positions
+  const minStrike = Math.min(note.strike_entry, note.strike_exit, note.underlying_price_entry)
+  const maxStrike = Math.max(note.strike_entry, note.strike_exit, note.underlying_price_entry)
+  
+  // Linear interpolation between min and max strikes
+  const ratio = (beStrike - minStrike) / (maxStrike - minStrike)
+  const minPosition = Math.min(leftPosition, middlePosition, rightPosition)
+  const maxPosition = Math.max(leftPosition, middlePosition, rightPosition)
+  
+  return minPosition + ratio * (maxPosition - minPosition)
+}
+
 export function PriceVisualization({ note }: PriceVisualizationProps) {
-  const { leftPosition, middlePosition, rightPosition } = calculatePositions(note)
+  const positions = calculatePositions(note)
+  const { leftPosition, middlePosition, rightPosition } = positions
   
   const { data: latestBalance = 0 } = useQuery({
     queryKey: ['latest-balance'],
@@ -57,6 +72,18 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   })
 
   const contracts = Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
+  const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
+  
+  // Calculate BE strikes
+  const premium = (note.premium_entry - note.premium_exit) * contracts * 100
+  const be0Strike = note.underlying_price_entry - (premium/contracts/100)
+  const be1Strike = note.underlying_price_entry + ((exposureAmount*(note.risk_free_yield/100))/contracts/100)
+  const be2Strike = note.underlying_price_entry + ((exposureAmount*(7/100))/contracts/100)
+
+  // Calculate BE positions
+  const be0Position = calculateBEPosition(be0Strike, note, positions)
+  const be1Position = calculateBEPosition(be1Strike, note, positions)
+  const be2Position = calculateBEPosition(be2Strike, note, positions)
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -83,6 +110,23 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
             label="Exit strike"
           />
         )}
+
+        {/* BE Circles */}
+        <BECircle 
+          price={be0Strike}
+          position={be0Position}
+          beNumber={0}
+        />
+        <BECircle 
+          price={be1Strike}
+          position={be1Position}
+          beNumber={1}
+        />
+        <BECircle 
+          price={be2Strike}
+          position={be2Position}
+          beNumber={2}
+        />
         
         {/* Price range bar */}
         <PriceRangeBar 
