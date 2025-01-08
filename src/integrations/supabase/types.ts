@@ -308,7 +308,6 @@ export type Database = {
           strike_exit: number | null
           ticker: string | null
           underlying_price_entry: number | null
-          underlying_price_exit: number | null
         }
         Insert: {
           action?: string | null
@@ -327,7 +326,6 @@ export type Database = {
           strike_exit?: number | null
           ticker?: string | null
           underlying_price_entry?: number | null
-          underlying_price_exit?: number | null
         }
         Update: {
           action?: string | null
@@ -346,7 +344,6 @@ export type Database = {
           strike_exit?: number | null
           ticker?: string | null
           underlying_price_entry?: number | null
-          underlying_price_exit?: number | null
         }
         Relationships: []
       }
