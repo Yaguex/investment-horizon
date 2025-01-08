@@ -10,36 +10,59 @@ interface PriceVisualizationProps {
   note: any
 }
 
-const calculatePositions = (note: any) => {
+const calculatePositions = (note: any, beStrikes: { be0: number; be1: number; be2: number }) => {
   const middlePosition = 50 // underlying_price_entry is always at 50%
-  let leftPosition, rightPosition
+  const underlyingPrice = note.underlying_price_entry
+  
+  // Collect all valid strikes
+  const strikes = [
+    note.strike_entry,
+    note.action.includes('spread') ? note.strike_exit : null,
+    beStrikes.be0,
+    beStrikes.be1,
+    beStrikes.be2
+  ].filter(strike => strike !== null && strike !== undefined)
 
-  if (note.action.includes('spread')) {
-    // Calculate distances from underlying price
-    const entryDistance = Math.abs(note.strike_entry - note.underlying_price_entry)
-    const exitDistance = Math.abs(note.strike_exit - note.underlying_price_entry)
-    
-    // Determine which strike is furthest from underlying price
-    if (entryDistance >= exitDistance) {
-      // strike_entry is furthest
-      leftPosition = note.strike_entry < note.underlying_price_entry ? 10 : 90
-      // Calculate exit position proportionally
-      const ratio = (note.strike_exit - note.underlying_price_entry) / (note.strike_entry - note.underlying_price_entry)
-      rightPosition = middlePosition + (leftPosition - middlePosition) * ratio
-    } else {
-      // strike_exit is furthest
-      rightPosition = note.strike_exit < note.underlying_price_entry ? 10 : 90
-      // Calculate entry position proportionally
-      const ratio = (note.strike_entry - note.underlying_price_entry) / (note.strike_exit - note.underlying_price_entry)
-      leftPosition = middlePosition + (rightPosition - middlePosition) * ratio
+  // Find strike furthest from underlying price
+  let maxDistance = 0
+  let furthestStrike = strikes[0]
+
+  strikes.forEach(strike => {
+    const distance = Math.abs(strike - underlyingPrice)
+    if (distance > maxDistance) {
+      maxDistance = distance
+      furthestStrike = strike
     }
-  } else {
-    // For non-spreads, only position strike_entry
-    leftPosition = note.strike_entry < note.underlying_price_entry ? 10 : 90
-    rightPosition = leftPosition // Not used but needed for the range bar
+  })
+
+  // Calculate position for each strike based on furthest strike
+  const calculateRelativePosition = (strike: number) => {
+    if (strike === underlyingPrice) return middlePosition
+    
+    const isFurthest = strike === furthestStrike
+    const isBelow = strike < underlyingPrice
+    
+    if (isFurthest) {
+      return isBelow ? 10 : 90
+    }
+
+    // Linear interpolation between 10/90 and 50
+    const ratio = Math.abs(strike - underlyingPrice) / maxDistance
+    return isBelow
+      ? middlePosition - (ratio * (middlePosition - 10))
+      : middlePosition + (ratio * (90 - middlePosition))
   }
 
-  return { leftPosition, middlePosition, rightPosition }
+  return {
+    leftPosition: calculateRelativePosition(note.strike_entry),
+    middlePosition,
+    rightPosition: note.action.includes('spread') 
+      ? calculateRelativePosition(note.strike_exit)
+      : calculateRelativePosition(note.strike_entry),
+    be0Position: calculateRelativePosition(beStrikes.be0),
+    be1Position: calculateRelativePosition(beStrikes.be1),
+    be2Position: calculateRelativePosition(beStrikes.be2)
+  }
 }
 
 const calculatePremium = (note: any, contracts: number) => {
@@ -55,23 +78,7 @@ const calculatePremium = (note: any, contracts: number) => {
   return roundedPremium
 }
 
-const calculateBEPosition = (beStrike: number, note: any, positions: any) => {
-  const minStrike = Math.min(note.strike_entry, note.strike_exit, note.underlying_price_entry)
-  const maxStrike = Math.max(note.strike_entry, note.strike_exit, note.underlying_price_entry)
-  
-  // If BE strike is outside the range, return edge positions
-  if (beStrike <= minStrike) return 0
-  if (beStrike >= maxStrike) return 100
-  
-  // For strikes within range, do linear interpolation
-  const ratio = (beStrike - minStrike) / (maxStrike - minStrike)
-  return ratio * 100
-}
-
 export function PriceVisualization({ note }: PriceVisualizationProps) {
-  const positions = calculatePositions(note)
-  const { leftPosition, middlePosition, rightPosition } = positions
-  
   const { data: latestBalance = 0 } = useQuery({
     queryKey: ['latest-balance'],
     queryFn: async () => {
@@ -93,16 +100,18 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   const daysUntilExpiration = Math.max(0, (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   const yearsUntilExpiration = daysUntilExpiration / 365
   
-  // Calculate BE strikes with updated formulas using the consistent premium calculation
+  // Calculate BE strikes
   const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
   const be0Strike = note.underlying_price_entry - (premium/contracts/100)
   const be1Strike = note.underlying_price_entry + ((exposureAmount*((note.risk_free_yield*yearsUntilExpiration)/100))/contracts/100)
   const be2Strike = note.underlying_price_entry + ((exposureAmount*(7*yearsUntilExpiration/100))/contracts/100)
 
-  // Calculate BE positions
-  const be0Position = calculateBEPosition(be0Strike, note, positions)
-  const be1Position = calculateBEPosition(be1Strike, note, positions)
-  const be2Position = calculateBEPosition(be2Strike, note, positions)
+  // Calculate positions using new function
+  const positions = calculatePositions(note, {
+    be0: be0Strike,
+    be1: be1Strike,
+    be2: be2Strike
+  })
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -110,14 +119,14 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         {/* Underlying Price Circle (Middle) */}
         <PriceCircle 
           price={note.underlying_price_entry}
-          position={middlePosition}
+          position={positions.middlePosition}
           label="Underlying price"
         />
         
         {/* Strike Entry Circle */}
         <PriceCircle 
           price={note.strike_entry}
-          position={leftPosition}
+          position={positions.leftPosition}
           label="Entry strike"
         />
         
@@ -125,7 +134,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         {note.action.includes('spread') && (
           <PriceCircle 
             price={note.strike_exit}
-            position={rightPosition}
+            position={positions.rightPosition}
             label="Exit strike"
           />
         )}
@@ -133,31 +142,31 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         {/* BE Circles */}
         <BECircle 
           price={be0Strike}
-          position={be0Position}
+          position={positions.be0Position}
           beNumber={0}
         />
         <BECircle 
           price={be1Strike}
-          position={be1Position}
+          position={positions.be1Position}
           beNumber={1}
         />
         <BECircle 
           price={be2Strike}
-          position={be2Position}
+          position={positions.be2Position}
           beNumber={2}
         />
         
         {/* Price range bar */}
         <PriceRangeBar 
-          leftPosition={leftPosition}
-          middlePosition={middlePosition}
-          rightPosition={rightPosition}
+          leftPosition={positions.leftPosition}
+          middlePosition={positions.middlePosition}
+          rightPosition={positions.rightPosition}
           action={note.action}
         />
         
         {/* Position indicators */}
         <PositionIndicator
-          position={leftPosition}
+          position={positions.leftPosition}
           contracts={contracts}
           premium={note.premium_entry}
           type="entry"
@@ -165,7 +174,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         
         {note.action.includes('spread') && (
           <PositionIndicator
-            position={rightPosition}
+            position={positions.rightPosition}
             contracts={contracts}
             premium={note.premium_exit}
             type="exit"
