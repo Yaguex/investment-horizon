@@ -39,8 +39,8 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     const action = note.action?.toLowerCase() || ''
     const isSellAction = action.includes('sell')
     
-    // Round to 2 decimals
-    const roundedROI = Math.round(annualROI * 100) / 100
+    // Round to 1 decimal
+    const roundedROI = Math.round(annualROI * 10) / 10
 
     // Return positive for sell actions, negative for buy actions
     return isSellAction ? Math.abs(roundedROI) : -Math.abs(roundedROI)
@@ -57,11 +57,11 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   }
 
   const getDeltaColor = (value: number) => {
-    if (value >= 0.6) return "text-green-600"
-    if (value > 0.3 && value < 0.6) return "text-orange-500"
+    if (value > 0.6) return "text-green-600"
+    if (value > 0.3 && value <= 0.6) return "text-orange-500"
     if (value > 0 && value <= 0.3) return "text-red-600"
-    if (value < 0 && value > -0.3) return "text-green-600"
-    if (value <= -0.3 && value > -0.6) return "text-orange-500"
+    if (value > -0.3 && value <= 0) return "text-green-600"
+    if (value > -0.6 && value <= -0.3) return "text-orange-500"
     if (value <= -0.6) return "text-red-600"
     return "text-black"
   }
@@ -87,6 +87,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   }
 
   const roi = calculateROI()
+  const normalizedDelta = note.delta_entry ? Math.round((roi / note.delta_entry) * 100) / 100 : 0
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -127,7 +128,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getROIColor(roi)} text-xl font-bold`}>{formatNumber(roi, 2)}%</p>
+                <p className={`${getROIColor(roi)} text-xl font-bold`}>{formatNumber(roi, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Premium Annual ROI
@@ -138,7 +139,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getDeltaColor(0.49)} text-xl font-bold`}>0.49</p>
+                <p className={`${getDeltaColor(normalizedDelta)} text-xl font-bold`}>{normalizedDelta}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Delta normalized for position size
