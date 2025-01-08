@@ -22,11 +22,6 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
 
   const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
 
-  const calculateContracts = () => {
-    if (!latestBalance || !note.exposure || !note.strike_entry) return 0
-    return Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
-  }
-
   const getROIColor = (value: number) => {
     if (value >= 10) return "text-green-600"
     if (value > 6 && value < 10) return "text-orange-500"
@@ -118,7 +113,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className="text-black text-xl font-bold">{calculateContracts()}</p>
+                <p className="text-black text-xl font-bold">240</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Number of contracts in the position
