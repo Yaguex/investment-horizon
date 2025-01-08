@@ -23,14 +23,37 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
   const contracts = Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
 
+  const calculateROI = () => {
+    const today = new Date()
+    const expirationDate = new Date(note.expiration)
+    const daysToExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
+    
+    const premium = calculatePremium()
+    const commission = calculateCommission()
+    const underlyingValue = note.underlying_price_entry * contracts
+
+    let roi = ((premium + commission) / (underlyingValue || 1)) * (365 / daysToExpiration) / 100
+
+    const action = note.action?.toLowerCase() || ''
+    const isSellAction = action.includes('sell')
+    
+    // Adjust sign based on action type
+    if (isSellAction && roi < 0) {
+      roi = Math.abs(roi)
+    } else if (!isSellAction && roi > 0) {
+      roi = -roi
+    }
+
+    return Number(roi.toFixed(2))
+  }
+
   const getROIColor = (value: number) => {
-    if (value >= 10) return "text-green-600"
-    if (value > 6 && value < 10) return "text-orange-500"
+    if (value > 10) return "text-green-600"
+    if (value > 6 && value <= 10) return "text-orange-500"
     if (value > 0 && value <= 6) return "text-red-600"
-    if (value < 0 && value > -6) return "text-green-600"
-    if (value <= -6 && value > -10) return "text-orange-500"
-    if (value <= -10) return "text-red-600"
-    return "text-black"
+    if (value > -6 && value <= 0) return "text-green-600"
+    if (value > -10 && value <= -6) return "text-orange-500"
+    return "text-red-600"
   }
 
   const getDeltaColor = (value: number) => {
@@ -77,6 +100,8 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     }
     return roundedPremium
   }
+
+  const roi = calculateROI()
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -127,7 +152,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getROIColor(9.71)} text-xl font-bold`}>9.71%</p>
+                <p className={`${getROIColor(roi)} text-xl font-bold`}>{roi}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Premium Annual ROI
