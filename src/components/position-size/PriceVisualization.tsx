@@ -82,7 +82,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   
   // Calculate BE strikes with updated formulas
   const premium = (note.premium_entry - note.premium_exit) * contracts * 100
-  const be0Strike = note.underlying_price_entry + (premium/contracts/100)
+  const be0Strike = note.underlying_price_entry - (premium/contracts/100)
   const be1Strike = note.underlying_price_entry + ((exposureAmount*((note.risk_free_yield*yearsUntilExpiration)/100))/contracts/100)
   const be2Strike = note.underlying_price_entry + ((exposureAmount*(7*yearsUntilExpiration/100))/contracts/100)
 
