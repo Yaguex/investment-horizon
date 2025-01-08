@@ -50,20 +50,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     return -Math.abs(Math.round(commission))
   }
 
-  const calculateMaxGain = () => {
-    const action = note.action?.toLowerCase() || ''
-    if (action.includes('buy') && !action.includes('spread')) {
-      return "Unlimited"
-    }
-    
-    let maxGain
-    if (action.includes('sell')) {
-      maxGain = (note.premium_entry - note.premium_exit) * contracts * 100
-    } else if (action.includes('spread')) {
-      maxGain = (note.strike_entry - note.strike_exit) * contracts * 100
-    }
-    return Math.abs(Math.round(maxGain || 0))
-  }
+
 
   const calculatePremium = () => {
     const action = note.action?.toLowerCase() || ''
@@ -109,16 +96,6 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total commission cost
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-green-600">
-            <Tooltip>
-              <TooltipTrigger>
-                Max gain: {typeof calculateMaxGain() === 'string' ? calculateMaxGain() : `$${formatNumber(calculateMaxGain(), 0)}`}
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Maximum potential gain
               </TooltipContent>
             </Tooltip>
           </p>
