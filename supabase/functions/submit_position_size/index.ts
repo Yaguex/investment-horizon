@@ -145,7 +145,8 @@ Deno.serve(async (req) => {
     // Handle entry strike data if present
     if (note.strike_entry && marketData.responses[0]) {
       updateData.premium_entry = marketData.responses[0]?.marketData?.mid || null;
-      updateData.delta_entry = marketData.responses[0]?.marketData?.delta || null;
+      // Store absolute value of delta_entry
+      updateData.delta_entry = marketData.responses[0]?.marketData?.delta ? Math.abs(marketData.responses[0].marketData.delta) : null;
       updateData.iv_entry = marketData.responses[0]?.marketData?.iv || null;
       updateData.underlying_price_entry = marketData.responses[0]?.marketData?.underlyingPrice || null;
     }
@@ -154,7 +155,8 @@ Deno.serve(async (req) => {
     if (note.strike_exit && marketData.responses[note.strike_entry ? 1 : 0]) {
       const exitResponse = note.strike_entry ? marketData.responses[1] : marketData.responses[0];
       updateData.premium_exit = exitResponse?.marketData?.mid || null;
-      updateData.delta_exit = exitResponse?.marketData?.delta || null;
+      // Store absolute value of delta_exit
+      updateData.delta_exit = exitResponse?.marketData?.delta ? Math.abs(exitResponse.marketData.delta) : null;
       updateData.iv_exit = exitResponse?.marketData?.iv || null;
     }
 
