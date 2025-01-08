@@ -13,7 +13,7 @@ const calculatePositions = (note: any) => {
   const middlePosition = 50 // underlying_price_entry is always at 50%
   let leftPosition, rightPosition
 
-  if (note.action === 'spread') {
+  if (note.action.includes('spread')) {
     // Calculate distances from underlying price
     const entryDistance = Math.abs(note.strike_entry - note.underlying_price_entry)
     const exitDistance = Math.abs(note.strike_exit - note.underlying_price_entry)
@@ -76,7 +76,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
         />
         
         {/* Strike Exit Circle (only for spreads) */}
-        {note.action === 'spread' && (
+        {note.action.includes('spread') && (
           <PriceCircle 
             price={note.strike_exit}
             position={rightPosition}
@@ -99,7 +99,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           type="entry"
         />
         
-        {note.action === 'spread' && (
+        {note.action.includes('spread') && (
           <PositionIndicator
             position={rightPosition}
             contracts={contracts}
