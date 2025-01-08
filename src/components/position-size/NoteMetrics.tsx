@@ -34,7 +34,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
 
     if (!exposureValue || !daysToExpiration) return 0
 
-    const annualROI = ((totalPremium + totalCommission) / exposureValue) * (365 / daysToExpiration) * 100
+    const annualROI = ((totalPremium + totalCommission) / exposureValue) * (365 / daysToExpiration)
 
     const action = note.action?.toLowerCase() || ''
     const isSellAction = action.includes('sell')
