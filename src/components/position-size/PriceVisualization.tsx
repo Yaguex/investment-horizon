@@ -1,6 +1,8 @@
 import { Circle } from "lucide-react"
 import { formatNumber } from "./utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
 
 interface PriceVisualizationProps {
   note: any
@@ -96,9 +98,26 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
     be3Position
   } = calculateCirclePositions(note)
 
+  const { data: latestBalance = 0 } = useQuery({
+    queryKey: ['latest-balance'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('portfolio_data')
+        .select('balance')
+        .order('month', { ascending: false })
+        .limit(1)
+      return data?.[0]?.balance || 0
+    }
+  })
+
   const calculateOTMPercentage = (strike: number) => {
     if (!note.underlying_price_entry) return 0
     return Math.abs(Math.round(((strike - note.underlying_price_entry) / note.underlying_price_entry) * 100))
+  }
+
+  const calculateContracts = () => {
+    if (!latestBalance || !note.exposure || !note.strike_entry) return 0
+    return Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
   }
   
   return (
@@ -197,7 +216,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           style={{ left: `${entryPosition}%` }}
         >
           <span className="text-xs text-black">
-            <span className="font-bold">-42P</span> for ${formatNumber(note.premium_entry, 2)}
+            <span className="font-bold">-{calculateContracts()}P</span> for ${formatNumber(note.premium_entry, 2)}
           </span>
           <span className="text-xs text-black">{calculateOTMPercentage(note.strike_entry)}% OTM</span>
         </div>
@@ -207,7 +226,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
             style={{ left: `${exitPosition}%` }}
           >
             <span className="text-xs text-black">
-              <span className="font-bold">+42P</span> for ${formatNumber(note.premium_exit, 2)}
+              <span className="font-bold">+{calculateContracts()}P</span> for ${formatNumber(note.premium_exit, 2)}
             </span>
             <span className="text-xs text-black">{calculateOTMPercentage(note.strike_exit)}% OTM</span>
           </div>
