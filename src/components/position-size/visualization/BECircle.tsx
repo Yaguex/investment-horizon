@@ -9,7 +9,7 @@ interface BECircleProps {
 
 export function BECircle({ price, position, beNumber }: BECircleProps) {
   const style = { fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }
-  const clampedPosition = Math.max(10, Math.min(90, position))
+  const clampedPosition = Math.max(0, Math.min(100, position))
 
   return (
     <div 
