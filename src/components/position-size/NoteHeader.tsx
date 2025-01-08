@@ -22,7 +22,7 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
       <div className="flex items-center">
         <span className="font-bold text-lg mr-8">{note.ticker}</span>
         <span className="text-sm text-gray-500 mr-8">{formatDate(note.expiration)}</span>
-        <span className="text-sm text-gray-500 mr-8">Sell put spread</span>
+        <span className="text-sm text-gray-500 mr-8">{note.action}</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
