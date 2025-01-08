@@ -43,16 +43,16 @@ const calculatePositions = (note: any) => {
 }
 
 const calculateBEPosition = (beStrike: number, note: any, positions: any) => {
-  const { leftPosition, middlePosition, rightPosition } = positions
   const minStrike = Math.min(note.strike_entry, note.strike_exit, note.underlying_price_entry)
   const maxStrike = Math.max(note.strike_entry, note.strike_exit, note.underlying_price_entry)
   
-  // Linear interpolation between min and max strikes
-  const ratio = (beStrike - minStrike) / (maxStrike - minStrike)
-  const minPosition = Math.min(leftPosition, middlePosition, rightPosition)
-  const maxPosition = Math.max(leftPosition, middlePosition, rightPosition)
+  // If BE strike is outside the range, return edge positions
+  if (beStrike <= minStrike) return 0
+  if (beStrike >= maxStrike) return 100
   
-  return minPosition + ratio * (maxPosition - minPosition)
+  // For strikes within range, do linear interpolation
+  const ratio = (beStrike - minStrike) / (maxStrike - minStrike)
+  return ratio * 100
 }
 
 export function PriceVisualization({ note }: PriceVisualizationProps) {
