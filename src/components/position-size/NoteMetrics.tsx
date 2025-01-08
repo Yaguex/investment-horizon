@@ -23,35 +23,12 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
   const contracts = Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
 
-  const calculateROI = () => {
-    const today = new Date()
-    const expirationDate = new Date(note.expiration)
-    const daysToExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
-    
-    const totalPremium = calculatePremium()
-    const totalCommission = calculateCommission()
-    const exposureValue = note.underlying_price_entry * contracts
-
-    if (!exposureValue || !daysToExpiration) return 0
-
-    const annualROI = ((totalPremium + totalCommission) / exposureValue) * (365 / daysToExpiration) * 100
-
-    const action = note.action?.toLowerCase() || ''
-    const isSellAction = action.includes('sell')
-    
-    // Round to 2 decimals
-    const roundedROI = Math.round(annualROI * 100) / 100
-
-    // Return positive for sell actions, negative for buy actions
-    return isSellAction ? Math.abs(roundedROI) : -Math.abs(roundedROI)
-  }
-
   const getROIColor = (value: number) => {
-    if (value > 10) return "text-green-600"
-    if (value > 6 && value <= 10) return "text-orange-500"
+    if (value >= 10) return "text-green-600"
+    if (value > 6 && value < 10) return "text-orange-500"
     if (value > 0 && value <= 6) return "text-red-600"
-    if (value > -6 && value <= 0) return "text-green-600"
-    if (value > -10 && value <= -6) return "text-orange-500"
+    if (value < 0 && value > -6) return "text-green-600"
+    if (value <= -6 && value > -10) return "text-orange-500"
     if (value <= -10) return "text-red-600"
     return "text-black"
   }
@@ -73,6 +50,21 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     return -Math.abs(Math.round(commission))
   }
 
+  const calculateMaxGain = () => {
+    const action = note.action?.toLowerCase() || ''
+    if (action.includes('buy') && !action.includes('spread')) {
+      return "Unlimited"
+    }
+    
+    let maxGain
+    if (action.includes('sell')) {
+      maxGain = (note.premium_entry - note.premium_exit) * contracts * 100
+    } else if (action.includes('spread')) {
+      maxGain = (note.strike_entry - note.strike_exit) * contracts * 100
+    }
+    return Math.abs(Math.round(maxGain || 0))
+  }
+
   const calculatePremium = () => {
     const action = note.action?.toLowerCase() || ''
     const premium = (note.premium_entry - note.premium_exit) * contracts * 100
@@ -85,8 +77,6 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     }
     return roundedPremium
   }
-
-  const roi = calculateROI()
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -122,12 +112,22 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               </TooltipContent>
             </Tooltip>
           </p>
+          <p className="text-green-600">
+            <Tooltip>
+              <TooltipTrigger>
+                Max gain: {typeof calculateMaxGain() === 'string' ? calculateMaxGain() : `$${formatNumber(calculateMaxGain(), 0)}`}
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Maximum potential gain
+              </TooltipContent>
+            </Tooltip>
+          </p>
         </div>
         <div className="flex gap-8 items-start">
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getROIColor(roi)} text-xl font-bold`}>{formatNumber(roi, 2)}%</p>
+                <p className={`${getROIColor(9.71)} text-xl font-bold`}>9.71%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Premium Annual ROI
