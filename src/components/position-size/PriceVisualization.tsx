@@ -74,11 +74,17 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   const contracts = Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
   const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
   
-  // Calculate BE strikes
+  // Calculate days until expiration
+  const today = new Date()
+  const expirationDate = note.expiration ? new Date(note.expiration) : today
+  const daysUntilExpiration = Math.max(0, (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const yearsUntilExpiration = daysUntilExpiration / 365
+  
+  // Calculate BE strikes with updated formulas
   const premium = (note.premium_entry - note.premium_exit) * contracts * 100
-  const be0Strike = note.underlying_price_entry - (premium/contracts/100)
-  const be1Strike = note.underlying_price_entry + ((exposureAmount*(note.risk_free_yield/100))/contracts/100)
-  const be2Strike = note.underlying_price_entry + ((exposureAmount*(7/100))/contracts/100)
+  const be0Strike = note.underlying_price_entry + (premium/contracts/100)
+  const be1Strike = note.underlying_price_entry + ((exposureAmount*((note.risk_free_yield*yearsUntilExpiration)/100))/contracts/100)
+  const be2Strike = note.underlying_price_entry + ((exposureAmount*(7*yearsUntilExpiration/100))/contracts/100)
 
   // Calculate BE positions
   const be0Position = calculateBEPosition(be0Strike, note, positions)
