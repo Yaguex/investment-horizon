@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     }
 
     // 2. Prepare market data request
-    if (!note.ticker || !note.expiration || !note.strike_entry) {
+    if (!note.ticker || !note.expiration) {
       console.log('[submit_position_size] Missing required fields for market data');
       return new Response(
         JSON.stringify({ success: true }),
@@ -66,18 +66,37 @@ Deno.serve(async (req) => {
     const strikes = [];
     const isCall = note.action.toLowerCase().includes('call');
     const type = isCall ? 'call' : 'put';
-    const isSpread = note.action.includes('spread');
 
-    // Always add entry strike
-    strikes.push({
-      ticker: note.ticker,
-      expiration: note.expiration,
-      type,
-      strike: note.strike_entry
-    });
-
-    // Add exit strike for spreads
-    if (isSpread && note.strike_exit) {
+    // New safeguard logic for API calls
+    if (note.strike_entry && note.strike_exit) {
+      // Both strikes present - add them in a single array
+      console.log('[submit_position_size] Both strikes present, preparing single API call');
+      strikes.push(
+        {
+          ticker: note.ticker,
+          expiration: note.expiration,
+          type,
+          strike: note.strike_entry
+        },
+        {
+          ticker: note.ticker,
+          expiration: note.expiration,
+          type,
+          strike: note.strike_exit
+        }
+      );
+    } else if (note.strike_entry) {
+      // Only entry strike present
+      console.log('[submit_position_size] Only entry strike present');
+      strikes.push({
+        ticker: note.ticker,
+        expiration: note.expiration,
+        type,
+        strike: note.strike_entry
+      });
+    } else if (note.strike_exit) {
+      // Only exit strike present
+      console.log('[submit_position_size] Only exit strike present');
       strikes.push({
         ticker: note.ticker,
         expiration: note.expiration,
@@ -86,7 +105,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Fetch market data
+    if (strikes.length === 0) {
+      console.log('[submit_position_size] No valid strikes to process');
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 3. Fetch market data with a single API call
     console.log('[submit_position_size] Fetching market data for strikes:', strikes);
     const marketDataResponse = await fetch(
       `${supabaseUrl}/functions/v1/fetch_marketdata_api`,
@@ -108,17 +135,22 @@ Deno.serve(async (req) => {
     }
 
     // 4. Update position with market data
-    const updateData: any = {
-      premium_entry: marketData.responses[0]?.marketData?.mid || null,
-      delta_entry: marketData.responses[0]?.marketData?.delta || null,
-      iv_entry: marketData.responses[0]?.marketData?.iv || null,
-      underlying_price_entry: marketData.responses[0]?.marketData?.underlyingPrice || null,
-    };
+    const updateData: any = {};
+    
+    // Handle entry strike data if present
+    if (note.strike_entry && marketData.responses[0]) {
+      updateData.premium_entry = marketData.responses[0]?.marketData?.mid || null;
+      updateData.delta_entry = marketData.responses[0]?.marketData?.delta || null;
+      updateData.iv_entry = marketData.responses[0]?.marketData?.iv || null;
+      updateData.underlying_price_entry = marketData.responses[0]?.marketData?.underlyingPrice || null;
+    }
 
-    if (isSpread && marketData.responses[1]) {
-      updateData.premium_exit = marketData.responses[1].marketData?.mid || null;
-      updateData.delta_exit = marketData.responses[1].marketData?.delta || null;
-      updateData.iv_exit = marketData.responses[1].marketData?.iv || null;
+    // Handle exit strike data if present
+    if (note.strike_exit && marketData.responses[note.strike_entry ? 1 : 0]) {
+      const exitResponse = note.strike_entry ? marketData.responses[1] : marketData.responses[0];
+      updateData.premium_exit = exitResponse?.marketData?.mid || null;
+      updateData.delta_exit = exitResponse?.marketData?.delta || null;
+      updateData.iv_exit = exitResponse?.marketData?.iv || null;
     }
 
     console.log('[submit_position_size] Updating position with market data:', updateData);
