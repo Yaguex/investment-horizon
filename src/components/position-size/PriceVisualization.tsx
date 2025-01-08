@@ -89,6 +89,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           leftPosition={leftPosition}
           middlePosition={middlePosition}
           rightPosition={rightPosition}
+          action={note.action}
         />
         
         {/* Position indicators */}
