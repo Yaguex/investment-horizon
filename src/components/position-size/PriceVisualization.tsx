@@ -193,14 +193,14 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${entryPosition}%` }}
         >
-          <span className="text-xs text-black">-42P for $2.03</span>
+          <span className="text-xs text-black"><span class="font-bold">-42P</span> for $2.03</span>
           <span className="text-xs text-black">8% OTM</span>
         </div>
         <div 
           className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
           style={{ left: `${exitPosition}%` }}
         >
-          <span className="text-xs text-black">+42P for $20.74</span>
+          <span className="text-xs text-black"><span class="font-bold">+42P</span> for $20.74</span>
           <span className="text-xs text-black">15% OTM</span>
         </div>
       </div>
