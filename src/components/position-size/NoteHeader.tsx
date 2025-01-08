@@ -2,6 +2,8 @@ import { Copy, Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatDate } from "../diy-notes/utils/formatters"
 import { toast } from "sonner"
+import { supabase } from "@/integrations/supabase/client"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface NoteHeaderProps {
   note: any
@@ -9,12 +11,44 @@ interface NoteHeaderProps {
 }
 
 export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
+  const queryClient = useQueryClient()
+
   const handleDelete = async () => {
-    toast.success('Position size deleted')
+    try {
+      console.log('Deleting position size:', note.id)
+      const { error } = await supabase
+        .from('position_size')
+        .delete()
+        .eq('id', note.id)
+
+      if (error) throw error
+
+      console.log('Position size deleted successfully')
+      toast.success('Position size deleted')
+      queryClient.invalidateQueries({ queryKey: ['position-sizes'] })
+    } catch (error) {
+      console.error('Error deleting position size:', error)
+      toast.error('Error deleting position size')
+    }
   }
 
   const handleClone = async () => {
-    toast.success('Position size cloned')
+    try {
+      // Create a new note object without the id
+      const { id, ...noteWithoutId } = note
+
+      const { error } = await supabase
+        .from('position_size')
+        .insert([noteWithoutId])
+
+      if (error) throw error
+
+      toast.success('Position size cloned')
+      queryClient.invalidateQueries({ queryKey: ['position-sizes'] })
+    } catch (error) {
+      console.error('Error cloning position size:', error)
+      toast.error('Error cloning position size')
+    }
   }
 
   return (
