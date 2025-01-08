@@ -55,6 +55,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
   const onSubmit = async (data: PositionSizeFormValues) => {
     try {
       setIsLoading(true)
+      onOpenChange(false)
 
       // Save position size
       if (note) {
@@ -103,13 +104,20 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
       await queryClient.invalidateQueries({ queryKey: ['position-sizes'] })
       
       form.reset()
-      onOpenChange(false)
     } catch (error: any) {
       console.error('Error in form submission:', error)
       toast.error(`Error: ${error.message}`)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
   }
 
   return (
@@ -125,12 +133,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
               actionOptions={ACTION_OPTIONS}
             />
             <div className="flex justify-end space-x-2">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                {note ? 'Update' : 'Create'} Position Size
-              </Button>
+              <Button type="submit">{note ? 'Update' : 'Create'} Position Size</Button>
             </div>
           </form>
         </Form>
