@@ -42,6 +42,19 @@ const calculatePositions = (note: any) => {
   return { leftPosition, middlePosition, rightPosition }
 }
 
+const calculatePremium = (note: any, contracts: number) => {
+  const action = note.action?.toLowerCase() || ''
+  const premium = (note.premium_entry - note.premium_exit) * contracts * 100
+  const roundedPremium = Math.round(premium)
+  
+  if (action.includes('sell')) {
+    return Math.abs(roundedPremium)
+  } else if (action.includes('buy')) {
+    return -Math.abs(roundedPremium)
+  }
+  return roundedPremium
+}
+
 const calculateBEPosition = (beStrike: number, note: any, positions: any) => {
   const minStrike = Math.min(note.strike_entry, note.strike_exit, note.underlying_price_entry)
   const maxStrike = Math.max(note.strike_entry, note.strike_exit, note.underlying_price_entry)
@@ -72,7 +85,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   })
 
   const contracts = Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
-  const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
+  const premium = calculatePremium(note, contracts)
   
   // Calculate days until expiration
   const today = new Date()
@@ -80,8 +93,8 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
   const daysUntilExpiration = Math.max(0, (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   const yearsUntilExpiration = daysUntilExpiration / 365
   
-  // Calculate BE strikes with updated formulas
-  const premium = (note.premium_entry - note.premium_exit) * contracts * 100
+  // Calculate BE strikes with updated formulas using the consistent premium calculation
+  const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
   const be0Strike = note.underlying_price_entry - (premium/contracts/100)
   const be1Strike = note.underlying_price_entry + ((exposureAmount*((note.risk_free_yield*yearsUntilExpiration)/100))/contracts/100)
   const be2Strike = note.underlying_price_entry + ((exposureAmount*(7*yearsUntilExpiration/100))/contracts/100)
