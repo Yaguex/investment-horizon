@@ -10,8 +10,11 @@ export const formatDate = (dateString?: string | Date | null) => {
 
 export const formatNumber = (value: number | undefined | null, decimals: number = 0) => {
   if (value === undefined || value === null) return ""
+  
+  // Use Intl.NumberFormat with the same decimal settings but add thousand separators
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
+    maximumFractionDigits: decimals,
+    useGrouping: true // This enables thousand separators
   }).format(value)
 }
