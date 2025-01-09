@@ -35,6 +35,13 @@ export const TableRow = ({
     return formatted ? `${formatted}%` : ""
   }
 
+  const getPnLColor = (value: number | undefined | null) => {
+    if (value === undefined || value === null) return "text-black"
+    if (value > 0) return "text-green-600"
+    if (value < 0) return "text-red-600"
+    return "text-black"
+  }
+
   return (
     <TableRowComponent className={cn(
       "group",
@@ -71,7 +78,7 @@ export const TableRow = ({
       <TableCell>{formatPercentage(row["risk_%"], 2)}</TableCell>
       <TableCell>{formatCurrency(row["risk_$"], 0)}</TableCell>
       <TableCell>{formatCurrency(row.commission, 0)}</TableCell>
-      <TableCell>{formatCurrency(row.pnl, 0)}</TableCell>
+      <TableCell className={getPnLColor(row.pnl)}>{formatCurrency(row.pnl, 0)}</TableCell>
       <TableCell>{formatPercentage(row.roi, 2)}</TableCell>
       <TableCell>{formatPercentage(row.roi_yearly, 2)}</TableCell>
       <TableCell>{formatPercentage(row.roi_portfolio, 2)}</TableCell>
