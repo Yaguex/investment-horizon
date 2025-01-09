@@ -63,7 +63,10 @@ export const TableRow = ({
         />
       </TableCell>
       
-      <TableCell>{row.ticker}</TableCell>
+      <TableCell className={cn(
+        "sticky left-[100px] z-10",
+        getStickyBackground(isSubRow, effectiveTradeStatus, row.pnl)
+      )}>{row.ticker}</TableCell>
       <TableCell>{row.vehicle}</TableCell>
       <TableCell>{row.order}</TableCell>
       <TableCell>{formatNumber(row.qty)}</TableCell>
