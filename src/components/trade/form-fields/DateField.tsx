@@ -19,7 +19,7 @@ export function DateField<T extends FieldValues>({ control, name, label }: DateF
           <FormControl>
             <Input
               {...field}
-              placeholder="DD-MM-YYYY"
+              placeholder="YYYY-MM-DD"
             />
           </FormControl>
         </FormItem>

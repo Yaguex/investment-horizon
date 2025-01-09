@@ -156,8 +156,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
               // Parent row fields
               <>
                 <TextField control={form.control} name="ticker" label="Ticker" />
-                <DateField control={form.control} name="date_entry" label="Date Entry" />
-                <DateField control={form.control} name="date_exit" label="Date Exit" />
+                <DateField control={form.control} name="date_entry" label="Date Entry (YYYY-MM-DD)" />
+                <DateField control={form.control} name="date_exit" label="Date Exit (YYYY-MM-DD)" />
                 <NumberField control={form.control} name="commission" label="Commission" />
                 <NumberField control={form.control} name="pnl" label="PnL" />
                 <NumberField control={form.control} name="roi" label="ROI" />
@@ -174,12 +174,12 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             ) : (
               // Child row fields
               <>
-                <TextField control={form.control} name="vehicle" label="Vehicle" />
-                <TextField control={form.control} name="order" label="Order" />
+                <TextField control={form.control} name="vehicle" label="Vehicle (Ex: Sell put)" />
+                <TextField control={form.control} name="order" label="Order (Ex: Sell to open)" />
                 <NumberField control={form.control} name="qty" label="QTY" />
-                <DateField control={form.control} name="date_entry" label="Date Entry" />
-                <DateField control={form.control} name="date_expiration" label="Date Expiration" />
-                <DateField control={form.control} name="date_exit" label="Date Exit" />
+                <DateField control={form.control} name="date_entry" label="Date Entry (YYYY-MM-DD)" />
+                <DateField control={form.control} name="date_expiration" label="Date Expiration (YYYY-MM-DD)" />
+                <DateField control={form.control} name="date_exit" label="Date Exit (YYYY-MM-DD)" />
                 <NumberField control={form.control} name="strike_start" label="Strike Start" />
                 <NumberField control={form.control} name="strike_end" label="Strike End" />
                 <NumberField control={form.control} name="premium" label="Premium" />
