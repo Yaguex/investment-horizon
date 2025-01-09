@@ -25,6 +25,16 @@ export const TableRow = ({
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
   const effectiveTradeStatus = isSubRow ? row.trade_status as "open" | "closed" : tradeStatus
 
+  const formatCurrency = (value: number | undefined | null, decimals: number = 0) => {
+    const formatted = formatNumber(value, decimals)
+    return formatted ? `$${formatted}` : ""
+  }
+
+  const formatPercentage = (value: number | undefined | null, decimals: number = 0) => {
+    const formatted = formatNumber(value, decimals)
+    return formatted ? `${formatted}%` : ""
+  }
+
   return (
     <TableRowComponent className={cn(
       "group",
@@ -56,21 +66,21 @@ export const TableRow = ({
       <TableCell>{formatNumber(row.days_in_trade)}</TableCell>
       <TableCell>{formatNumber(row.strike_start, 0)}</TableCell>
       <TableCell>{formatNumber(row.strike_end, 0)}</TableCell>
-      <TableCell><span>$</span>{formatNumber(row.premium, 2)}</TableCell>
-      <TableCell><span>$</span>{formatNumber(row.stock_price, 2)}</TableCell>
-      <TableCell>{formatNumber(row["risk_%"], 2)}<span>%</span></TableCell>
-      <TableCell><span>$</span>{formatNumber(row["risk_$"], 0)}</TableCell>
-      <TableCell><span>$</span>{formatNumber(row.commission, 0)}</TableCell>
-      <TableCell><span>$</span>{formatNumber(row.pnl, 0)}</TableCell>
-      <TableCell>{formatNumber(row.roi, 2)}<span>%</span></TableCell>
-      <TableCell>{formatNumber(row.roi_yearly, 2)}<span>%</span></TableCell>
-      <TableCell>{formatNumber(row.roi_portfolio, 2)}<span>%</span></TableCell>
-      <TableCell><span>$</span>{formatNumber(row.be_0, 2)}</TableCell>
-      <TableCell><span>$</span>{formatNumber(row.be_1, 2)}</TableCell>
-      <TableCell><span>$</span>{formatNumber(row.be_2, 2)}</TableCell>
+      <TableCell>{formatCurrency(row.premium, 2)}</TableCell>
+      <TableCell>{formatCurrency(row.stock_price, 2)}</TableCell>
+      <TableCell>{formatPercentage(row["risk_%"], 2)}</TableCell>
+      <TableCell>{formatCurrency(row["risk_$"], 0)}</TableCell>
+      <TableCell>{formatCurrency(row.commission, 0)}</TableCell>
+      <TableCell>{formatCurrency(row.pnl, 0)}</TableCell>
+      <TableCell>{formatPercentage(row.roi, 2)}</TableCell>
+      <TableCell>{formatPercentage(row.roi_yearly, 2)}</TableCell>
+      <TableCell>{formatPercentage(row.roi_portfolio, 2)}</TableCell>
+      <TableCell>{formatCurrency(row.be_0, 2)}</TableCell>
+      <TableCell>{formatCurrency(row.be_1, 2)}</TableCell>
+      <TableCell>{formatCurrency(row.be_2, 2)}</TableCell>
       <TableCell>{formatNumber(row.delta, 2)}</TableCell>
-      <TableCell>{formatNumber(row.iv, 0)}<span>%</span></TableCell>
-      <TableCell>{formatNumber(row.iv_percentile, 0)}<span>%</span></TableCell>
+      <TableCell>{formatPercentage(row.iv, 0)}</TableCell>
+      <TableCell>{formatPercentage(row.iv_percentile, 0)}</TableCell>
       <TableCell>{row.notes}</TableCell>
 
       {isEditSheetOpen && (
