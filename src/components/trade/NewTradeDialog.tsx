@@ -24,6 +24,21 @@ export function NewTradeDialog() {
     try {
       console.log('Starting new trade creation for user:', user.id)
       
+      // Get latest portfolio balance for ROI Portfolio calculation
+      const { data: portfolioData, error: portfolioError } = await supabase
+        .from('portfolio_data')
+        .select('balance')
+        .order('month', { ascending: false })
+        .limit(1)
+
+      if (portfolioError) {
+        console.error('Error fetching portfolio balance:', portfolioError)
+        throw portfolioError
+      }
+
+      const latestBalance = portfolioData?.[0]?.balance || 0
+      console.log('Latest portfolio balance:', latestBalance)
+      
       // First get the max trade_id from the trade_log table
       const { data: maxTradeIdResult } = await supabase
         .from('trade_log')
@@ -57,7 +72,8 @@ export function NewTradeDialog() {
           row_type: 'parent',
           trade_status: 'open',
           ticker: 'New trade',
-          date_entry: format(today, 'yyyy-MM-dd')
+          date_entry: format(today, 'yyyy-MM-dd'),
+          roi_portfolio: 0 // Initialize ROI Portfolio as 0 for new trades
         })
 
       if (error) {

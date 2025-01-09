@@ -41,7 +41,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       pnl: trade.pnl || null,
       roi: trade.roi || null,
       roi_yearly: trade.roi_yearly || null,
-      roi_portfolio: trade.roi_portfolio || null,
       be_0: trade.be_0 || null,
       be_1: trade.be_1 || null,
       be_2: trade.be_2 || null,
@@ -63,6 +62,21 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     console.log('Submitting trade update with values:', values)
     
     try {
+      // Get latest portfolio balance
+      const { data: portfolioData, error: portfolioError } = await supabase
+        .from('portfolio_data')
+        .select('balance')
+        .order('month', { ascending: false })
+        .limit(1)
+
+      if (portfolioError) {
+        console.error('Error fetching portfolio balance:', portfolioError)
+        throw portfolioError
+      }
+
+      const latestBalance = portfolioData?.[0]?.balance || 0
+      console.log('Latest portfolio balance:', latestBalance)
+
       if (trade.row_type === 'parent') {
         // For parent rows, first get the sum of commission and pnl from child rows
         const { data: childRows, error: fetchError } = await supabase
@@ -99,6 +113,10 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         const dateExit = values.trade_status === 'closed' ? format(new Date(), 'yyyy-MM-dd') : null
         const daysInTrade = dateExit ? calculateDaysInTrade(new Date(oldestDateEntry), new Date(dateExit)) : null
         
+        // Calculate ROI Portfolio for parent (using total PNL)
+        const roiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
+        console.log('Calculated parent ROI Portfolio:', roiPortfolio)
+
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
@@ -110,7 +128,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             pnl: totalPnl,
             roi: values.roi,
             roi_yearly: values.roi_yearly,
-            roi_portfolio: values.roi_portfolio,
+            roi_portfolio: roiPortfolio,
             be_0: values.be_0,
             be_1: values.be_1,
             be_2: values.be_2,
@@ -127,6 +145,11 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         // For child rows, update normally
         const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
         
+        // Calculate ROI Portfolio for child row
+        const pnl = values.pnl || 0
+        const roiPortfolio = latestBalance > 0 ? Number(((pnl / latestBalance) * 100).toFixed(2)) : 0
+        console.log('Calculated child ROI Portfolio:', roiPortfolio)
+
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
@@ -147,7 +170,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             pnl: values.pnl,
             roi: values.roi,
             roi_yearly: values.roi_yearly,
-            roi_portfolio: values.roi_portfolio,
+            roi_portfolio: roiPortfolio,
             be_0: values.be_0,
             be_1: values.be_1,
             be_2: values.be_2,
@@ -164,7 +187,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           throw updateError
         }
         
-        // After updating child row, update parent row's commission and pnl
+        // After updating child row, update parent row's commission, pnl and ROI Portfolio
         if (trade.trade_id) {
           const { data: childRows, error: fetchError } = await supabase
             .from('trade_log')
@@ -194,14 +217,17 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
           const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
           
-          console.log('Updating parent with new totals:', { totalCommission, totalPnl, oldestDateEntry })
+          // Calculate parent's ROI Portfolio using total PNL
+          const parentRoiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
+          console.log('Updating parent with new totals:', { totalCommission, totalPnl, oldestDateEntry, parentRoiPortfolio })
           
           const { error: parentUpdateError } = await supabase
             .from('trade_log')
             .update({
               commission: totalCommission,
               pnl: totalPnl,
-              date_entry: oldestDateEntry
+              date_entry: oldestDateEntry,
+              roi_portfolio: parentRoiPortfolio
             })
             .eq('trade_id', trade.trade_id)
             .eq('row_type', 'parent')
@@ -247,12 +273,11 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             {trade.row_type === 'parent' ? (
-              // Parent row fields - removed date_entry and date_exit fields
+              // Parent row fields - removed ROI Portfolio field
               <>
                 <TextField control={form.control} name="ticker" label="Ticker" />
                 <NumberField control={form.control} name="roi" label="ROI" />
                 <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
-                <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
                 <NumberField control={form.control} name="be_0" label="B/E 0" />
                 <NumberField control={form.control} name="be_1" label="B/E 1" />
                 <NumberField control={form.control} name="be_2" label="B/E 2" />
@@ -262,7 +287,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 </div>
               </>
             ) : (
-              // Child row fields
+              // Child row fields - removed ROI Portfolio field
               <>
                 <TextField control={form.control} name="vehicle" label="Vehicle (Ex: Sell put)" />
                 <TextField control={form.control} name="order" label="Order (Ex: Sell to open)" />
@@ -280,7 +305,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 <NumberField control={form.control} name="pnl" label="PnL" />
                 <NumberField control={form.control} name="roi" label="ROI" />
                 <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
-                <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
                 <NumberField control={form.control} name="be_0" label="B/E 0" />
                 <NumberField control={form.control} name="be_1" label="B/E 1" />
                 <NumberField control={form.control} name="be_2" label="B/E 2" />
