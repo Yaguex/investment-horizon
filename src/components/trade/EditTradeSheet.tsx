@@ -65,16 +65,33 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     try {
       const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
       
-      const { error: updateError } = await supabase
-        .from('trade_log')
-        .update({
-          ...(trade.row_type === 'parent' ? {
+      if (trade.row_type === 'parent') {
+        // For parent rows, first get the sum of commission and pnl from child rows
+        const { data: childRows, error: fetchError } = await supabase
+          .from('trade_log')
+          .select('commission, pnl')
+          .eq('trade_id', trade.trade_id)
+          .eq('row_type', 'child')
+        
+        if (fetchError) {
+          console.error('Error fetching child rows:', fetchError)
+          throw fetchError
+        }
+        
+        const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
+        const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
+        
+        console.log('Calculated totals from child rows:', { totalCommission, totalPnl })
+        
+        const { error: updateError } = await supabase
+          .from('trade_log')
+          .update({
             ticker: values.ticker,
             date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
             date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
             days_in_trade: daysInTrade,
-            commission: values.commission,
-            pnl: values.pnl,
+            commission: totalCommission,
+            pnl: totalPnl,
             roi: values.roi,
             roi_yearly: values.roi_yearly,
             roi_portfolio: values.roi_portfolio,
@@ -83,7 +100,18 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             be_2: values.be_2,
             notes: values.notes,
             trade_status: values.trade_status
-          } : {
+          })
+          .eq('id', trade.id)
+        
+        if (updateError) {
+          console.error('Error updating parent trade:', updateError)
+          throw updateError
+        }
+      } else {
+        // For child rows, update normally
+        const { error: updateError } = await supabase
+          .from('trade_log')
+          .update({
             vehicle: values.vehicle,
             order: values.order,
             qty: values.qty,
@@ -111,12 +139,45 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             notes: values.notes,
             trade_status: values.trade_status
           })
-        })
-        .eq('id', trade.id)
-      
-      if (updateError) {
-        console.error('Error updating trade:', updateError)
-        throw updateError
+          .eq('id', trade.id)
+        
+        if (updateError) {
+          console.error('Error updating child trade:', updateError)
+          throw updateError
+        }
+        
+        // After updating child row, update parent row's commission and pnl
+        if (trade.trade_id) {
+          const { data: childRows, error: fetchError } = await supabase
+            .from('trade_log')
+            .select('commission, pnl')
+            .eq('trade_id', trade.trade_id)
+            .eq('row_type', 'child')
+          
+          if (fetchError) {
+            console.error('Error fetching child rows for parent update:', fetchError)
+            throw fetchError
+          }
+          
+          const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
+          const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
+          
+          console.log('Updating parent with new totals:', { totalCommission, totalPnl })
+          
+          const { error: parentUpdateError } = await supabase
+            .from('trade_log')
+            .update({
+              commission: totalCommission,
+              pnl: totalPnl
+            })
+            .eq('trade_id', trade.trade_id)
+            .eq('row_type', 'parent')
+          
+          if (parentUpdateError) {
+            console.error('Error updating parent trade totals:', parentUpdateError)
+            throw parentUpdateError
+          }
+        }
       }
       
       // For parent rows only, update all child rows' trade_status
@@ -153,13 +214,11 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             {trade.row_type === 'parent' ? (
-              // Parent row fields
+              // Parent row fields - removed commission and pnl fields
               <>
                 <TextField control={form.control} name="ticker" label="Ticker" />
                 <DateField control={form.control} name="date_entry" label="Date Entry (YYYY-MM-DD)" />
                 <DateField control={form.control} name="date_exit" label="Date Exit (YYYY-MM-DD)" />
-                <NumberField control={form.control} name="commission" label="Commission" />
-                <NumberField control={form.control} name="pnl" label="PnL" />
                 <NumberField control={form.control} name="roi" label="ROI" />
                 <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
                 <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
