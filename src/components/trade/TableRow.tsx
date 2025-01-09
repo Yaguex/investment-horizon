@@ -56,7 +56,7 @@ export const TableRow = ({
       <TableCell>{formatNumber(row.days_in_trade)}</TableCell>
       <TableCell>{formatNumber(row.strike_start, 0)}</TableCell>
       <TableCell>{formatNumber(row.strike_end, 0)}</TableCell>
-      <TableCell>${formatNumber(row.premium, 2)}</TableCell>
+      <TableCell><span>$</span>{formatNumber(row.premium, 2)}</TableCell>
       <TableCell>${formatNumber(row.stock_price, 2)}</TableCell>
       <TableCell>{formatNumber(row["risk_%"], 2)}%</TableCell>
       <TableCell>${formatNumber(row["risk_$"], 0)}</TableCell>
