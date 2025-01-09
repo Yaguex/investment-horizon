@@ -5,6 +5,7 @@ import { EditTradeSheet } from "./EditTradeSheet"
 import { TradeData } from "./types"
 import { cn } from "@/lib/utils"
 import { getRowBackground, getStickyBackground } from "./utils/styles"
+import { formatNumber } from "./utils/formatters"
 
 interface TableRowProps {
   row: TradeData
@@ -48,28 +49,28 @@ export const TableRow = ({
       <TableCell>{row.ticker}</TableCell>
       <TableCell>{row.vehicle}</TableCell>
       <TableCell>{row.order}</TableCell>
-      <TableCell>{row.qty}</TableCell>
+      <TableCell>{formatNumber(row.qty)}</TableCell>
       <TableCell>{row.date_entry}</TableCell>
       <TableCell>{row.date_expiration}</TableCell>
       <TableCell>{row.date_exit}</TableCell>
-      <TableCell>{row.days_in_trade}</TableCell>
-      <TableCell>{row.strike_start}</TableCell>
-      <TableCell>{row.strike_end}</TableCell>
-      <TableCell>{row.premium}</TableCell>
-      <TableCell>{row.stock_price}</TableCell>
-      <TableCell>{row["risk_%"]}</TableCell>
-      <TableCell>{row["risk_$"]}</TableCell>
-      <TableCell>{row.commission}</TableCell>
-      <TableCell>{row.pnl}</TableCell>
-      <TableCell>{row.roi}</TableCell>
-      <TableCell>{row.roi_yearly}</TableCell>
-      <TableCell>{row.roi_portfolio}</TableCell>
-      <TableCell>{row.be_0}</TableCell>
-      <TableCell>{row.be_1}</TableCell>
-      <TableCell>{row.be_2}</TableCell>
-      <TableCell>{row.delta}</TableCell>
-      <TableCell>{row.iv}</TableCell>
-      <TableCell>{row.iv_percentile}</TableCell>
+      <TableCell>{formatNumber(row.days_in_trade)}</TableCell>
+      <TableCell>{formatNumber(row.strike_start, 2)}</TableCell>
+      <TableCell>{formatNumber(row.strike_end, 2)}</TableCell>
+      <TableCell>{formatNumber(row.premium)}</TableCell>
+      <TableCell>{formatNumber(row.stock_price, 2)}</TableCell>
+      <TableCell>{formatNumber(row["risk_%"], 2)}</TableCell>
+      <TableCell>{formatNumber(row["risk_$"])}</TableCell>
+      <TableCell>{formatNumber(row.commission)}</TableCell>
+      <TableCell>{formatNumber(row.pnl)}</TableCell>
+      <TableCell>{formatNumber(row.roi, 2)}</TableCell>
+      <TableCell>{formatNumber(row.roi_yearly, 2)}</TableCell>
+      <TableCell>{formatNumber(row.roi_portfolio, 2)}</TableCell>
+      <TableCell>{formatNumber(row.be_0, 2)}</TableCell>
+      <TableCell>{formatNumber(row.be_1, 2)}</TableCell>
+      <TableCell>{formatNumber(row.be_2, 2)}</TableCell>
+      <TableCell>{formatNumber(row.delta, 2)}</TableCell>
+      <TableCell>{formatNumber(row.iv, 2)}</TableCell>
+      <TableCell>{formatNumber(row.iv_percentile, 2)}</TableCell>
       <TableCell>{row.notes}</TableCell>
 
       {isEditSheetOpen && (
