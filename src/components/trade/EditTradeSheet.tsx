@@ -63,13 +63,11 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     console.log('Submitting trade update with values:', values)
     
     try {
-      const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
-      
       if (trade.row_type === 'parent') {
         // For parent rows, first get the sum of commission and pnl from child rows
         const { data: childRows, error: fetchError } = await supabase
           .from('trade_log')
-          .select('commission, pnl')
+          .select('commission, pnl, date_entry')
           .eq('trade_id', trade.trade_id)
           .eq('row_type', 'child')
         
@@ -77,18 +75,36 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           console.error('Error fetching child rows:', fetchError)
           throw fetchError
         }
+
+        // Calculate oldest date_entry from child rows
+        let oldestDateEntry = '1999-01-01' // Default date if all children have null dates
+        if (childRows && childRows.length > 0) {
+          const validDates = childRows
+            .map(row => row.date_entry)
+            .filter(date => date !== null) as string[]
+          
+          if (validDates.length > 0) {
+            oldestDateEntry = validDates.reduce((oldest, current) => 
+              current < oldest ? current : oldest
+            )
+          }
+        }
         
         const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
         const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
         
-        console.log('Calculated totals from child rows:', { totalCommission, totalPnl })
+        console.log('Calculated totals from child rows:', { totalCommission, totalPnl, oldestDateEntry })
+
+        // Handle date_exit based on trade status
+        const dateExit = values.trade_status === 'closed' ? format(new Date(), 'yyyy-MM-dd') : null
+        const daysInTrade = dateExit ? calculateDaysInTrade(new Date(oldestDateEntry), new Date(dateExit)) : null
         
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
             ticker: values.ticker,
-            date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
-            date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
+            date_entry: oldestDateEntry,
+            date_exit: dateExit,
             days_in_trade: daysInTrade,
             commission: totalCommission,
             pnl: totalPnl,
@@ -109,6 +125,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         }
       } else {
         // For child rows, update normally
+        const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
+        
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
@@ -150,7 +168,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         if (trade.trade_id) {
           const { data: childRows, error: fetchError } = await supabase
             .from('trade_log')
-            .select('commission, pnl')
+            .select('commission, pnl, date_entry')
             .eq('trade_id', trade.trade_id)
             .eq('row_type', 'child')
           
@@ -158,17 +176,32 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             console.error('Error fetching child rows for parent update:', fetchError)
             throw fetchError
           }
+
+          // Calculate oldest date_entry from child rows
+          let oldestDateEntry = '1999-01-01' // Default date if all children have null dates
+          if (childRows && childRows.length > 0) {
+            const validDates = childRows
+              .map(row => row.date_entry)
+              .filter(date => date !== null) as string[]
+            
+            if (validDates.length > 0) {
+              oldestDateEntry = validDates.reduce((oldest, current) => 
+                current < oldest ? current : oldest
+              )
+            }
+          }
           
           const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
           const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
           
-          console.log('Updating parent with new totals:', { totalCommission, totalPnl })
+          console.log('Updating parent with new totals:', { totalCommission, totalPnl, oldestDateEntry })
           
           const { error: parentUpdateError } = await supabase
             .from('trade_log')
             .update({
               commission: totalCommission,
-              pnl: totalPnl
+              pnl: totalPnl,
+              date_entry: oldestDateEntry
             })
             .eq('trade_id', trade.trade_id)
             .eq('row_type', 'parent')
@@ -214,11 +247,9 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             {trade.row_type === 'parent' ? (
-              // Parent row fields - removed commission and pnl fields
+              // Parent row fields - removed date_entry and date_exit fields
               <>
                 <TextField control={form.control} name="ticker" label="Ticker" />
-                <DateField control={form.control} name="date_entry" label="Date Entry (YYYY-MM-DD)" />
-                <DateField control={form.control} name="date_exit" label="Date Exit (YYYY-MM-DD)" />
                 <NumberField control={form.control} name="roi" label="ROI" />
                 <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
                 <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
