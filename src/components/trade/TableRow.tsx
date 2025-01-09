@@ -54,23 +54,23 @@ export const TableRow = ({
       <TableCell>{row.date_expiration}</TableCell>
       <TableCell>{row.date_exit}</TableCell>
       <TableCell>{formatNumber(row.days_in_trade)}</TableCell>
-      <TableCell>{formatNumber(row.strike_start, 2)}</TableCell>
-      <TableCell>{formatNumber(row.strike_end, 2)}</TableCell>
-      <TableCell>{formatNumber(row.premium)}</TableCell>
-      <TableCell>{formatNumber(row.stock_price, 2)}</TableCell>
-      <TableCell>{formatNumber(row["risk_%"], 2)}</TableCell>
-      <TableCell>{formatNumber(row["risk_$"])}</TableCell>
-      <TableCell>{formatNumber(row.commission)}</TableCell>
-      <TableCell>{formatNumber(row.pnl)}</TableCell>
-      <TableCell>{formatNumber(row.roi, 2)}</TableCell>
-      <TableCell>{formatNumber(row.roi_yearly, 2)}</TableCell>
-      <TableCell>{formatNumber(row.roi_portfolio, 2)}</TableCell>
-      <TableCell>{formatNumber(row.be_0, 2)}</TableCell>
-      <TableCell>{formatNumber(row.be_1, 2)}</TableCell>
-      <TableCell>{formatNumber(row.be_2, 2)}</TableCell>
+      <TableCell>{formatNumber(row.strike_start, 0)}</TableCell>
+      <TableCell>{formatNumber(row.strike_end, 0)}</TableCell>
+      <TableCell>${formatNumber(row.premium, 2)}</TableCell>
+      <TableCell>${formatNumber(row.stock_price, 2)}</TableCell>
+      <TableCell>{formatNumber(row["risk_%"], 2)}%</TableCell>
+      <TableCell>${formatNumber(row["risk_$"], 0)}</TableCell>
+      <TableCell>${formatNumber(row.commission, 0)}</TableCell>
+      <TableCell>${formatNumber(row.pnl, 0)}</TableCell>
+      <TableCell>{formatNumber(row.roi, 2)}%</TableCell>
+      <TableCell>{formatNumber(row.roi_yearly, 2)}%</TableCell>
+      <TableCell>{formatNumber(row.roi_portfolio, 2)}%</TableCell>
+      <TableCell>${formatNumber(row.be_0, 2)}</TableCell>
+      <TableCell>${formatNumber(row.be_1, 2)}</TableCell>
+      <TableCell>${formatNumber(row.be_2, 2)}</TableCell>
       <TableCell>{formatNumber(row.delta, 2)}</TableCell>
-      <TableCell>{formatNumber(row.iv, 2)}</TableCell>
-      <TableCell>{formatNumber(row.iv_percentile, 2)}</TableCell>
+      <TableCell>{formatNumber(row.iv, 0)}%</TableCell>
+      <TableCell>{formatNumber(row.iv_percentile, 0)}%</TableCell>
       <TableCell>{row.notes}</TableCell>
 
       {isEditSheetOpen && (
