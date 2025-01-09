@@ -34,12 +34,8 @@ const Header = () => {
       onClick: () => navigate("/diy-notes")
     },
     {
-      label: "Test",
+      label: "Test API",
       onClick: () => navigate("/test")
-    },
-    {
-      label: "Settings",
-      onClick: () => navigate("/settings")
     },
     {
       label: "Sign out",
