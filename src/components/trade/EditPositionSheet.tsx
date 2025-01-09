@@ -112,8 +112,8 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             <TextField control={form.control} name="ticker" label="Ticker" />
-            <DateField control={form.control} name="date_entry" label="Date Entry" />
-            <DateField control={form.control} name="date_exit" label="Date Exit" />
+            <DateField control={form.control} name="date_entry" label="Date Entry (YYYY-MM-DD)" />
+            <DateField control={form.control} name="date_exit" label="Date Exit (YYYY-MM-DD)" />
             <NumberField control={form.control} name="commission" label="Commission" />
             <NumberField control={form.control} name="pnl" label="PnL" />
             <NumberField control={form.control} name="roi" label="ROI" />
