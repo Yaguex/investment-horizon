@@ -51,7 +51,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       strike_end: trade.strike_end || null,
       premium: trade.premium || null,
       stock_price: trade.stock_price || null,
-      "risk_%": trade["risk_%"] || null,
       "risk_$": trade["risk_$"] || null,
       commission: trade.commission || null,
       pnl: trade.pnl || null,
@@ -76,6 +75,56 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
   const calculateYearlyROI = (roi: number | null, daysInTrade: number) => {
     if (!roi || daysInTrade === 0) return 0
     return Number(((roi / daysInTrade) * 365).toFixed(2))
+  }
+
+  const calculateRiskPercentage = async (values: FormValues) => {
+    console.log('Calculating risk percentage with values:', values)
+    
+    // Get latest portfolio balance
+    const { data: portfolioData, error: portfolioError } = await supabase
+      .from('portfolio_data')
+      .select('balance')
+      .order('month', { ascending: false })
+      .limit(1)
+
+    if (portfolioError) {
+      console.error('Error fetching portfolio balance:', portfolioError)
+      return null
+    }
+
+    const latestBalance = portfolioData?.[0]?.balance
+    if (!latestBalance || latestBalance <= 0) {
+      console.log('No valid portfolio balance found')
+      return null
+    }
+
+    const { vehicle, qty, stock_price, strike_start, strike_end } = values
+    
+    // Check if we have all required values
+    if (!qty) {
+      console.log('Missing qty, cannot calculate risk %')
+      return null
+    }
+
+    let riskPercentage: number | null = null
+
+    if (vehicle === 'Stock' || vehicle === 'Fund') {
+      if (!stock_price) {
+        console.log('Missing stock price for Stock/Fund calculation')
+        return null
+      }
+      riskPercentage = (qty * stock_price) / latestBalance * 100
+    } else if (['Buy call', 'Buy put', 'Buy call spread', 'Buy put spread', 
+                'Sell call', 'Sell put', 'Sell call spread', 'Sell put spread',
+                'Exercise', 'Roll over'].includes(vehicle)) {
+      if (!strike_start) {
+        console.log('Missing strike_start for options calculation')
+        return null
+      }
+      riskPercentage = Math.abs(qty * (strike_start - (strike_end || 0)) * 100) / latestBalance * 100
+    }
+
+    return riskPercentage ? Number(riskPercentage.toFixed(2)) : null
   }
 
   const onSubmit = async (values: FormValues) => {
@@ -173,6 +222,10 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         // For child rows, update normally
         const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
         
+        // Calculate risk percentage after days in trade
+        const riskPercentage = await calculateRiskPercentage(values)
+        console.log('Calculated risk percentage:', riskPercentage)
+        
         // Get all sibling rows (including this one) to calculate sum of negative PnLs
         const { data: siblingRows, error: siblingError } = await supabase
           .from('trade_log')
@@ -227,7 +280,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             strike_end: values.strike_end,
             premium: values.premium,
             stock_price: values.stock_price,
-            "risk_%": values["risk_%"],
+            "risk_%": riskPercentage,
             "risk_$": values["risk_$"],
             commission: values.commission,
             pnl: values.pnl,
@@ -373,7 +426,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 </div>
               </>
             ) : (
-              // Child row fields
+              // Child row fields - removed Risk % field as it's now auto-calculated
               <>
                 <SelectField 
                   control={form.control} 
@@ -390,7 +443,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 <NumberField control={form.control} name="strike_end" label="Strike End" />
                 <NumberField control={form.control} name="premium" label="Premium" />
                 <NumberField control={form.control} name="stock_price" label="Stock Price" />
-                <NumberField control={form.control} name="risk_%" label="Risk %" />
                 <NumberField control={form.control} name="risk_$" label="Risk $" />
                 <NumberField control={form.control} name="commission" label="Commission" />
                 <NumberField control={form.control} name="pnl" label="PnL" />
