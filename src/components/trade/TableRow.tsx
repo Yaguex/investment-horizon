@@ -64,7 +64,7 @@ export const TableRow = ({
       </TableCell>
       
       <TableCell className={cn(
-        "sticky left-[100px] z-10",
+        "sticky left-[120px] z-10",
         getStickyBackground(isSubRow, effectiveTradeStatus, row.pnl)
       )}>{row.ticker}</TableCell>
       <TableCell>{row.vehicle}</TableCell>
