@@ -10,7 +10,23 @@ import { useQueryClient } from "@tanstack/react-query"
 import { TextField } from "./form-fields/TextField"
 import { DateField } from "./form-fields/DateField"
 import { NumberField } from "./form-fields/NumberField"
+import { SelectField } from "./form-fields/SelectField"
 import { Textarea } from "@/components/ui/textarea"
+
+const vehicleOptions = [
+  { label: "Stock", value: "Stock" },
+  { label: "Fund", value: "Fund" },
+  { label: "Buy call", value: "Buy call" },
+  { label: "Buy put", value: "Buy put" },
+  { label: "Sell call", value: "Sell call" },
+  { label: "Sell put", value: "Sell put" },
+  { label: "Buy call spread", value: "Buy call spread" },
+  { label: "Buy put spread", value: "Buy put spread" },
+  { label: "Sell call spread", value: "Sell call spread" },
+  { label: "Sell put spread", value: "Sell put spread" },
+  { label: "Roll over", value: "Roll over" },
+  { label: "Exercise", value: "Exercise" }
+]
 
 interface EditTradeSheetProps {
   isOpen: boolean
@@ -359,7 +375,12 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             ) : (
               // Child row fields
               <>
-                <TextField control={form.control} name="vehicle" label="Vehicle (Ex: Sell put)" />
+                <SelectField 
+                  control={form.control} 
+                  name="vehicle" 
+                  label="Vehicle" 
+                  options={vehicleOptions}
+                />
                 <TextField control={form.control} name="order" label="Order (Ex: Sell to open)" />
                 <NumberField control={form.control} name="qty" label="QTY" />
                 <DateField control={form.control} name="date_entry" label="Date Entry (YYYY-MM-DD)" />
