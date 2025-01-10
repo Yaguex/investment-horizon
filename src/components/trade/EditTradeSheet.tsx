@@ -50,13 +50,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     }
   })
 
-  const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null) => {
-    if (!dateEntry) return null
-    const exitDate = dateExit || new Date()
-    const diffTime = Math.abs(exitDate.getTime() - dateEntry.getTime())
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  }
-
   const calculateYearlyROI = (roi: number | null, daysInTrade: number | null): number | null => {
     console.log('Calculating Yearly ROI with:', { roi, daysInTrade })
     if (roi === null || daysInTrade === null || daysInTrade === 0) {
