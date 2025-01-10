@@ -453,10 +453,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 <NumberField control={form.control} name="strike_end" label="Strike End" />
                 <NumberField control={form.control} name="premium" label="Net Premium" />
                 <NumberField control={form.control} name="stock_price" label="Stock Price" />
-                <NumberField control={form.control} name="risk_$" label="Risk $" />
                 <NumberField control={form.control} name="commission" label="Commission" />
                 <NumberField control={form.control} name="pnl" label="PnL" />
-                <NumberField control={form.control} name="roi" label="ROI" />
                 <NumberField control={form.control} name="be_0" label="B/E 0" />
                 <NumberField control={form.control} name="be_1" label="B/E 1" />
                 <NumberField control={form.control} name="be_2" label="B/E 2" />
