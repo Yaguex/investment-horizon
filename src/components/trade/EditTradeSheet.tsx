@@ -98,9 +98,9 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       return null
     }
 
-    const { vehicle, qty, stock_price, strike_start, strike_end } = values
+    const { vehicle, qty, stock_price, strike_start, strike_end, premium } = values
     
-    // Check if we have all required values
+    // Check if we have qty as it's required for all calculations
     if (!qty) {
       console.log('Missing qty, cannot calculate risk %')
       return null
@@ -108,22 +108,32 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
     let riskPercentage: number | null = null
 
+    // Stock or Fund calculation
     if (vehicle === 'Stock' || vehicle === 'Fund') {
       if (!stock_price) {
         console.log('Missing stock price for Stock/Fund calculation')
         return null
       }
-      riskPercentage = (qty * stock_price) / latestBalance * 100
-    } else if (['Buy call', 'Buy put', 'Buy call spread', 'Buy put spread', 
-                'Sell call', 'Sell put', 'Sell call spread', 'Sell put spread',
-                'Exercise', 'Roll over'].includes(vehicle)) {
+      riskPercentage = Math.abs((qty * stock_price) / latestBalance * 100)
+    } 
+    // Sell options and Exercise calculation
+    else if (['Sell call', 'Sell put', 'Sell call spread', 'Sell put spread', 'Exercise'].includes(vehicle)) {
       if (!strike_start) {
-        console.log('Missing strike_start for options calculation')
+        console.log('Missing strike_start for sell options calculation')
         return null
       }
-      riskPercentage = Math.abs(qty * (strike_start - (strike_end || 0)) * 100) / latestBalance * 100
+      riskPercentage = Math.abs((qty * (strike_start - (strike_end || 0)) * 100) / latestBalance * 100)
+    }
+    // Buy options and Roll over calculation
+    else if (['Buy call', 'Buy put', 'Buy call spread', 'Buy put spread', 'Roll over'].includes(vehicle)) {
+      if (!premium) {
+        console.log('Missing premium for buy options calculation')
+        return null
+      }
+      riskPercentage = Math.abs((qty * premium * 100) / latestBalance * 100)
     }
 
+    console.log('Calculated risk percentage:', riskPercentage)
     return riskPercentage ? Number(riskPercentage.toFixed(2)) : null
   }
 
