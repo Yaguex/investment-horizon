@@ -130,7 +130,7 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
               <TableHeader>
                 <TableRow className="bg-white">
                   <TableHead className="sticky left-0 z-20 w-[120px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
-                  <TableHead className="sticky left-[100px] z-20 min-w-[200px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Ticker</TableHead>
+                  <TableHead className="sticky left-[120px] z-20 min-w-[200px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Ticker</TableHead>
                   <TableHead className="min-w-[140px]">Vehicle</TableHead>
                   <TableHead className="min-w-[200px]">Order</TableHead>
                   <TableHead>QTY</TableHead>
