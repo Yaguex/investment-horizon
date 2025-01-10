@@ -451,7 +451,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 <DateField control={form.control} name="date_exit" label="Date Exit (YYYY-MM-DD)" />
                 <NumberField control={form.control} name="strike_start" label="Strike Start" />
                 <NumberField control={form.control} name="strike_end" label="Strike End" />
-                <NumberField control={form.control} name="premium" label="Premium" />
+                <NumberField control={form.control} name="premium" label="Net Premium" />
                 <NumberField control={form.control} name="stock_price" label="Stock Price" />
                 <NumberField control={form.control} name="risk_$" label="Risk $" />
                 <NumberField control={form.control} name="commission" label="Commission" />
