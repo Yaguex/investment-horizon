@@ -61,8 +61,6 @@ export interface FormValues {
   commission: number | null
   pnl: number | null
   roi: number | null
-  roi_yearly: number | null
-  roi_portfolio: number | null
   be_0: number | null
   be_1: number | null
   be_2: number | null

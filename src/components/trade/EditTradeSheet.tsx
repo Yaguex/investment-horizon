@@ -39,7 +39,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       "risk_$": trade["risk_$"] || null,
       commission: trade.commission || null,
       pnl: trade.pnl || null,
-      roi_yearly: trade.roi_yearly || null,
+      roi: trade.roi || null,
       be_0: trade.be_0 || null,
       be_1: trade.be_1 || null,
       be_2: trade.be_2 || null,
@@ -119,13 +119,11 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
         // Calculate ROI for parent
         const roi = sumNegativePnl === 0 ? 0 : Number(((totalPnl / sumNegativePnl) * 100).toFixed(2))
-        const yearlyRoi = calculateYearlyROI(roi, calculateDaysInTrade(new Date(oldestDateEntry), new Date()))
         
-        console.log('Calculated totals from child rows:', { totalCommission, totalPnl, sumNegativePnl, roi, yearlyRoi, oldestDateEntry })
-
         // Handle date_exit based on trade status
         const dateExit = values.trade_status === 'closed' ? format(new Date(), 'yyyy-MM-dd') : null
         const daysInTrade = dateExit ? calculateDaysInTrade(new Date(oldestDateEntry), new Date(dateExit)) : null
+        const yearlyRoi = calculateYearlyROI(roi, daysInTrade || 0)
         
         // Calculate ROI Portfolio for parent (using total PNL)
         const roiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
@@ -158,7 +156,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       } else {
         // For child rows, update normally
         const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
-        const yearlyRoi = calculateYearlyROI(values.roi, daysInTrade)
         
         // Get all sibling rows (including this one) to calculate sum of negative PnLs
         const { data: siblingRows, error: siblingError } = await supabase
@@ -185,6 +182,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
         // Calculate ROI for this child row
         const roi = sumNegativePnl === 0 ? 0 : Number(((values.pnl || 0) / sumNegativePnl * 100).toFixed(2))
+        const yearlyRoi = calculateYearlyROI(roi, daysInTrade || 0)
         
         console.log('Child row calculations:', { 
           pnl: values.pnl, 
@@ -240,7 +238,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         for (const sibling of siblingRows) {
           if (sibling.id !== trade.id) { // Skip the row we just updated
             const siblingRoi = sumNegativePnl === 0 ? 0 : Number(((sibling.pnl || 0) / sumNegativePnl * 100).toFixed(2))
-            const siblingYearlyRoi = calculateYearlyROI(siblingRoi, daysInTrade)
+            const siblingYearlyRoi = calculateYearlyROI(siblingRoi, daysInTrade || 0)
             
             const { error: siblingUpdateError } = await supabase
               .from('trade_log')
@@ -295,7 +293,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
           // Calculate ROI for parent
           const parentRoi = sumNegativePnl === 0 ? 0 : Number(((totalPnl / sumNegativePnl) * 100).toFixed(2))
-          const parentYearlyRoi = calculateYearlyROI(parentRoi, calculateDaysInTrade(new Date(oldestDateEntry), new Date()))
+          const parentYearlyRoi = calculateYearlyROI(parentRoi, daysInTrade || 0)
           
           // Calculate parent's ROI Portfolio using total PNL
           const parentRoiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
@@ -350,7 +348,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
               // Parent row fields
               <>
                 <TextField control={form.control} name="ticker" label="Ticker" />
-                <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
                 <NumberField control={form.control} name="be_0" label="B/E 0" />
                 <NumberField control={form.control} name="be_1" label="B/E 1" />
                 <NumberField control={form.control} name="be_2" label="B/E 2" />
@@ -376,7 +373,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 <NumberField control={form.control} name="risk_$" label="Risk $" />
                 <NumberField control={form.control} name="commission" label="Commission" />
                 <NumberField control={form.control} name="pnl" label="PnL" />
-                <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
+                <NumberField control={form.control} name="roi" label="ROI" />
                 <NumberField control={form.control} name="be_0" label="B/E 0" />
                 <NumberField control={form.control} name="be_1" label="B/E 1" />
                 <NumberField control={form.control} name="be_2" label="B/E 2" />
