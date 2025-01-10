@@ -132,29 +132,29 @@ const TradeTable = ({ tradeStatus }: TradeTableProps) => {
                   <TableHead className="sticky left-0 z-20 w-[100px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Actions</TableHead>
                   <TableHead className="sticky left-[100px] z-20 min-w-[200px] bg-white after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-border">Ticker</TableHead>
                   <TableHead className="min-w-[140px]">Vehicle</TableHead>
-                  <TableHead className="min-w-[140px]">Order</TableHead>
+                  <TableHead className="min-w-[200px]">Order</TableHead>
                   <TableHead>QTY</TableHead>
                   <TableHead className="min-w-[140px]">Date Entry</TableHead>
                   <TableHead className="min-w-[140px]">Date Expiration</TableHead>
                   <TableHead className="min-w-[140px]">Date Exit</TableHead>
                   <TableHead className="min-w-[140px]">Days in Trade</TableHead>
-                  <TableHead>Strike Start</TableHead>
-                  <TableHead>Strike End</TableHead>
+                  <TableHead className="min-w-[140px]">Strike Start</TableHead>
+                  <TableHead className="min-w-[140px]">Strike End</TableHead>
                   <TableHead>Premium</TableHead>
-                  <TableHead>Stock Price</TableHead>
+                  <TableHead className="min-w-[140px]">Stock Price</TableHead>
                   <TableHead className="min-w-[100px]">Risk %</TableHead>
                   <TableHead className="min-w-[100px]">Risk $</TableHead>
                   <TableHead>Commission</TableHead>
                   <TableHead>PnL</TableHead>
                   <TableHead>ROI</TableHead>
-                  <TableHead>Yearly ROI</TableHead>
-                  <TableHead>ROI Portfolio</TableHead>
+                  <TableHead className="min-w-[140px]">Yearly ROI</TableHead>
+                  <TableHead className="min-w-[140px]">ROI Portfolio</TableHead>
                   <TableHead className="min-w-[120px]">B/E 0</TableHead>
                   <TableHead className="min-w-[120px]">B/E 1</TableHead>
                   <TableHead className="min-w-[120px]">B/E 2</TableHead>
                   <TableHead>Delta</TableHead>
                   <TableHead>IV</TableHead>
-                  <TableHead>IV Percentile</TableHead>
+                  <TableHead className="min-w-[140px]">IV Percentile</TableHead>
                   <TableHead className="min-w-[7000px]">Notes</TableHead>
                 </TableRow>
               </TableHeader>
