@@ -46,11 +46,17 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
 
+  const calculateYearlyROI = (roi: number | null, daysInTrade: number) => {
+    if (!roi || daysInTrade === 0) return 0
+    return Number(((roi / daysInTrade) * 365).toFixed(2))
+  }
+
   const onSubmit = async (values: PositionFormValues) => {
     console.log('Submitting position update with values:', values)
     
     try {
       const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
+      const yearlyRoi = calculateYearlyROI(values.roi, daysInTrade)
       
       // Update parent row
       const { error: updateError } = await supabase
@@ -63,7 +69,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
           commission: values.commission,
           pnl: values.pnl,
           roi: values.roi,
-          roi_yearly: values.roi_yearly,
+          roi_yearly: yearlyRoi,
           roi_portfolio: values.roi_portfolio,
           be_0: values.be_0,
           be_1: values.be_1,
@@ -78,12 +84,13 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
         throw updateError
       }
       
-      // Update all child rows' trade_status if trade_id exists
+      // Update all child rows' trade_status and yearly_roi if trade_id exists
       if (trade.trade_id) {
         const { error: childError } = await supabase
           .from('trade_log')
           .update({
-            trade_status: values.trade_status
+            trade_status: values.trade_status,
+            roi_yearly: yearlyRoi
           })
           .eq('trade_id', trade.trade_id)
           .eq('row_type', 'child')

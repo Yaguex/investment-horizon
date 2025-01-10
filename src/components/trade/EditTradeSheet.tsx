@@ -57,6 +57,11 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
 
+  const calculateYearlyROI = (roi: number | null, daysInTrade: number) => {
+    if (!roi || daysInTrade === 0) return 0
+    return Number(((roi / daysInTrade) * 365).toFixed(2))
+  }
+
   const onSubmit = async (values: FormValues) => {
     console.log('Submitting trade update with values:', values)
     
@@ -114,8 +119,9 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
         // Calculate ROI for parent
         const roi = sumNegativePnl === 0 ? 0 : Number(((totalPnl / sumNegativePnl) * 100).toFixed(2))
+        const yearlyRoi = calculateYearlyROI(roi, calculateDaysInTrade(new Date(oldestDateEntry), new Date()))
         
-        console.log('Calculated totals from child rows:', { totalCommission, totalPnl, sumNegativePnl, roi, oldestDateEntry })
+        console.log('Calculated totals from child rows:', { totalCommission, totalPnl, sumNegativePnl, roi, yearlyRoi, oldestDateEntry })
 
         // Handle date_exit based on trade status
         const dateExit = values.trade_status === 'closed' ? format(new Date(), 'yyyy-MM-dd') : null
@@ -135,7 +141,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             commission: totalCommission,
             pnl: totalPnl,
             roi,
-            roi_yearly: values.roi_yearly,
+            roi_yearly: yearlyRoi,
             roi_portfolio: roiPortfolio,
             be_0: values.be_0,
             be_1: values.be_1,
@@ -152,6 +158,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       } else {
         // For child rows, update normally
         const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
+        const yearlyRoi = calculateYearlyROI(values.roi, daysInTrade)
         
         // Get all sibling rows (including this one) to calculate sum of negative PnLs
         const { data: siblingRows, error: siblingError } = await supabase
@@ -183,6 +190,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           pnl: values.pnl, 
           sumNegativePnl, 
           roi,
+          yearlyRoi,
           siblingCount: siblingRows.length 
         })
         
@@ -210,7 +218,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             commission: values.commission,
             pnl: values.pnl,
             roi,
-            roi_yearly: values.roi_yearly,
+            roi_yearly: yearlyRoi,
             roi_portfolio: roiPortfolio,
             be_0: values.be_0,
             be_1: values.be_1,
@@ -228,14 +236,18 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           throw updateError
         }
 
-        // Update ROI for all sibling rows
+        // Update ROI and yearly ROI for all sibling rows
         for (const sibling of siblingRows) {
           if (sibling.id !== trade.id) { // Skip the row we just updated
             const siblingRoi = sumNegativePnl === 0 ? 0 : Number(((sibling.pnl || 0) / sumNegativePnl * 100).toFixed(2))
+            const siblingYearlyRoi = calculateYearlyROI(siblingRoi, daysInTrade)
             
             const { error: siblingUpdateError } = await supabase
               .from('trade_log')
-              .update({ roi: siblingRoi })
+              .update({ 
+                roi: siblingRoi,
+                roi_yearly: siblingYearlyRoi
+              })
               .eq('id', sibling.id)
 
             if (siblingUpdateError) {
@@ -245,7 +257,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           }
         }
         
-        // After updating child row, update parent row's commission, pnl and ROI Portfolio
+        // After updating child row, update parent row's commission, pnl, ROI and ROI Portfolio
         if (trade.trade_id) {
           const { data: childRows, error: fetchError } = await supabase
             .from('trade_log')
@@ -283,6 +295,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
 
           // Calculate ROI for parent
           const parentRoi = sumNegativePnl === 0 ? 0 : Number(((totalPnl / sumNegativePnl) * 100).toFixed(2))
+          const parentYearlyRoi = calculateYearlyROI(parentRoi, calculateDaysInTrade(new Date(oldestDateEntry), new Date()))
           
           // Calculate parent's ROI Portfolio using total PNL
           const parentRoiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
@@ -292,6 +305,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             oldestDateEntry, 
             parentRoiPortfolio,
             parentRoi,
+            parentYearlyRoi,
             sumNegativePnl
           })
           
@@ -302,6 +316,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
               pnl: totalPnl,
               date_entry: oldestDateEntry,
               roi: parentRoi,
+              roi_yearly: parentYearlyRoi,
               roi_portfolio: parentRoiPortfolio
             })
             .eq('trade_id', trade.trade_id)
@@ -311,22 +326,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             console.error('Error updating parent trade totals:', parentUpdateError)
             throw parentUpdateError
           }
-        }
-      }
-      
-      // For parent rows only, update all child rows' trade_status
-      if (trade.row_type === 'parent' && values.trade_status !== trade.trade_status && trade.trade_id) {
-        const { error: childError } = await supabase
-          .from('trade_log')
-          .update({
-            trade_status: values.trade_status
-          })
-          .eq('trade_id', trade.trade_id)
-          .eq('row_type', 'child')
-        
-        if (childError) {
-          console.error('Error updating child trades:', childError)
-          throw childError
         }
       }
       
