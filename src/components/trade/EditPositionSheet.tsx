@@ -29,6 +29,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
       commission: trade.commission || null,
       pnl: trade.pnl || null,
       roi: trade.roi || null,
+      roi_yearly: trade.roi_yearly || null,
       roi_portfolio: trade.roi_portfolio || null,
       be_0: trade.be_0 || null,
       be_1: trade.be_1 || null,
@@ -45,17 +46,11 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
 
-  const calculateYearlyRoi = (roi: number | null, daysInTrade: number) => {
-    if (roi === null || daysInTrade === null) return null
-    return Number((roi * (365.0 / Math.max(daysInTrade, 1))).toFixed(2))
-  }
-
   const onSubmit = async (values: PositionFormValues) => {
     console.log('Submitting position update with values:', values)
     
     try {
       const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
-      const yearlyRoi = calculateYearlyRoi(values.roi, daysInTrade)
       
       // Update parent row
       const { error: updateError } = await supabase
@@ -68,7 +63,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
           commission: values.commission,
           pnl: values.pnl,
           roi: values.roi,
-          roi_yearly: yearlyRoi,
+          roi_yearly: values.roi_yearly,
           roi_portfolio: values.roi_portfolio,
           be_0: values.be_0,
           be_1: values.be_1,
@@ -122,6 +117,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
             <NumberField control={form.control} name="commission" label="Commission" />
             <NumberField control={form.control} name="pnl" label="PnL" />
             <NumberField control={form.control} name="roi" label="ROI" />
+            <NumberField control={form.control} name="roi_yearly" label="ROI Yearly" />
             <NumberField control={form.control} name="roi_portfolio" label="ROI Portfolio" />
             <NumberField control={form.control} name="be_0" label="B/E 0" />
             <NumberField control={form.control} name="be_1" label="B/E 1" />
