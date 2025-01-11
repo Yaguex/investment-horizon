@@ -110,13 +110,18 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
       } else {
         console.log('Starting child row update sequence')
         
-        // 1. First calculate child metrics
+        // Convert date strings to Date objects before calculations
+        const dateEntry = values.date_entry ? new Date(values.date_entry) : null
+        const dateExit = values.date_exit ? new Date(values.date_exit) : null
+        const dateExpiration = values.date_expiration ? new Date(values.date_expiration) : null
+        
+        // 1. First calculate child metrics with converted dates
         const childMetrics = await recalculateChildMetrics(
           values,
           trade.trade_id || 0,
           trade.id,
-          values.date_entry,
-          values.date_exit
+          dateEntry,
+          dateExit
         )
         
         console.log('Calculated child metrics:', childMetrics)
@@ -128,9 +133,9 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             vehicle: values.vehicle,
             order: values.order,
             qty: values.qty,
-            date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
-            date_expiration: values.date_expiration ? format(values.date_expiration, 'yyyy-MM-dd') : null,
-            date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
+            date_entry: dateEntry ? format(dateEntry, 'yyyy-MM-dd') : null,
+            date_expiration: dateExpiration ? format(dateExpiration, 'yyyy-MM-dd') : null,
+            date_exit: dateExit ? format(dateExit, 'yyyy-MM-dd') : null,
             days_in_trade: childMetrics.daysInTrade,
             strike_start: values.strike_start,
             strike_end: values.strike_end,
