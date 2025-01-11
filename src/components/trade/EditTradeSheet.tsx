@@ -108,33 +108,20 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           throw updateError
         }
       } else {
-        // For child rows, calculate all metrics in parallel
-        const [childMetrics, siblingMetrics, parentMetrics] = await Promise.all([
-          recalculateChildMetrics(
-            values,
-            trade.trade_id || 0,
-            trade.id,
-            values.date_entry,
-            values.date_exit
-          ),
-          trade.trade_id ? recalculateSiblingMetrics(
-            trade.trade_id,
-            trade.id,
-            values.pnl
-          ) : Promise.resolve([]),
-          trade.trade_id ? recalculateParentMetrics(
-            trade.trade_id,
-            values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null
-          ) : Promise.resolve(null)
-        ])
+        console.log('Starting child row update sequence')
         
-        console.log('Calculated metrics:', {
-          childMetrics,
-          siblingMetrics,
-          parentMetrics
-        })
+        // 1. First calculate child metrics
+        const childMetrics = await recalculateChildMetrics(
+          values,
+          trade.trade_id || 0,
+          trade.id,
+          values.date_entry,
+          values.date_exit
+        )
         
-        // Update child row with new metrics
+        console.log('Calculated child metrics:', childMetrics)
+        
+        // 2. Update child row with new metrics
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
@@ -172,8 +159,20 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           throw updateError
         }
 
-        if (trade.trade_id && siblingMetrics.length > 0) {
-          // Get all sibling rows to update them
+        console.log('Child row updated successfully')
+
+        // 3. If trade has siblings, update them
+        if (trade.trade_id) {
+          console.log('Calculating sibling metrics')
+          const siblingMetrics = await recalculateSiblingMetrics(
+            trade.trade_id,
+            trade.id,
+            values.pnl
+          )
+          
+          console.log('Calculated sibling metrics:', siblingMetrics)
+          
+          // Get all sibling rows
           const { data: siblingRows, error: siblingFetchError } = await supabase
             .from('trade_log')
             .select('id')
@@ -186,7 +185,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             throw siblingFetchError
           }
           
-          // Update each sibling with its new metrics
+          // 4. Update each sibling sequentially
+          console.log('Updating sibling rows')
           for (let i = 0; i < siblingRows.length; i++) {
             const { error: siblingUpdateError } = await supabase
               .from('trade_log')
@@ -201,10 +201,24 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
               throw siblingUpdateError
             }
           }
-        }
-        
-        // Update parent row if it exists and we have parent metrics
-        if (trade.trade_id && parentMetrics) {
+          
+          console.log('All sibling rows updated successfully')
+          
+          // 5. Finally calculate and update parent metrics
+          console.log('Calculating parent metrics')
+          const parentMetrics = await recalculateParentMetrics(
+            trade.trade_id,
+            values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null
+          )
+          
+          if (!parentMetrics) {
+            console.error('Failed to calculate parent metrics')
+            throw new Error('Failed to calculate parent metrics')
+          }
+          
+          console.log('Calculated parent metrics:', parentMetrics)
+          
+          // 6. Update parent row
           const { error: parentUpdateError } = await supabase
             .from('trade_log')
             .update({
@@ -223,10 +237,12 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             console.error('Error updating parent trade totals:', parentUpdateError)
             throw parentUpdateError
           }
+          
+          console.log('Parent row updated successfully')
         }
       }
       
-      console.log('Trade updated successfully')
+      console.log('Trade update completed successfully')
       await queryClient.invalidateQueries({ queryKey: ['trades'] })
       onClose()
     } catch (error) {
