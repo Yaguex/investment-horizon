@@ -110,47 +110,35 @@ export const recalculateChildMetrics = async (
   const latestBalance = portfolioData?.[0]?.balance || 0
   console.log('Latest portfolio balance:', latestBalance)
 
-  // If we have a trade ID, get all sibling rows to calculate ROI
-  let roi = 0
-  let roiYearly = 0
-  let roiPortfolio = 0
+  // Get all sibling rows to calculate ROI
+  const { data: siblingRows, error: siblingError } = await supabase
+    .from('trade_log')
+    .select('id, pnl')
+    .eq('trade_id', tradeId)
+    .eq('row_type', 'child')
 
-  if (tradeId) {
-    // Get all sibling rows (including this one)
-    const { data: siblingRows, error: siblingError } = await supabase
-      .from('trade_log')
-      .select('id, pnl')
-      .eq('trade_id', tradeId)
-      .eq('row_type', 'child')
-
-    if (siblingError) {
-      console.error('Error fetching sibling rows:', siblingError)
-      throw siblingError
-    }
-
-    // Update current row's PnL in sibling rows for accurate calculation
-    const updatedSiblingRows = siblingRows.map(row => 
-      row.id === currentTradeId ? { ...row, pnl: values.pnl } : row
-    )
-
-    // Calculate sum of negative PnLs
-    const sumNegativePnl = updatedSiblingRows.reduce((sum, row) => {
-      const pnl = row.pnl || 0
-      return sum + (pnl < 0 ? Math.abs(pnl) : 0)
-    }, 0)
-
-    console.log('Sum of negative PnLs:', sumNegativePnl)
-
-    // Calculate ROI
-    roi = sumNegativePnl === 0 ? 0 : Number(((values.pnl || 0) / sumNegativePnl * 100).toFixed(2))
-    roiYearly = calculateYearlyROI(roi, daysInTrade || 0)
-    
-    // Calculate ROI Portfolio
-    const pnl = values.pnl || 0
-    roiPortfolio = latestBalance > 0 ? Number(((pnl / latestBalance) * 100).toFixed(2)) : 0
-
-    console.log('Calculated ROI metrics:', { roi, roiYearly, roiPortfolio })
+  if (siblingError) {
+    console.error('Error fetching sibling rows:', siblingError)
+    throw siblingError
   }
+
+  // Calculate sum of negative PnLs
+  const sumNegativePnl = siblingRows.reduce((sum, row) => {
+    const pnl = row.pnl || 0
+    return sum + (pnl < 0 ? Math.abs(pnl) : 0)
+  }, 0)
+
+  console.log('Sum of negative PnLs:', sumNegativePnl)
+
+  // Calculate ROI
+  const roi = sumNegativePnl === 0 ? 0 : Number(((values.pnl || 0) / sumNegativePnl * 100).toFixed(2))
+  const roiYearly = calculateYearlyROI(roi, daysInTrade || 0)
+  
+  // Calculate ROI Portfolio
+  const pnl = values.pnl || 0
+  const roiPortfolio = latestBalance > 0 ? Number(((pnl / latestBalance) * 100).toFixed(2)) : 0
+
+  console.log('Calculated ROI metrics:', { roi, roiYearly, roiPortfolio })
 
   return {
     daysInTrade,
