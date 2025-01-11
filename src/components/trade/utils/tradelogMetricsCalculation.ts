@@ -150,7 +150,7 @@ export const recalculateChildMetrics = async (
   // Get all sibling rows to calculate ROI
   const { data: siblingRows, error: siblingError } = await supabase
     .from('trade_log')
-    .select('id, pnl')
+    .select('id, pnl, date_entry, date_exit')
     .eq('trade_id', tradeId)
     .eq('row_type', 'child')
 
@@ -199,7 +199,7 @@ export const recalculateSiblingMetrics = async (
 }[]> => {
   console.log('Starting sibling metrics recalculation for trade:', tradeId)
   
-  // Get all sibling rows
+  // Get all sibling rows with necessary fields
   const { data: siblingRows, error: siblingError } = await supabase
     .from('trade_log')
     .select('id, pnl, date_entry, date_exit')
