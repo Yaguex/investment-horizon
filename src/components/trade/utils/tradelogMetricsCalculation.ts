@@ -284,10 +284,13 @@ export const recalculateParentMetrics = async (
       return row.date_entry < oldest ? row.date_entry : oldest
     }, null as string | null)
   
-  // Find latest date_exit among child rows
-  const dateExit = childRows.every(row => row.date_exit) 
-    ? format(new Date(), 'yyyy-MM-dd')
-    : null
+  // Find latest date_exit among child rows that have a date_exit
+  const dateExit = childRows
+    .reduce((latest, row) => {
+      if (!row.date_exit) return latest
+      if (!latest) return row.date_exit
+      return row.date_exit > latest ? row.date_exit : latest
+    }, null as string | null)
   
   // Calculate days in trade
   const daysInTrade = oldestDate && dateExit
