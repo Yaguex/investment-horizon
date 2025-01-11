@@ -213,13 +213,14 @@ export const recalculateParentMetrics = async (
   parentRoiPortfolio: number
   dateExit: string | null
   daysInTrade: number | null
+  oldestDateEntry: string | null
 }> => {
   console.log('Starting parent metrics recalculation for trade:', tradeId)
   
   // Get all child rows
   const { data: childRows, error: childError } = await supabase
     .from('trade_log')
-    .select('commission, pnl, date_exit')
+    .select('commission, pnl, date_exit, date_entry')
     .eq('trade_id', tradeId)
     .eq('row_type', 'child')
   
@@ -251,6 +252,14 @@ export const recalculateParentMetrics = async (
   }
   
   const latestBalance = portfolioData?.[0]?.balance || 0
+
+  // Find oldest date_entry from child rows
+  const oldestDate = childRows
+    .reduce((oldest, row) => {
+      if (!row.date_entry) return oldest
+      if (!oldest) return row.date_entry
+      return row.date_entry < oldest ? row.date_entry : oldest
+    }, null as string | null)
   
   // Find latest date_exit among child rows
   const dateExit = childRows.every(row => row.date_exit) 
@@ -258,8 +267,8 @@ export const recalculateParentMetrics = async (
     : null
   
   // Calculate days in trade
-  const daysInTrade = oldestDateEntry && dateExit
-    ? calculateDaysInTrade(new Date(oldestDateEntry), new Date(dateExit))
+  const daysInTrade = oldestDate && dateExit
+    ? calculateDaysInTrade(new Date(oldestDate), new Date(dateExit))
     : null
   
   // Calculate ROIs
@@ -274,7 +283,8 @@ export const recalculateParentMetrics = async (
     parentYearlyRoi,
     parentRoiPortfolio,
     dateExit,
-    daysInTrade
+    daysInTrade,
+    oldestDateEntry: oldestDate
   })
   
   return {
@@ -284,6 +294,7 @@ export const recalculateParentMetrics = async (
     parentYearlyRoi,
     parentRoiPortfolio,
     dateExit,
-    daysInTrade
+    daysInTrade,
+    oldestDateEntry: oldestDate
   }
 }
