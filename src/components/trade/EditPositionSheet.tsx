@@ -44,7 +44,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
     console.log('Submitting position update with values:', values)
     
     try {
-      const { daysInTrade, yearlyRoi } = await recalculateParentRowMetrics(values, trade)
+      const { daysInTrade, yearlyRoi } = await recalculateParentRowMetrics(values, trade, queryClient)
       
       // Update parent row
       const { error: updateError } = await supabase
@@ -90,7 +90,6 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
       }
       
       console.log('Position updated successfully')
-      await queryClient.invalidateQueries({ queryKey: ['trades'] })
       onClose()
     } catch (error) {
       console.error('Error in onSubmit:', error)

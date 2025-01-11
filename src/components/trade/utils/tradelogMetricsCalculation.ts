@@ -1,6 +1,7 @@
 import { format } from "date-fns"
 import { supabase } from "@/integrations/supabase/client"
 import { FormValues, PositionFormValues } from "../types"
+import { QueryClient } from "@tanstack/react-query"
 
 export const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null): number | null => {
   if (!dateEntry || !dateExit) return null
@@ -73,9 +74,18 @@ const calculateRiskPercentage = async (values: FormValues): Promise<number | nul
   return riskPercentage ? Number(riskPercentage.toFixed(2)) : null
 }
 
+export const invalidateTradeMetrics = async (queryClient: QueryClient) => {
+  console.log('Invalidating trade metrics caches')
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['trades'] }),
+    queryClient.invalidateQueries({ queryKey: ['tradeMetrics'] })
+  ])
+}
+
 export const recalculateParentRowMetrics = async (
   values: PositionFormValues,
-  trade: any
+  trade: any,
+  queryClient: QueryClient
 ): Promise<{
   daysInTrade: number
   yearlyRoi: number
@@ -90,6 +100,8 @@ export const recalculateParentRowMetrics = async (
   const yearlyRoi = calculateYearlyROI(values.roi, daysInTrade || 0)
   console.log('Calculated yearly ROI:', yearlyRoi)
   
+  await invalidateTradeMetrics(queryClient)
+  
   return {
     daysInTrade: daysInTrade || 0,
     yearlyRoi
@@ -101,7 +113,8 @@ export const recalculateChildMetrics = async (
   tradeId: number,
   currentTradeId: number,
   dateEntry: Date | null,
-  dateExit: Date | null
+  dateExit: Date | null,
+  queryClient: QueryClient
 ): Promise<{
   daysInTrade: number | null
   riskPercentage: number | null
@@ -164,6 +177,8 @@ export const recalculateChildMetrics = async (
 
   console.log('Calculated ROI metrics:', { roi, roiYearly, roiPortfolio })
 
+  await invalidateTradeMetrics(queryClient)
+
   return {
     daysInTrade,
     riskPercentage,
@@ -176,7 +191,8 @@ export const recalculateChildMetrics = async (
 export const recalculateSiblingMetrics = async (
   tradeId: number,
   currentTradeId: number,
-  pnl: number | null
+  pnl: number | null,
+  queryClient: QueryClient
 ): Promise<{
   siblingRoi: number
   siblingYearlyRoi: number
@@ -222,12 +238,16 @@ export const recalculateSiblingMetrics = async (
   })
   
   console.log('Calculated sibling metrics:', siblingMetrics)
+
+  await invalidateTradeMetrics(queryClient)
+
   return siblingMetrics
 }
 
 export const recalculateParentMetrics = async (
   tradeId: number,
-  oldestDateEntry: string | null
+  oldestDateEntry: string | null,
+  queryClient: QueryClient
 ): Promise<{
   totalCommission: number
   totalPnl: number
@@ -313,6 +333,8 @@ export const recalculateParentMetrics = async (
     oldestDateEntry: oldestDate
   })
   
+  await invalidateTradeMetrics(queryClient)
+
   return {
     totalCommission,
     totalPnl,

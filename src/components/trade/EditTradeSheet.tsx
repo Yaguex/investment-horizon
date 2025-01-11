@@ -79,14 +79,10 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         // Calculate metrics for parent row
         const parentMetrics = await recalculateParentMetrics(
           trade.trade_id || 0,
-          values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null
+          values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
+          queryClient
         )
         
-        if (!parentMetrics) {
-          console.error('Parent metrics calculation failed')
-          throw new Error('Failed to calculate parent metrics')
-        }
-
         // Update parent row with new metrics
         const { error: updateError } = await supabase
           .from('trade_log')
@@ -127,11 +123,11 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           trade.trade_id || 0,
           trade.id,
           dateEntry,
-          dateExit
+          dateExit,
+          queryClient
         )
         
-        // 2. Update child row with new metrics
-        console.info('Updating child trade row')
+        // Update child row with new metrics
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
@@ -175,7 +171,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           const siblingMetrics = await recalculateSiblingMetrics(
             trade.trade_id,
             trade.id,
-            values.pnl
+            values.pnl,
+            queryClient
           )
           
           // Get all sibling rows
@@ -211,7 +208,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           console.info('Updating parent trade metrics')
           const parentMetrics = await recalculateParentMetrics(
             trade.trade_id,
-            values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null
+            values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
+            queryClient
           )
           
           if (!parentMetrics) {
