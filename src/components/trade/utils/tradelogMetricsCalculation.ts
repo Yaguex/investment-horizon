@@ -1,6 +1,6 @@
 import { format } from "date-fns"
 import { supabase } from "@/integrations/supabase/client"
-import { FormValues, PositionFormValues } from "../types"
+import { FormValues, PositionFormValues, TradeData } from "../types"
 import { QueryClient } from "@tanstack/react-query"
 
 export const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null): number | null => {
