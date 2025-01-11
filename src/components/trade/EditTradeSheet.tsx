@@ -108,6 +108,9 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           console.error('Parent trade update failed:', updateError)
           throw updateError
         }
+
+        // Invalidate caches after all operations complete
+        await invalidateTradeMetrics(queryClient)
       } else {
         console.info('Starting child trade row update sequence')
         
@@ -127,7 +130,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           queryClient
         )
         
-        // Update child row with new metrics
+        // 2. Update child row with new metrics
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
@@ -237,10 +240,12 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             throw parentUpdateError
           }
         }
+
+        // Invalidate caches after ALL operations complete
+        await invalidateTradeMetrics(queryClient)
       }
       
       console.info('Trade update completed successfully')
-      await queryClient.invalidateQueries({ queryKey: ['trades'] })
       onClose()
     } catch (error) {
       console.error('Trade update failed:', error)
