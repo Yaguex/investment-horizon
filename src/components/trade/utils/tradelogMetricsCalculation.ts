@@ -199,7 +199,7 @@ export const recalculateSiblingMetrics = async (
 }[]> => {
   console.log('Starting sibling metrics recalculation for trade:', tradeId)
   
-  // Get all sibling rows with necessary fields
+  // Get all sibling rows with necessary fields including dates
   const { data: siblingRows, error: siblingError } = await supabase
     .from('trade_log')
     .select('id, pnl, date_entry, date_exit')
@@ -453,7 +453,7 @@ export const updateTradeAndRecalculate = async (
         // Get all sibling rows except the current one
         const { data: siblingRows, error: siblingFetchError } = await supabase
           .from('trade_log')
-          .select('id, pnl')
+          .select('id, pnl, date_entry, date_exit')
           .eq('trade_id', trade.trade_id)
           .eq('row_type', 'child')
           .neq('id', trade.id)
