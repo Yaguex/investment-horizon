@@ -72,65 +72,29 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     
     try {
       if (trade.row_type === 'parent') {
-        // For parent rows, first get the sum of commission and pnl from child rows
-        const { data: childRows, error: fetchError } = await supabase
-          .from('trade_log')
-          .select('commission, pnl, date_entry')
-          .eq('trade_id', trade.trade_id)
-          .eq('row_type', 'child')
+        // For parent rows, get metrics from utility function
+        const parentMetrics = await recalculateParentMetrics(
+          trade.trade_id || 0,
+          values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null
+        )
         
-        if (fetchError) {
-          console.error('Error fetching child rows:', fetchError)
-          throw fetchError
+        if (!parentMetrics) {
+          console.error('Failed to calculate parent metrics')
+          throw new Error('Failed to calculate parent metrics')
         }
-
-        // Calculate oldest date_entry from child rows
-        let oldestDateEntry = '1999-01-01' // Default date if all children have null dates
-        if (childRows && childRows.length > 0) {
-          const validDates = childRows
-            .map(row => row.date_entry)
-            .filter(date => date !== null) as string[]
-          
-          if (validDates.length > 0) {
-            oldestDateEntry = validDates.reduce((oldest, current) => 
-              current < oldest ? current : oldest
-            )
-          }
-        }
-        
-        const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
-        const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
-        
-        // Calculate sum of negative PnLs for ROI calculation
-        const sumNegativePnl = childRows?.reduce((sum, row) => {
-          const pnl = row.pnl || 0
-          return sum + (pnl < 0 ? Math.abs(pnl) : 0)
-        }, 0) || 0
-
-        // Calculate ROI for parent
-        const roi = sumNegativePnl === 0 ? 0 : Number(((totalPnl / sumNegativePnl) * 100).toFixed(2))
-        
-        // Handle date_exit based on trade status
-        const dateExit = values.trade_status === 'closed' ? format(new Date(), 'yyyy-MM-dd') : null
-        const daysInTrade = dateExit ? calculateDaysInTrade(new Date(oldestDateEntry), new Date(dateExit)) : null
-        const yearlyRoi = calculateYearlyROI(roi, daysInTrade || 0)
-        
-        // Calculate ROI Portfolio for parent (using total PNL)
-        const roiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
-        console.log('Calculated parent ROI Portfolio:', roiPortfolio)
 
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
             ticker: values.ticker,
-            date_entry: oldestDateEntry,
-            date_exit: dateExit,
-            days_in_trade: daysInTrade,
-            commission: totalCommission,
-            pnl: totalPnl,
-            roi,
-            roi_yearly: yearlyRoi,
-            roi_portfolio: roiPortfolio,
+            date_entry: parentMetrics.oldestDateEntry,
+            date_exit: parentMetrics.dateExit,
+            days_in_trade: parentMetrics.daysInTrade,
+            commission: parentMetrics.totalCommission,
+            pnl: parentMetrics.totalPnl,
+            roi: parentMetrics.parentRoi,
+            roi_yearly: parentMetrics.parentYearlyRoi,
+            roi_portfolio: parentMetrics.parentRoiPortfolio,
             be_0: values.be_0,
             be_1: values.be_1,
             be_2: values.be_2,
@@ -280,7 +244,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             {trade.row_type === 'parent' ? (
-              // Parent row fields
               <>
                 <TextField control={form.control} name="ticker" label="Ticker" />
                 <NumberField control={form.control} name="be_0" label="B/E 0" />
@@ -292,7 +255,6 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
                 </div>
               </>
             ) : (
-              // Child row fields - removed Risk % field as it's now auto-calculated
               <>
                 <SelectField 
                   control={form.control} 
