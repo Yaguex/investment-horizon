@@ -12,7 +12,7 @@ import { DateField } from "./form-fields/DateField"
 import { NumberField } from "./form-fields/NumberField"
 import { SelectField } from "./form-fields/SelectField"
 import { Textarea } from "@/components/ui/textarea"
-import { recalculateChildMetrics } from "./utils/tradelogMetricsCalculation"
+import { recalculateChildMetrics, recalculateSiblingMetrics, recalculateParentMetrics } from "./utils/tradelogMetricsCalculation"
 
 const vehicleOptions = [
   { label: "Stock", value: "Stock" },
@@ -144,8 +144,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           throw updateError
         }
       } else {
-        // For child rows, calculate metrics with the new function
-        const metrics = await recalculateChildMetrics(
+        // For child rows, calculate metrics with the new functions
+        const childMetrics = await recalculateChildMetrics(
           values,
           trade.trade_id || 0,
           trade.id,
@@ -153,7 +153,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           values.date_exit
         )
         
-        console.log('Calculated child metrics:', metrics)
+        console.log('Calculated child metrics:', childMetrics)
         
         const { error: updateError } = await supabase
           .from('trade_log')
@@ -164,18 +164,18 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
             date_expiration: values.date_expiration ? format(values.date_expiration, 'yyyy-MM-dd') : null,
             date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
-            days_in_trade: metrics.daysInTrade,
+            days_in_trade: childMetrics.daysInTrade,
             strike_start: values.strike_start,
             strike_end: values.strike_end,
             premium: values.premium,
             stock_price: values.stock_price,
-            "risk_%": metrics.riskPercentage,
+            "risk_%": childMetrics.riskPercentage,
             "risk_$": values["risk_$"],
             commission: values.commission,
             pnl: values.pnl,
-            roi: metrics.roi,
-            roi_yearly: metrics.roiYearly,
-            roi_portfolio: metrics.roiPortfolio,
+            roi: childMetrics.roi,
+            roi_yearly: childMetrics.roiYearly,
+            roi_portfolio: childMetrics.roiPortfolio,
             be_0: values.be_0,
             be_1: values.be_1,
             be_2: values.be_2,
@@ -193,87 +193,54 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
         }
 
         // Update ROI and yearly ROI for all sibling rows
-        for (const sibling of siblingRows) {
-          if (sibling.id !== trade.id) { // Skip the row we just updated
-            const siblingRoi = sumNegativePnl === 0 ? 0 : Number(((sibling.pnl || 0) / sumNegativePnl * 100).toFixed(2))
-            const siblingYearlyRoi = calculateYearlyROI(siblingRoi, daysInTrade || 0)
-            
+        if (trade.trade_id) {
+          const siblingMetrics = await recalculateSiblingMetrics(trade.trade_id, trade.id, values.pnl)
+          
+          // Get all sibling rows to update them
+          const { data: siblingRows, error: siblingFetchError } = await supabase
+            .from('trade_log')
+            .select('id')
+            .eq('trade_id', trade.trade_id)
+            .eq('row_type', 'child')
+            .neq('id', trade.id)
+          
+          if (siblingFetchError) {
+            console.error('Error fetching sibling rows:', siblingFetchError)
+            throw siblingFetchError
+          }
+          
+          // Update each sibling with its new metrics
+          for (let i = 0; i < siblingRows.length; i++) {
             const { error: siblingUpdateError } = await supabase
               .from('trade_log')
               .update({ 
-                roi: siblingRoi,
-                roi_yearly: siblingYearlyRoi
+                roi: siblingMetrics[i].siblingRoi,
+                roi_yearly: siblingMetrics[i].siblingYearlyRoi
               })
-              .eq('id', sibling.id)
+              .eq('id', siblingRows[i].id)
 
             if (siblingUpdateError) {
-              console.error(`Error updating sibling row ${sibling.id}:`, siblingUpdateError)
+              console.error(`Error updating sibling row ${siblingRows[i].id}:`, siblingUpdateError)
               throw siblingUpdateError
             }
           }
-        }
-        
-        // After updating child row, update parent row's commission, pnl, ROI and ROI Portfolio
-        if (trade.trade_id) {
-          const { data: childRows, error: fetchError } = await supabase
-            .from('trade_log')
-            .select('commission, pnl, date_entry')
-            .eq('trade_id', trade.trade_id)
-            .eq('row_type', 'child')
           
-          if (fetchError) {
-            console.error('Error fetching child rows for parent update:', fetchError)
-            throw fetchError
-          }
-
-          // Calculate oldest date_entry from child rows
-          let oldestDateEntry = '1999-01-01' // Default date if all children have null dates
-          if (childRows && childRows.length > 0) {
-            const validDates = childRows
-              .map(row => row.date_entry)
-              .filter(date => date !== null) as string[]
-            
-            if (validDates.length > 0) {
-              oldestDateEntry = validDates.reduce((oldest, current) => 
-                current < oldest ? current : oldest
-              )
-            }
-          }
-          
-          const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
-          const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
-          
-          // Calculate sum of negative PnLs for parent ROI
-          const sumNegativePnl = childRows?.reduce((sum, row) => {
-            const pnl = row.pnl || 0
-            return sum + (pnl < 0 ? Math.abs(pnl) : 0)
-          }, 0) || 0
-
-          // Calculate ROI for parent
-          const parentRoi = sumNegativePnl === 0 ? 0 : Number(((totalPnl / sumNegativePnl) * 100).toFixed(2))
-          const parentYearlyRoi = calculateYearlyROI(parentRoi, daysInTrade || 0)
-          
-          // Calculate parent's ROI Portfolio using total PNL
-          const parentRoiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
-          console.log('Updating parent with new totals:', { 
-            totalCommission, 
-            totalPnl, 
-            oldestDateEntry, 
-            parentRoiPortfolio,
-            parentRoi,
-            parentYearlyRoi,
-            sumNegativePnl
-          })
+          // After updating child and sibling rows, update parent row
+          const parentMetrics = await recalculateParentMetrics(
+            trade.trade_id,
+            values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null
+          )
           
           const { error: parentUpdateError } = await supabase
             .from('trade_log')
             .update({
-              commission: totalCommission,
-              pnl: totalPnl,
-              date_entry: oldestDateEntry,
-              roi: parentRoi,
-              roi_yearly: parentYearlyRoi,
-              roi_portfolio: parentRoiPortfolio
+              commission: parentMetrics.totalCommission,
+              pnl: parentMetrics.totalPnl,
+              date_exit: parentMetrics.dateExit,
+              days_in_trade: parentMetrics.daysInTrade,
+              roi: parentMetrics.parentRoi,
+              roi_yearly: parentMetrics.parentYearlyRoi,
+              roi_portfolio: parentMetrics.parentRoiPortfolio
             })
             .eq('trade_id', trade.trade_id)
             .eq('row_type', 'parent')

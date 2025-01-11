@@ -148,3 +148,141 @@ export const recalculateChildMetrics = async (
     roiPortfolio
   }
 }
+
+export const recalculateSiblingMetrics = async (
+  tradeId: number,
+  currentTradeId: number,
+  pnl: number | null
+): Promise<{
+  siblingRoi: number
+  siblingYearlyRoi: number
+}[]> => {
+  console.log('Starting sibling metrics recalculation for trade:', tradeId)
+  
+  // Get all sibling rows
+  const { data: siblingRows, error: siblingError } = await supabase
+    .from('trade_log')
+    .select('id, pnl, date_entry, date_exit')
+    .eq('trade_id', tradeId)
+    .eq('row_type', 'child')
+  
+  if (siblingError) {
+    console.error('Error fetching sibling rows:', siblingError)
+    throw siblingError
+  }
+  
+  // Calculate sum of negative PnLs including the current trade's PnL
+  const sumNegativePnl = siblingRows.reduce((sum, row) => {
+    const tradePnl = row.id === currentTradeId ? (pnl || 0) : (row.pnl || 0)
+    return sum + (tradePnl < 0 ? Math.abs(tradePnl) : 0)
+  }, 0)
+  
+  console.log('Sum of negative PnLs:', sumNegativePnl)
+  
+  // Calculate metrics for each sibling
+  const siblingMetrics = siblingRows.map(sibling => {
+    const siblingPnl = sibling.id === currentTradeId ? (pnl || 0) : (sibling.pnl || 0)
+    const siblingRoi = sumNegativePnl === 0 ? 0 : Number(((siblingPnl / sumNegativePnl) * 100).toFixed(2))
+    
+    const daysInTrade = calculateDaysInTrade(
+      sibling.date_entry ? new Date(sibling.date_entry) : null,
+      sibling.date_exit ? new Date(sibling.date_exit) : null
+    )
+    
+    const siblingYearlyRoi = calculateYearlyROI(siblingRoi, daysInTrade || 0)
+    
+    return {
+      siblingRoi,
+      siblingYearlyRoi
+    }
+  })
+  
+  console.log('Calculated sibling metrics:', siblingMetrics)
+  return siblingMetrics
+}
+
+export const recalculateParentMetrics = async (
+  tradeId: number,
+  oldestDateEntry: string | null
+): Promise<{
+  totalCommission: number
+  totalPnl: number
+  parentRoi: number
+  parentYearlyRoi: number
+  parentRoiPortfolio: number
+  dateExit: string | null
+  daysInTrade: number | null
+}> => {
+  console.log('Starting parent metrics recalculation for trade:', tradeId)
+  
+  // Get all child rows
+  const { data: childRows, error: childError } = await supabase
+    .from('trade_log')
+    .select('commission, pnl, date_exit')
+    .eq('trade_id', tradeId)
+    .eq('row_type', 'child')
+  
+  if (childError) {
+    console.error('Error fetching child rows:', childError)
+    throw childError
+  }
+  
+  // Calculate totals
+  const totalCommission = childRows?.reduce((sum, row) => sum + (row.commission || 0), 0) || 0
+  const totalPnl = childRows?.reduce((sum, row) => sum + (row.pnl || 0), 0) || 0
+  
+  // Calculate sum of negative PnLs for ROI calculation
+  const sumNegativePnl = childRows?.reduce((sum, row) => {
+    const pnl = row.pnl || 0
+    return sum + (pnl < 0 ? Math.abs(pnl) : 0)
+  }, 0) || 0
+  
+  // Get latest portfolio balance
+  const { data: portfolioData, error: portfolioError } = await supabase
+    .from('portfolio_data')
+    .select('balance')
+    .order('month', { ascending: false })
+    .limit(1)
+  
+  if (portfolioError) {
+    console.error('Error fetching portfolio balance:', portfolioError)
+    throw portfolioError
+  }
+  
+  const latestBalance = portfolioData?.[0]?.balance || 0
+  
+  // Find latest date_exit among child rows
+  const dateExit = childRows.every(row => row.date_exit) 
+    ? format(new Date(), 'yyyy-MM-dd')
+    : null
+  
+  // Calculate days in trade
+  const daysInTrade = oldestDateEntry && dateExit
+    ? calculateDaysInTrade(new Date(oldestDateEntry), new Date(dateExit))
+    : null
+  
+  // Calculate ROIs
+  const parentRoi = sumNegativePnl === 0 ? 0 : Number(((totalPnl / sumNegativePnl) * 100).toFixed(2))
+  const parentYearlyRoi = calculateYearlyROI(parentRoi, daysInTrade || 0)
+  const parentRoiPortfolio = latestBalance > 0 ? Number(((totalPnl / latestBalance) * 100).toFixed(2)) : 0
+  
+  console.log('Calculated parent metrics:', {
+    totalCommission,
+    totalPnl,
+    parentRoi,
+    parentYearlyRoi,
+    parentRoiPortfolio,
+    dateExit,
+    daysInTrade
+  })
+  
+  return {
+    totalCommission,
+    totalPnl,
+    parentRoi,
+    parentYearlyRoi,
+    parentRoiPortfolio,
+    dateExit,
+    daysInTrade
+  }
+}
