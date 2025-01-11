@@ -144,7 +144,7 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           throw updateError
         }
       } else {
-        // For child rows, calculate metrics with the new function signature
+        // For child rows, calculate metrics with the new function
         const metrics = await recalculateChildMetrics(
           values,
           trade.trade_id || 0,
@@ -152,6 +152,8 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           values.date_entry,
           values.date_exit
         )
+        
+        console.log('Calculated child metrics:', metrics)
         
         const { error: updateError } = await supabase
           .from('trade_log')
