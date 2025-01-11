@@ -11,6 +11,7 @@ import { TextField } from "./form-fields/TextField"
 import { DateField } from "./form-fields/DateField"
 import { NumberField } from "./form-fields/NumberField"
 import { Textarea } from "@/components/ui/textarea"
+import { recalculateParentRowMetrics } from "./utils/tradelogMetricsCalculation"
 
 interface EditPositionSheetProps {
   isOpen: boolean
@@ -39,24 +40,11 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
     }
   })
 
-  const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null) => {
-    if (!dateEntry) return 0
-    const exitDate = dateExit || new Date()
-    const diffTime = Math.abs(exitDate.getTime() - dateEntry.getTime())
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  }
-
-  const calculateYearlyROI = (roi: number | null, daysInTrade: number) => {
-    if (!roi || daysInTrade === 0) return 0
-    return Number(((roi / daysInTrade) * 365).toFixed(2))
-  }
-
   const onSubmit = async (values: PositionFormValues) => {
     console.log('Submitting position update with values:', values)
     
     try {
-      const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
-      const yearlyRoi = calculateYearlyROI(values.roi, daysInTrade)
+      const { daysInTrade, yearlyRoi } = await recalculateParentRowMetrics(values, trade)
       
       // Update parent row
       const { error: updateError } = await supabase

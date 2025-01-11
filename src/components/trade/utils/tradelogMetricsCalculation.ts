@@ -1,6 +1,6 @@
 import { format } from "date-fns"
 import { supabase } from "@/integrations/supabase/client"
-import { FormValues } from "../types"
+import { FormValues, PositionFormValues } from "../types"
 
 export const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null): number | null => {
   if (!dateEntry || !dateExit) return null
@@ -71,6 +71,29 @@ const calculateRiskPercentage = async (values: FormValues): Promise<number | nul
 
   console.log('Calculated risk percentage:', riskPercentage)
   return riskPercentage ? Number(riskPercentage.toFixed(2)) : null
+}
+
+export const recalculateParentRowMetrics = async (
+  values: PositionFormValues,
+  trade: any
+): Promise<{
+  daysInTrade: number
+  yearlyRoi: number
+}> => {
+  console.log('Starting parent row metrics recalculation for trade:', trade.id)
+  
+  // Calculate days in trade
+  const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
+  console.log('Calculated days in trade:', daysInTrade)
+  
+  // Calculate yearly ROI
+  const yearlyRoi = calculateYearlyROI(values.roi, daysInTrade || 0)
+  console.log('Calculated yearly ROI:', yearlyRoi)
+  
+  return {
+    daysInTrade: daysInTrade || 0,
+    yearlyRoi
+  }
 }
 
 export const recalculateChildMetrics = async (
