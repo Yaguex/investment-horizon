@@ -488,7 +488,10 @@ export const updateTradeAndRecalculate = async (
           // Calculate new ROI for this sibling
           const siblingPnl = sibling.pnl || 0
           const newRoi = sumNegativePnl === 0 ? 0 : Number(((siblingPnl / sumNegativePnl) * 100).toFixed(2))
-          const daysInTrade = calculateDaysInTrade(dateEntry, dateExit)
+          const daysInTrade = calculateDaysInTrade(
+            sibling.date_entry ? new Date(sibling.date_entry) : null,
+            sibling.date_exit ? new Date(sibling.date_exit) : null
+          )
           const newYearlyRoi = calculateYearlyROI(newRoi, daysInTrade || 0)
 
           // Update the sibling with new ROI values
