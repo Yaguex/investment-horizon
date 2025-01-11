@@ -12,6 +12,7 @@ import { DateField } from "./form-fields/DateField"
 import { NumberField } from "./form-fields/NumberField"
 import { SelectField } from "./form-fields/SelectField"
 import { Textarea } from "@/components/ui/textarea"
+import { recalculateChildMetrics } from "./utils/tradelogMetricsCalculation"
 
 const vehicleOptions = [
   { label: "Stock", value: "Stock" },
@@ -66,96 +67,10 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
     }
   })
 
-  const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null) => {
-    if (!dateEntry || !dateExit) return null
-    const diffTime = Math.abs(dateExit.getTime() - dateEntry.getTime())
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  }
-
-  const calculateYearlyROI = (roi: number | null, daysInTrade: number) => {
-    if (!roi || daysInTrade === 0) return 0
-    return Number(((roi / daysInTrade) * 365).toFixed(2))
-  }
-
-  const calculateRiskPercentage = async (values: FormValues) => {
-    console.log('Calculating risk percentage with values:', values)
-    
-    // Get latest portfolio balance
-    const { data: portfolioData, error: portfolioError } = await supabase
-      .from('portfolio_data')
-      .select('balance')
-      .order('month', { ascending: false })
-      .limit(1)
-
-    if (portfolioError) {
-      console.error('Error fetching portfolio balance:', portfolioError)
-      return null
-    }
-
-    const latestBalance = portfolioData?.[0]?.balance
-    if (!latestBalance || latestBalance <= 0) {
-      console.log('No valid portfolio balance found')
-      return null
-    }
-
-    const { vehicle, qty, stock_price, strike_start, strike_end, premium } = values
-    
-    // Check if we have qty as it's required for all calculations
-    if (!qty) {
-      console.log('Missing qty, cannot calculate risk %')
-      return null
-    }
-
-    let riskPercentage: number | null = null
-
-    // Stock or Fund calculation
-    if (vehicle === 'Stock' || vehicle === 'Fund') {
-      if (!stock_price) {
-        console.log('Missing stock price for Stock/Fund calculation')
-        return null
-      }
-      riskPercentage = Math.abs((qty * stock_price) / latestBalance * 100)
-    } 
-    // Sell options and Exercise calculation
-    else if (['Sell call', 'Sell put', 'Sell call spread', 'Sell put spread', 'Exercise'].includes(vehicle)) {
-      if (!strike_start) {
-        console.log('Missing strike_start for sell options calculation')
-        return null
-      }
-      riskPercentage = Math.abs((qty * (strike_start - (strike_end || 0)) * 100) / latestBalance * 100)
-    }
-    // Buy options and Roll over calculation
-    else if (['Buy call', 'Buy put', 'Buy call spread', 'Buy put spread', 'Roll over'].includes(vehicle)) {
-      if (!premium) {
-        console.log('Missing premium for buy options calculation')
-        return null
-      }
-      riskPercentage = Math.abs((qty * premium * 100) / latestBalance * 100)
-    }
-
-    console.log('Calculated risk percentage:', riskPercentage)
-    return riskPercentage ? Number(riskPercentage.toFixed(2)) : null
-  }
-
   const onSubmit = async (values: FormValues) => {
     console.log('Submitting trade update with values:', values)
     
     try {
-      // Get latest portfolio balance
-      const { data: portfolioData, error: portfolioError } = await supabase
-        .from('portfolio_data')
-        .select('balance')
-        .order('month', { ascending: false })
-        .limit(1)
-
-      if (portfolioError) {
-        console.error('Error fetching portfolio balance:', portfolioError)
-        throw portfolioError
-      }
-
-      const latestBalance = portfolioData?.[0]?.balance || 0
-      console.log('Latest portfolio balance:', latestBalance)
-
       if (trade.row_type === 'parent') {
         // For parent rows, first get the sum of commission and pnl from child rows
         const { data: childRows, error: fetchError } = await supabase
@@ -229,53 +144,15 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
           throw updateError
         }
       } else {
-        // For child rows, update normally
-        const daysInTrade = calculateDaysInTrade(values.date_entry, values.date_exit)
-        
-        // Calculate risk percentage after days in trade
-        const riskPercentage = await calculateRiskPercentage(values)
-        console.log('Calculated risk percentage:', riskPercentage)
-        
-        // Get all sibling rows (including this one) to calculate sum of negative PnLs
-        const { data: siblingRows, error: siblingError } = await supabase
-          .from('trade_log')
-          .select('id, pnl')
-          .eq('trade_id', trade.trade_id)
-          .eq('row_type', 'child')
-
-        if (siblingError) {
-          console.error('Error fetching sibling rows:', siblingError)
-          throw siblingError
-        }
-
-        // Update current row's PnL in sibling rows for accurate calculation
-        const updatedSiblingRows = siblingRows.map(row => 
-          row.id === trade.id ? { ...row, pnl: values.pnl } : row
+        // For child rows, calculate metrics with the new function signature
+        const metrics = await recalculateChildMetrics(
+          values,
+          trade.trade_id || 0,
+          trade.id,
+          values.date_entry,
+          values.date_exit
         )
-
-        // Calculate sum of negative PnLs
-        const sumNegativePnl = updatedSiblingRows.reduce((sum, row) => {
-          const pnl = row.pnl || 0
-          return sum + (pnl < 0 ? Math.abs(pnl) : 0)
-        }, 0)
-
-        // Calculate ROI for this child row
-        const roi = sumNegativePnl === 0 ? 0 : Number(((values.pnl || 0) / sumNegativePnl * 100).toFixed(2))
-        const yearlyRoi = calculateYearlyROI(roi, daysInTrade || 0)
         
-        console.log('Child row calculations:', { 
-          pnl: values.pnl, 
-          sumNegativePnl, 
-          roi,
-          yearlyRoi,
-          siblingCount: siblingRows.length 
-        })
-        
-        // Calculate ROI Portfolio for child row
-        const pnl = values.pnl || 0
-        const roiPortfolio = latestBalance > 0 ? Number(((pnl / latestBalance) * 100).toFixed(2)) : 0
-        console.log('Calculated child ROI Portfolio:', roiPortfolio)
-
         const { error: updateError } = await supabase
           .from('trade_log')
           .update({
@@ -285,18 +162,18 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
             date_entry: values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
             date_expiration: values.date_expiration ? format(values.date_expiration, 'yyyy-MM-dd') : null,
             date_exit: values.date_exit ? format(values.date_exit, 'yyyy-MM-dd') : null,
-            days_in_trade: daysInTrade,
+            days_in_trade: metrics.daysInTrade,
             strike_start: values.strike_start,
             strike_end: values.strike_end,
             premium: values.premium,
             stock_price: values.stock_price,
-            "risk_%": riskPercentage,
+            "risk_%": metrics.riskPercentage,
             "risk_$": values["risk_$"],
             commission: values.commission,
             pnl: values.pnl,
-            roi,
-            roi_yearly: yearlyRoi,
-            roi_portfolio: roiPortfolio,
+            roi: metrics.roi,
+            roi_yearly: metrics.roiYearly,
+            roi_portfolio: metrics.roiPortfolio,
             be_0: values.be_0,
             be_1: values.be_1,
             be_2: values.be_2,

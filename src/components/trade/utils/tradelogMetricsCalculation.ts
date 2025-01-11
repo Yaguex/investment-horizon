@@ -1,14 +1,6 @@
 import { supabase } from "@/integrations/supabase/client"
 import { FormValues } from "../types"
 
-interface ChildMetrics {
-  daysInTrade: number | null
-  riskPercentage: number | null
-  roi: number | null
-  roiYearly: number | null
-  roiPortfolio: number | null
-}
-
 export const calculateDaysInTrade = (dateEntry: Date | null, dateExit: Date | null): number | null => {
   if (!dateEntry || !dateExit) return null
   const diffTime = Math.abs(dateExit.getTime() - dateEntry.getTime())
@@ -82,10 +74,17 @@ const calculateRiskPercentage = async (values: FormValues): Promise<number | nul
 
 export const recalculateChildMetrics = async (
   values: FormValues,
-  tradeId: number | undefined,
+  tradeId: number,
+  currentTradeId: number,
   dateEntry: Date | null,
   dateExit: Date | null
-): Promise<ChildMetrics> => {
+): Promise<{
+  daysInTrade: number | null
+  riskPercentage: number | null
+  roi: number
+  roiYearly: number
+  roiPortfolio: number
+}> => {
   console.log('Starting child metrics recalculation for trade:', tradeId)
   
   // Calculate days in trade
@@ -131,7 +130,7 @@ export const recalculateChildMetrics = async (
 
     // Update current row's PnL in sibling rows for accurate calculation
     const updatedSiblingRows = siblingRows.map(row => 
-      row.id === values.id ? { ...row, pnl: values.pnl } : row
+      row.id === currentTradeId ? { ...row, pnl: values.pnl } : row
     )
 
     // Calculate sum of negative PnLs
@@ -145,7 +144,10 @@ export const recalculateChildMetrics = async (
     // Calculate ROI
     roi = sumNegativePnl === 0 ? 0 : Number(((values.pnl || 0) / sumNegativePnl * 100).toFixed(2))
     roiYearly = calculateYearlyROI(roi, daysInTrade || 0)
-    roiPortfolio = latestBalance > 0 ? Number(((values.pnl || 0) / latestBalance * 100).toFixed(2)) : 0
+    
+    // Calculate ROI Portfolio
+    const pnl = values.pnl || 0
+    roiPortfolio = latestBalance > 0 ? Number(((pnl / latestBalance) * 100).toFixed(2)) : 0
 
     console.log('Calculated ROI metrics:', { roi, roiYearly, roiPortfolio })
   }
