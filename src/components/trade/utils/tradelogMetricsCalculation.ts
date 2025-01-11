@@ -398,8 +398,8 @@ export const updateTradeAndRecalculate = async (
       const dateExit = values.date_exit ? new Date(values.date_exit) : null
       const dateExpiration = values.date_expiration ? new Date(values.date_expiration) : null
       
-      // 1. Calculate child metrics
-      console.info('Calculating child metrics')
+      // 1. First update the current child row
+      console.info('Updating current child row')
       const childMetrics = await recalculateChildMetrics(
         values,
         trade.trade_id || 0,
@@ -409,7 +409,6 @@ export const updateTradeAndRecalculate = async (
         queryClient
       )
       
-      // 2. Update child row with new metrics
       const { error: updateError } = await supabase
         .from('trade_log')
         .update({
@@ -447,20 +446,14 @@ export const updateTradeAndRecalculate = async (
         throw updateError
       }
 
-      // 3. If trade has siblings, update their metrics
+      // 2. If trade has siblings, update their metrics one by one
       if (trade.trade_id) {
-        console.info('Updating sibling trades')
-        const siblingMetrics = await recalculateSiblingMetrics(
-          trade.trade_id,
-          trade.id,
-          values.pnl,
-          queryClient
-        )
+        console.info('Updating sibling trades sequentially')
         
-        // Get all sibling rows
+        // Get all sibling rows except the current one
         const { data: siblingRows, error: siblingFetchError } = await supabase
           .from('trade_log')
-          .select('id')
+          .select('id, pnl')
           .eq('trade_id', trade.trade_id)
           .eq('row_type', 'child')
           .neq('id', trade.id)
@@ -469,14 +462,41 @@ export const updateTradeAndRecalculate = async (
           console.error('Failed to fetch sibling trades:', siblingFetchError)
           throw siblingFetchError
         }
-        
-        // Update each sibling's metrics
+
+        // Update each sibling's metrics sequentially
         for (const sibling of siblingRows) {
+          console.info('Recalculating metrics for sibling:', sibling.id)
+          
+          // Get fresh data for ROI calculation after previous updates
+          const { data: freshSiblingData, error: freshDataError } = await supabase
+            .from('trade_log')
+            .select('pnl')
+            .eq('trade_id', trade.trade_id)
+            .eq('row_type', 'child')
+          
+          if (freshDataError) {
+            console.error('Failed to fetch fresh sibling data:', freshDataError)
+            throw freshDataError
+          }
+
+          // Calculate sum of negative PnLs using fresh data
+          const sumNegativePnl = freshSiblingData.reduce((sum, row) => {
+            const pnl = row.pnl || 0
+            return sum + (pnl < 0 ? Math.abs(pnl) : 0)
+          }, 0)
+
+          // Calculate new ROI for this sibling
+          const siblingPnl = sibling.pnl || 0
+          const newRoi = sumNegativePnl === 0 ? 0 : Number(((siblingPnl / sumNegativePnl) * 100).toFixed(2))
+          const daysInTrade = calculateDaysInTrade(dateEntry, dateExit)
+          const newYearlyRoi = calculateYearlyROI(newRoi, daysInTrade || 0)
+
+          // Update the sibling with new ROI values
           const { error: siblingUpdateError } = await supabase
             .from('trade_log')
             .update({ 
-              roi: siblingMetrics[0].siblingRoi,
-              roi_yearly: siblingMetrics[0].siblingYearlyRoi
+              roi: newRoi,
+              roi_yearly: newYearlyRoi
             })
             .eq('id', sibling.id)
 
@@ -486,8 +506,8 @@ export const updateTradeAndRecalculate = async (
           }
         }
         
-        // 4. Calculate and update parent metrics
-        console.info('Updating parent trade metrics')
+        // 3. Finally update parent metrics with fresh data
+        console.info('Updating parent trade metrics with fresh data')
         const parentMetrics = await recalculateParentMetrics(
           trade.trade_id,
           values.date_entry ? format(values.date_entry, 'yyyy-MM-dd') : null,
