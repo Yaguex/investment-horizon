@@ -12,6 +12,8 @@ import { DateField } from "./form-fields/DateField"
 import { NumberField } from "./form-fields/NumberField"
 import { Textarea } from "@/components/ui/textarea"
 import { recalculateParentRowMetrics } from "./utils/tradelogMetricsCalculation"
+import { Loader2 } from "lucide-react"
+import { useState } from "react"
 
 interface EditPositionSheetProps {
   isOpen: boolean
@@ -21,6 +23,7 @@ interface EditPositionSheetProps {
 
 export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetProps) {
   const queryClient = useQueryClient()
+  const [isLoading, setIsLoading] = useState(false)
   
   const form = useForm<PositionFormValues>({
     defaultValues: {
@@ -41,8 +44,7 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
   })
 
   const onSubmit = async (values: PositionFormValues) => {
-    console.log('Submitting position update with values:', values)
-    
+    setIsLoading(true)
     try {
       const { daysInTrade, yearlyRoi } = await recalculateParentRowMetrics(values, trade, queryClient)
       
@@ -93,6 +95,8 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
       onClose()
     } catch (error) {
       console.error('Error in onSubmit:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -135,7 +139,12 @@ export function EditPositionSheet({ isOpen, onClose, trade }: EditPositionSheetP
               <Button variant="outline" type="button" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                Save
+              </Button>
             </div>
           </form>
         </Form>

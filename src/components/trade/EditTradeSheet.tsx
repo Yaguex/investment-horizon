@@ -13,8 +13,9 @@ import { NumberField } from "./form-fields/NumberField"
 import { SelectField } from "./form-fields/SelectField"
 import { Textarea } from "@/components/ui/textarea"
 import { recalculateChildMetrics, recalculateSiblingMetrics, recalculateParentMetrics, updateTradeAndRecalculate } from "./utils/tradelogMetricsCalculation"
+import { Loader2 } from "lucide-react"
+import { useState } from "react"
 
-// Options for the vehicle selection dropdown
 const vehicleOptions = [
   { label: "Stock", value: "Stock" },
   { label: "Fund", value: "Fund" },
@@ -30,14 +31,9 @@ const vehicleOptions = [
   { label: "Exercise", value: "Exercise" }
 ]
 
-interface EditTradeSheetProps {
-  isOpen: boolean
-  onClose: () => void
-  trade: TradeData
-}
-
 export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) {
   const queryClient = useQueryClient()
+  const [isLoading, setIsLoading] = useState(false)
   
   // Initialize form with trade data, converting dates to Date objects
   const form = useForm<FormValues>({
@@ -70,11 +66,14 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
   })
 
   const onSubmit = async (values: FormValues) => {
+    setIsLoading(true)
     try {
       await updateTradeAndRecalculate(trade, values, queryClient)
       onClose()
     } catch (error) {
       console.error('Failed to update trade:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -144,7 +143,12 @@ export function EditTradeSheet({ isOpen, onClose, trade }: EditTradeSheetProps) 
               <Button variant="outline" type="button" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                Save
+              </Button>
             </div>
           </form>
         </Form>
