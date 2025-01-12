@@ -9,22 +9,21 @@ const corsHeaders = {
 function isThirdFriday(dateStr: string): boolean {
   const date = new Date(dateStr);
   
-  // Get the first day of the month
-  const firstOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-  
-  // Count Fridays in the month until we reach this date
+  // Count Fridays from the start of the month
+  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
   let fridayCount = 0;
-  const currentDate = new Date(firstOfMonth);
   
-  while (currentDate <= date) {
-    if (currentDate.getDay() === 5) {
-      fridayCount++;
-      if (fridayCount > 3) return false; // If we've passed the third Friday, this date isn't it
-    }
-    currentDate.setDate(currentDate.getDate() + 1);
+  // Find first Friday
+  while (firstDay.getDay() !== 5) {
+    firstDay.setDate(firstDay.getDate() + 1);
   }
   
-  return fridayCount === 3;
+  // Get third Friday
+  const thirdFriday = new Date(firstDay);
+  thirdFriday.setDate(firstDay.getDate() + 14); // Add two weeks
+  
+  // Compare with input date
+  return date.getTime() === thirdFriday.getTime();
 }
 
 serve(async (req) => {
@@ -96,7 +95,7 @@ serve(async (req) => {
       throw new Error('Invalid API response format');
     }
 
-    // Filter for third Fridays - new simplified logic
+    // Filter for third Fridays
     const thirdFridays = apiData.expirations.filter(isThirdFriday);
     console.log(`Filtered third Fridays for ${ticker}:`, thirdFridays);
 
