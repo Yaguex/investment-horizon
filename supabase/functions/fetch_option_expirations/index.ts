@@ -42,7 +42,7 @@ serve(async (req) => {
     if (existingData?.last_updated && new Date(existingData.last_updated) >= today) {
       console.log(`Using cached data for ${ticker}`);
       return new Response(
-        JSON.stringify(existingData.expirations),
+        JSON.stringify({ expirations: existingData.expirations }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -69,11 +69,16 @@ serve(async (req) => {
     }
 
     const apiData = await response.json();
-    console.log(`Received API response for ${ticker}`);
+    console.log(`Received API response for ${ticker}:`, apiData);
+
+    if (!apiData.data || !Array.isArray(apiData.data)) {
+      throw new Error('Invalid API response format');
+    }
 
     // Filter for third Fridays
+    // Note: dates are already in YYYY-MM-DD format from the API
     const thirdFridays = apiData.data.filter((dateStr: string) => {
-      const date = new Date(dateStr);
+      const date = new Date(dateStr); // Parse YYYY-MM-DD directly
       const year = date.getFullYear();
       const month = date.getMonth();
       
@@ -112,7 +117,7 @@ serve(async (req) => {
 
     console.log(`Successfully processed ${ticker}`);
     return new Response(
-      JSON.stringify(thirdFridays),
+      JSON.stringify({ expirations: thirdFridays }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
