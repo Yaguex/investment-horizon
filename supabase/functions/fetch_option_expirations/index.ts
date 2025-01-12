@@ -9,21 +9,28 @@ const corsHeaders = {
 function isThirdFriday(dateStr: string): boolean {
   const date = new Date(dateStr);
   
-  // Count Fridays from the start of the month
+  // Get first day of the month
   const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-  let fridayCount = 0;
   
   // Find first Friday
-  while (firstDay.getDay() !== 5) {
-    firstDay.setDate(firstDay.getDate() + 1);
+  let fridayCount = 0;
+  let currentDay = new Date(firstDay);
+  
+  while (fridayCount < 3) {
+    if (currentDay.getDay() === 5) {
+      fridayCount++;
+      if (fridayCount === 3) {
+        // Compare with input date (ignoring time)
+        const thirdFriday = currentDay;
+        return date.getFullYear() === thirdFriday.getFullYear() &&
+               date.getMonth() === thirdFriday.getMonth() &&
+               date.getDate() === thirdFriday.getDate();
+      }
+    }
+    currentDay.setDate(currentDay.getDate() + 1);
   }
   
-  // Get third Friday
-  const thirdFriday = new Date(firstDay);
-  thirdFriday.setDate(firstDay.getDate() + 14); // Add two weeks
-  
-  // Compare with input date
-  return date.getTime() === thirdFriday.getTime();
+  return false;
 }
 
 serve(async (req) => {
