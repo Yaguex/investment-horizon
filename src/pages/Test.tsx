@@ -5,6 +5,7 @@ import Header from "@/components/Header"
 import TestForm, { TestFormValues } from "@/components/test/TestForm"
 import StrikeDataCard from "@/components/test/StrikeDataCard"
 import { ApiResponse } from "@/components/test/types"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const Test = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -60,31 +61,48 @@ const Test = () => {
       <Header />
       
       <main className="container mx-auto px-4 pt-24 pb-8">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Test</h1>
-          
-          <TestForm onSubmit={onSubmit} isLoading={isLoading} />
-
-          {apiResponse && (
-            <div className="mt-8">
-              <StrikeDataCard 
-                title="Entry Strike"
-                symbol={apiResponse.responses[0]?.symbol}
-                marketData={apiResponse.responses[0]?.marketData}
-              />
-              <StrikeDataCard 
-                title="Target Strike"
-                symbol={apiResponse.responses[1]?.symbol}
-                marketData={apiResponse.responses[1]?.marketData}
-              />
-              <StrikeDataCard 
-                title="Protection Strike"
-                symbol={apiResponse.responses[2]?.symbol}
-                marketData={apiResponse.responses[2]?.marketData}
-              />
-            </div>
-          )}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Test</h1>
         </div>
+
+        <Tabs defaultValue="diy-notes" className="w-full">
+          <TabsList>
+            <TabsTrigger value="diy-notes">DIY Notes</TabsTrigger>
+            <TabsTrigger value="option-expirations">Option Expirations</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="diy-notes" className="animate-fade-in">
+            <div className="max-w-2xl mx-auto">
+              <TestForm onSubmit={onSubmit} isLoading={isLoading} />
+
+              {apiResponse && (
+                <div className="mt-8">
+                  <StrikeDataCard 
+                    title="Entry Strike"
+                    symbol={apiResponse.responses[0]?.symbol}
+                    marketData={apiResponse.responses[0]?.marketData}
+                  />
+                  <StrikeDataCard 
+                    title="Target Strike"
+                    symbol={apiResponse.responses[1]?.symbol}
+                    marketData={apiResponse.responses[1]?.marketData}
+                  />
+                  <StrikeDataCard 
+                    title="Protection Strike"
+                    symbol={apiResponse.responses[2]?.symbol}
+                    marketData={apiResponse.responses[2]?.marketData}
+                  />
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="option-expirations" className="animate-fade-in">
+            <div className="max-w-2xl mx-auto">
+              {/* Empty for now, waiting for future implementation */}
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   )
