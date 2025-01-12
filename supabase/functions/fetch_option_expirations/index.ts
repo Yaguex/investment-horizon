@@ -6,6 +6,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function isThirdFriday(dateStr: string): boolean {
+  const date = new Date(dateStr);
+  
+  // Must be a Friday
+  if (date.getDay() !== 5) return false;
+  
+  // Get the first day of the month
+  const firstOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  
+  // Count Fridays in the month until we reach this date
+  let fridayCount = 0;
+  const currentDate = new Date(firstOfMonth);
+  
+  while (currentDate <= date) {
+    if (currentDate.getDay() === 5) {
+      fridayCount++;
+      if (fridayCount > 3) return false; // If we've passed the third Friday, this date isn't it
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return fridayCount === 3;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -75,28 +99,9 @@ serve(async (req) => {
       throw new Error('Invalid API response format');
     }
 
-    // Filter for third Fridays
-    const thirdFridays = apiData.expirations.filter((dateStr: string) => {
-      const date = new Date(dateStr);
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      
-      // Get first day of the month
-      const firstDay = new Date(year, month, 1);
-      
-      // Count Fridays until we reach current date
-      let fridayCount = 0;
-      let currentDay = new Date(firstDay);
-      
-      while (currentDay <= date) {
-        if (currentDay.getDay() === 5) { // 5 is Friday
-          fridayCount++;
-        }
-        currentDay.setDate(currentDay.getDate() + 1);
-      }
-      
-      return fridayCount === 3;
-    });
+    // Filter for third Fridays - new simplified logic
+    const thirdFridays = apiData.expirations.filter(isThirdFriday);
+    console.log(`Filtered third Fridays for ${ticker}:`, thirdFridays);
 
     // Update database
     const { error: upsertError } = await supabase
