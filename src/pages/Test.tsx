@@ -3,13 +3,18 @@ import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import Header from "@/components/Header"
 import TestForm, { TestFormValues } from "@/components/test/TestForm"
+import TestFormExpirations, { TestFormExpirationsValues } from "@/components/test/TestFormExpirations"
 import StrikeDataCard from "@/components/test/StrikeDataCard"
+import ExpirationDataCard from "@/components/test/ExpirationDataCard"
 import { ApiResponse } from "@/components/test/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const Test = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null)
+  const [isLoadingExpirations, setIsLoadingExpirations] = useState(false)
+  const [expirations, setExpirations] = useState<string[]>([])
+  const [currentTicker, setCurrentTicker] = useState<string>("")
 
   const onSubmit = async (data: TestFormValues) => {
     console.log("Submitting test form with data:", data)
@@ -56,6 +61,31 @@ const Test = () => {
     }
   }
 
+  const onSubmitExpirations = async (data: TestFormExpirationsValues) => {
+    console.log("Submitting expirations form with data:", data)
+    setIsLoadingExpirations(true)
+    setExpirations([])
+    setCurrentTicker("")
+
+    try {
+      const { data: response, error } = await supabase.functions.invoke('fetch_option_expirations', {
+        body: { ticker: data.ticker }
+      })
+
+      if (error) throw error
+
+      console.log("API response:", response)
+      setExpirations(response.expirations || [])
+      setCurrentTicker(data.ticker)
+      toast.success('Expirations successfully fetched')
+    } catch (error) {
+      console.error("Error in API call:", error)
+      toast.error('Could not fetch expirations')
+    } finally {
+      setIsLoadingExpirations(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -99,7 +129,16 @@ const Test = () => {
           
           <TabsContent value="option-expirations" className="animate-fade-in">
             <div className="max-w-2xl mx-auto">
-              {/* Empty for now, waiting for future implementation */}
+              <TestFormExpirations onSubmit={onSubmitExpirations} isLoading={isLoadingExpirations} />
+
+              {currentTicker && (
+                <div className="mt-8">
+                  <ExpirationDataCard 
+                    ticker={currentTicker}
+                    expirations={expirations}
+                  />
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
