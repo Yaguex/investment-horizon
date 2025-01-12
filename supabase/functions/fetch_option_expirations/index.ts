@@ -71,14 +71,13 @@ serve(async (req) => {
     const apiData = await response.json();
     console.log(`Received API response for ${ticker}:`, apiData);
 
-    if (!apiData.data || !Array.isArray(apiData.data)) {
+    if (!apiData.expirations || !Array.isArray(apiData.expirations)) {
       throw new Error('Invalid API response format');
     }
 
     // Filter for third Fridays
-    // Note: dates are already in YYYY-MM-DD format from the API
-    const thirdFridays = apiData.data.filter((dateStr: string) => {
-      const date = new Date(dateStr); // Parse YYYY-MM-DD directly
+    const thirdFridays = apiData.expirations.filter((dateStr: string) => {
+      const date = new Date(dateStr);
       const year = date.getFullYear();
       const month = date.getMonth();
       
