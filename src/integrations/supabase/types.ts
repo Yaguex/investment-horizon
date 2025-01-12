@@ -63,6 +63,33 @@ export type Database = {
         }
         Relationships: []
       }
+      countries: {
+        Row: {
+          continent: Database["public"]["Enums"]["continents"] | null
+          id: number
+          iso2: string
+          iso3: string | null
+          local_name: string | null
+          name: string | null
+        }
+        Insert: {
+          continent?: Database["public"]["Enums"]["continents"] | null
+          id?: number
+          iso2: string
+          iso3?: string | null
+          local_name?: string | null
+          name?: string | null
+        }
+        Update: {
+          continent?: Database["public"]["Enums"]["continents"] | null
+          id?: number
+          iso2?: string
+          iso3?: string | null
+          local_name?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
       diy_notes: {
         Row: {
           bond_yield: number | null
@@ -500,7 +527,14 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      continents:
+        | "Africa"
+        | "Antarctica"
+        | "Asia"
+        | "Europe"
+        | "Oceania"
+        | "North America"
+        | "South America"
     }
     CompositeTypes: {
       [_ in never]: never
