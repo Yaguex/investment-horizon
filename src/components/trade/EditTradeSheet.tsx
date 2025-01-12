@@ -16,6 +16,12 @@ import { recalculateChildMetrics, recalculateSiblingMetrics, recalculateParentMe
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
 
+interface EditTradeSheetProps {
+  isOpen: boolean
+  onClose: () => void
+  trade: TradeData
+}
+
 const vehicleOptions = [
   { label: "Stock", value: "Stock" },
   { label: "Fund", value: "Fund" },
