@@ -1,0 +1,129 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.1'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log("Handling CORS preflight request");
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { ticker } = await req.json();
+    console.log(`Processing request for ticker: ${ticker}`);
+
+    if (!ticker) {
+      throw new Error('Ticker is required');
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase credentials');
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if we have fresh data
+    const { data: existingData } = await supabase
+      .from('option_expirations')
+      .select('*')
+      .eq('ticker', ticker)
+      .single();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (existingData?.last_updated && new Date(existingData.last_updated) >= today) {
+      console.log(`Using cached data for ${ticker}`);
+      return new Response(
+        JSON.stringify(existingData.expirations),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Fetch new data from API
+    console.log(`Fetching fresh data for ${ticker}`);
+    const apiKey = Deno.env.get('MARKETDATA_API_KEY');
+    if (!apiKey) {
+      throw new Error('MARKETDATA_API_KEY not found');
+    }
+
+    const response = await fetch(
+      `https://api.marketdata.app/v1/options/expirations/${ticker}/`,
+      {
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`);
+    }
+
+    const apiData = await response.json();
+    console.log(`Received API response for ${ticker}`);
+
+    // Filter for third Fridays
+    const thirdFridays = apiData.data.filter((dateStr: string) => {
+      const date = new Date(dateStr);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      
+      // Get first day of the month
+      const firstDay = new Date(year, month, 1);
+      
+      // Count Fridays until we reach current date
+      let fridayCount = 0;
+      let currentDay = new Date(firstDay);
+      
+      while (currentDay <= date) {
+        if (currentDay.getDay() === 5) { // 5 is Friday
+          fridayCount++;
+        }
+        currentDay.setDate(currentDay.getDate() + 1);
+      }
+      
+      return fridayCount === 3;
+    });
+
+    // Update database
+    const { error: upsertError } = await supabase
+      .from('option_expirations')
+      .upsert({
+        ticker,
+        expirations: thirdFridays,
+        last_updated: new Date().toISOString().split('T')[0]
+      }, {
+        onConflict: 'ticker'
+      });
+
+    if (upsertError) {
+      console.error('Error upserting data:', upsertError);
+      throw upsertError;
+    }
+
+    console.log(`Successfully processed ${ticker}`);
+    return new Response(
+      JSON.stringify(thirdFridays),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Error:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
+      }
+    );
+  }
+});
