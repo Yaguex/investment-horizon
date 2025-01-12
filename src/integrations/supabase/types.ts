@@ -246,6 +246,27 @@ export type Database = {
         }
         Relationships: []
       }
+      option_expirations: {
+        Row: {
+          expirations: Json | null
+          id: number
+          last_updated: string | null
+          ticker: string | null
+        }
+        Insert: {
+          expirations?: Json | null
+          id?: number
+          last_updated?: string | null
+          ticker?: string | null
+        }
+        Update: {
+          expirations?: Json | null
+          id?: number
+          last_updated?: string | null
+          ticker?: string | null
+        }
+        Relationships: []
+      }
       portfolio_data: {
         Row: {
           balance: number | null
