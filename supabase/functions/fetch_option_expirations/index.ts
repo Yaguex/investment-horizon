@@ -9,9 +9,6 @@ const corsHeaders = {
 function isThirdFriday(dateStr: string): boolean {
   const date = new Date(dateStr);
   
-  // Must be a Friday
-  if (date.getDay() !== 5) return false;
-  
   // Get the first day of the month
   const firstOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
   
