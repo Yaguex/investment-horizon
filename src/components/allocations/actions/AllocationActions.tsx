@@ -126,20 +126,25 @@ export const AllocationActions = ({
   }
 
   const handleDeleteTrade = async () => {
-    if (!id) {
-      console.error('No id found for child row')
+    if (!id || !profileId) {
+      console.error('No id or profileId found for child row')
+      toast({
+        title: "Error",
+        description: "Missing required fields for deletion",
+        variant: "destructive"
+      })
       return
     }
 
     try {
       console.log('Deleting allocation with id:', id)
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('allocations')
         .delete()
         .eq('id', id)
 
-      if (error) {
-        console.error('Error deleting allocation:', error)
+      if (deleteError) {
+        console.error('Error deleting allocation:', deleteError)
         toast({
           title: "Error",
           description: "Failed to delete allocation",
@@ -148,8 +153,27 @@ export const AllocationActions = ({
         return
       }
 
-      console.log('Successfully deleted allocation')
+      // Call recalculate_allocations function after successful deletion
+      const { error: recalculateError } = await supabase
+        .rpc('recalculate_allocations', {
+          profile_id_param: profileId
+        })
+
+      if (recalculateError) {
+        console.error('Error recalculating allocations:', recalculateError)
+        toast({
+          title: "Error",
+          description: "Failed to recalculate allocations",
+          variant: "destructive"
+        })
+        return
+      }
+
+      console.log('Successfully deleted allocation and recalculated values')
+      
+      // Invalidate both queries
       queryClient.invalidateQueries({ queryKey: ['allocations'] })
+      queryClient.invalidateQueries({ queryKey: ['allocationsMetrics'] })
       
       toast({
         title: "Success",
