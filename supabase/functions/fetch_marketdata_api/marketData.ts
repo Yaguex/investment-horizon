@@ -50,47 +50,30 @@ export async function fetchOptionData(symbol: string): Promise<MarketData | null
       return null;
     }
 
-    // Get all fields using safeGetArrayValue
-    const ask = safeGetArrayValue(data, 'ask');
-    const bid = safeGetArrayValue(data, 'bid');
+    // Get required fields, return null if any are missing
     const mid = safeGetArrayValue(data, 'mid');
-    const last = safeGetArrayValue(data, 'last');
-    const volume = safeGetArrayValue(data, 'volume');
     const openInterest = safeGetArrayValue(data, 'openInterest');
     const iv = safeGetArrayValue(data, 'iv');
     const delta = safeGetArrayValue(data, 'delta');
-    const gamma = safeGetArrayValue(data, 'gamma');
-    const theta = safeGetArrayValue(data, 'theta');
-    const vega = safeGetArrayValue(data, 'vega');
-    const rho = safeGetArrayValue(data, 'rho');
     const intrinsicValue = safeGetArrayValue(data, 'intrinsicValue');
     const extrinsicValue = safeGetArrayValue(data, 'extrinsicValue');
     const underlyingPrice = safeGetArrayValue(data, 'underlyingPrice');
 
     // If any required field is missing, return null
-    if (!ask || !bid || !mid || !last || !volume || !openInterest || !iv || 
-        !delta || !gamma || !theta || !vega || !rho || !intrinsicValue || 
+    if (!mid || !openInterest || !iv || !delta || !intrinsicValue || 
         !extrinsicValue || !underlyingPrice) {
       console.error(`[${new Date().toISOString()}] Missing required fields in response for ${symbol}`);
       return null;
     }
 
     return {
-      ask,
-      bid,
-      mid,
-      last,
-      volume,
-      openInterest,
-      iv,
-      delta,
-      gamma,
-      theta,
-      vega,
-      rho,
-      intrinsicValue,
-      extrinsicValue,
-      underlyingPrice
+      mid: Number(mid.toFixed(2)),
+      openInterest: Math.round(openInterest),
+      iv: Math.round(iv * 100),
+      delta: Number(delta.toFixed(2)),
+      intrinsicValue: Number(intrinsicValue.toFixed(2)),
+      extrinsicValue: Number(extrinsicValue.toFixed(2)),
+      underlyingPrice: Number(underlyingPrice.toFixed(2))
     };
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error fetching option data for ${symbol}:`, error);
