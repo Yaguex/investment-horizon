@@ -101,30 +101,39 @@ Deno.serve(async (req) => {
       throw new Error("Function failure")
     }
 
-    // Step 5: Update note with market data
+    // Step 5: Update note with market data using Position Size's methodology
     console.log(`[${new Date().toISOString()}] Updating note with market data`)
-    const [entry, target, protection] = marketData.responses
+    const updateData: any = {}
 
-    const updateData = {
-      underlying_price: entry.marketData.underlyingPrice,
-      strike_entry_mid: entry.marketData.mid,
-      strike_entry_open_interest: entry.marketData.openInterest,
-      strike_entry_iv: entry.marketData.iv,
-      strike_entry_delta: entry.marketData.delta,
-      strike_entry_intrinsic_value: entry.marketData.intrinsicValue,
-      strike_entry_extrinsic_value: entry.marketData.extrinsicValue,
-      strike_target_mid: target.marketData.mid,
-      strike_target_open_interest: target.marketData.openInterest,
-      strike_target_iv: target.marketData.iv,
-      strike_target_delta: target.marketData.delta,
-      strike_target_intrinsic_value: target.marketData.intrinsicValue,
-      strike_target_extrinsic_value: target.marketData.extrinsicValue,
-      strike_protection_mid: protection.marketData.mid,
-      strike_protection_open_interest: protection.marketData.openInterest,
-      strike_protection_iv: protection.marketData.iv,
-      strike_protection_delta: protection.marketData.delta,
-      strike_protection_intrinsic_value: protection.marketData.intrinsicValue,
-      strike_protection_extrinsic_value: protection.marketData.extrinsicValue,
+    // Handle entry strike data if present
+    if (note.strike_entry && marketData.responses[0]) {
+      updateData.underlying_price = marketData.responses[0]?.marketData?.underlyingPrice || null
+      updateData.strike_entry_mid = marketData.responses[0]?.marketData?.mid || null
+      updateData.strike_entry_open_interest = marketData.responses[0]?.marketData?.openInterest || null
+      updateData.strike_entry_iv = marketData.responses[0]?.marketData?.iv || null
+      updateData.strike_entry_delta = marketData.responses[0]?.marketData?.delta || null
+      updateData.strike_entry_intrinsic_value = marketData.responses[0]?.marketData?.intrinsicValue || null
+      updateData.strike_entry_extrinsic_value = marketData.responses[0]?.marketData?.extrinsicValue || null
+    }
+
+    // Handle target strike data if present
+    if (note.strike_target && marketData.responses[1]) {
+      updateData.strike_target_mid = marketData.responses[1]?.marketData?.mid || null
+      updateData.strike_target_open_interest = marketData.responses[1]?.marketData?.openInterest || null
+      updateData.strike_target_iv = marketData.responses[1]?.marketData?.iv || null
+      updateData.strike_target_delta = marketData.responses[1]?.marketData?.delta || null
+      updateData.strike_target_intrinsic_value = marketData.responses[1]?.marketData?.intrinsicValue || null
+      updateData.strike_target_extrinsic_value = marketData.responses[1]?.marketData?.extrinsicValue || null
+    }
+
+    // Handle protection strike data if present
+    if (note.strike_protection && marketData.responses[2]) {
+      updateData.strike_protection_mid = marketData.responses[2]?.marketData?.mid || null
+      updateData.strike_protection_open_interest = marketData.responses[2]?.marketData?.openInterest || null
+      updateData.strike_protection_iv = marketData.responses[2]?.marketData?.iv || null
+      updateData.strike_protection_delta = marketData.responses[2]?.marketData?.delta || null
+      updateData.strike_protection_intrinsic_value = marketData.responses[2]?.marketData?.intrinsicValue || null
+      updateData.strike_protection_extrinsic_value = marketData.responses[2]?.marketData?.extrinsicValue || null
     }
 
     const { error: updateError } = await supabase
