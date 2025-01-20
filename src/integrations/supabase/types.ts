@@ -189,6 +189,36 @@ export type Database = {
         }
         Relationships: []
       }
+      log_error: {
+        Row: {
+          event_message: string | null
+          event_type: string | null
+          function_id: string | null
+          id: number
+          id_1: string | null
+          level: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          event_message?: string | null
+          event_type?: string | null
+          function_id?: string | null
+          id: number
+          id_1?: string | null
+          level?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          event_message?: string | null
+          event_type?: string | null
+          function_id?: string | null
+          id?: number
+          id_1?: string | null
+          level?: string | null
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
       macro_data: {
         Row: {
           date: string | null
