@@ -12,45 +12,10 @@ async function processStrike(strike: StrikeRequest): Promise<StrikeResponse | nu
     strike.type === 'call' ? 'C' : 'P',
     strike.strike
   );
-  console.log(`[${new Date().toISOString()}] Processing symbol ${symbol}`);
+  console.log(`Processing symbol ${symbol}`);
 
   const marketData = await fetchOptionData(symbol);
   return { symbol, marketData };
-}
-
-async function processStrikeWithRetry(strike: StrikeRequest, retryAttempts = 3): Promise<StrikeResponse | null> {
-  for (let attempt = 1; attempt <= retryAttempts; attempt++) {
-    try {
-      console.log(`[${new Date().toISOString()}] Attempt ${attempt} for strike:`, strike);
-      const result = await processStrike(strike);
-      
-      if (result && result.marketData) {
-        console.log(`[${new Date().toISOString()}] Successfully processed strike on attempt ${attempt}`);
-        return result;
-      }
-      
-      console.log(`[${new Date().toISOString()}] No market data returned on attempt ${attempt}`);
-      
-      if (attempt === retryAttempts) {
-        console.error(`[${new Date().toISOString()}] All retry attempts exhausted for strike:`, strike);
-        return null;
-      }
-      
-      // Wait 1 second before next attempt
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error(`[${new Date().toISOString()}] Error on attempt ${attempt}:`, error);
-      
-      if (attempt === retryAttempts) {
-        console.error(`[${new Date().toISOString()}] All retry attempts failed for strike:`, strike);
-        return null;
-      }
-      
-      // Wait 1 second before next attempt
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-  return null;
 }
 
 Deno.serve(async (req) => {
@@ -61,20 +26,20 @@ Deno.serve(async (req) => {
 
   try {
     const { strikes } = await req.json() as { strikes: StrikeRequest[] };
-    console.log(`[${new Date().toISOString()}] Received request for ${strikes.length} strikes:`, strikes);
+    console.log(`Received request for ${strikes.length} strikes:`, strikes);
 
     if (!strikes || !Array.isArray(strikes) || strikes.length === 0) {
       throw new Error('Invalid request: strikes array is required');
     }
 
-    // Process all strikes with retry logic
+    // Process all strikes
     const responses = await Promise.all(
-      strikes.map(strike => processStrikeWithRetry(strike))
+      strikes.map(strike => processStrike(strike))
     );
 
     // Check if any strike processing failed completely
     if (responses.some(response => response === null)) {
-      console.error(`[${new Date().toISOString()}] API failure: Some strikes could not be processed after all retries`);
+      console.error('API failure: Some strikes could not be processed');
       return new Response(
         JSON.stringify({ error: "API failure" }),
         { 
@@ -84,7 +49,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[${new Date().toISOString()}] Successfully processed ${responses.length} strikes`);
+    console.log(`Successfully processed ${responses.length} strikes`);
     
     return new Response(
       JSON.stringify({ responses: responses.filter(Boolean) }),
@@ -92,7 +57,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Error:`, error);
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
