@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     const updateData: any = {}
 
     // Handle entry strike data if present
-    if (note.strike_entry && marketData.responses[0]) {
+    if (note.strike_entry && marketData.responses?.[0]) {
       updateData.underlying_price = marketData.responses[0]?.marketData?.underlyingPrice || null
       updateData.strike_entry_mid = marketData.responses[0]?.marketData?.mid || null
       updateData.strike_entry_open_interest = marketData.responses[0]?.marketData?.openInterest || null
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
     }
 
     // Handle target strike data if present
-    if (note.strike_target && marketData.responses[1]) {
+    if (note.strike_target && marketData.responses?.[1]) {
       updateData.strike_target_mid = marketData.responses[1]?.marketData?.mid || null
       updateData.strike_target_open_interest = marketData.responses[1]?.marketData?.openInterest || null
       updateData.strike_target_iv = marketData.responses[1]?.marketData?.iv || null
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
     }
 
     // Handle protection strike data if present
-    if (note.strike_protection && marketData.responses[2]) {
+    if (note.strike_protection && marketData.responses?.[2]) {
       updateData.strike_protection_mid = marketData.responses[2]?.marketData?.mid || null
       updateData.strike_protection_open_interest = marketData.responses[2]?.marketData?.openInterest || null
       updateData.strike_protection_iv = marketData.responses[2]?.marketData?.iv || null
