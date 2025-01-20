@@ -50,14 +50,22 @@ export async function fetchOptionData(symbol: string): Promise<MarketData | null
       return null;
     }
 
-    // Get required fields, return null if any are missing
+    // Apply safeGetArrayValue to all fields
     const mid = safeGetArrayValue(data, 'mid');
+    const ask = safeGetArrayValue(data, 'ask');
     const openInterest = safeGetArrayValue(data, 'openInterest');
+    const bid = safeGetArrayValue(data, 'bid');
     const iv = safeGetArrayValue(data, 'iv');
     const delta = safeGetArrayValue(data, 'delta');
+    const last = safeGetArrayValue(data, 'last');
     const intrinsicValue = safeGetArrayValue(data, 'intrinsicValue');
+    const volume = safeGetArrayValue(data, 'volume');
     const extrinsicValue = safeGetArrayValue(data, 'extrinsicValue');
     const underlyingPrice = safeGetArrayValue(data, 'underlyingPrice');
+    const gamma = safeGetArrayValue(data, 'gamma');
+    const theta = safeGetArrayValue(data, 'theta');
+    const vega = safeGetArrayValue(data, 'vega');
+    const rho = safeGetArrayValue(data, 'rho');
 
     // If any required field is missing, return null
     if (!mid || !openInterest || !iv || !delta || !intrinsicValue || 
@@ -68,12 +76,20 @@ export async function fetchOptionData(symbol: string): Promise<MarketData | null
 
     return {
       mid: Number(mid.toFixed(2)),
+      ask,
       openInterest: Math.round(openInterest),
+      bid,
       iv: Math.round(iv * 100),
       delta: Number(delta.toFixed(2)),
+      last,
       intrinsicValue: Number(intrinsicValue.toFixed(2)),
+      volume,
       extrinsicValue: Number(extrinsicValue.toFixed(2)),
-      underlyingPrice: Number(underlyingPrice.toFixed(2))
+      underlyingPrice: Number(underlyingPrice.toFixed(2)),
+      gamma,
+      theta,
+      vega,
+      rho
     };
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error fetching option data for ${symbol}:`, error);
