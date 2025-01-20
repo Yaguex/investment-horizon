@@ -37,14 +37,61 @@ Deno.serve(async (req) => {
       throw saveError
     }
 
-    // Step 2: Fetch market data
-    console.log(`[${new Date().toISOString()}] Step 2: Fetching market data`)
-    const strikes = [
-      { ticker: note.ticker, expiration: note.expiration, type: 'call', strike: note.strike_entry },
-      { ticker: note.ticker, expiration: note.expiration, type: 'call', strike: note.strike_target },
-      { ticker: note.ticker, expiration: note.expiration, type: 'put', strike: note.strike_protection }
-    ]
+    // Step 2: Validate required fields and prepare market data request
+    if (!note.ticker || !note.expiration) {
+      console.log(`[${new Date().toISOString()}] Missing required fields for market data`)
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
+    // Step 3: Prepare strikes array
+    console.log(`[${new Date().toISOString()}] Preparing strikes for market data fetch:`, {
+      strike_entry: note.strike_entry,
+      strike_target: note.strike_target,
+      strike_protection: note.strike_protection
+    })
+
+    const strikes = []
+
+    if (note.strike_entry) {
+      strikes.push({
+        ticker: note.ticker,
+        expiration: note.expiration,
+        type: 'call',
+        strike: note.strike_entry
+      })
+    }
+
+    if (note.strike_target) {
+      strikes.push({
+        ticker: note.ticker,
+        expiration: note.expiration,
+        type: 'call',
+        strike: note.strike_target
+      })
+    }
+
+    if (note.strike_protection) {
+      strikes.push({
+        ticker: note.ticker,
+        expiration: note.expiration,
+        type: 'put',
+        strike: note.strike_protection
+      })
+    }
+
+    if (strikes.length === 0) {
+      console.log(`[${new Date().toISOString()}] No valid strikes to process`)
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Step 4: Fetch market data
+    console.log(`[${new Date().toISOString()}] Fetching market data for strikes:`, strikes)
     const { data: marketData, error: marketDataError } = await supabase.functions.invoke('fetch_marketdata_api', {
       body: { strikes }
     })
@@ -54,8 +101,8 @@ Deno.serve(async (req) => {
       throw new Error("Function failure")
     }
 
-    // Step 3: Update note with market data
-    console.log(`[${new Date().toISOString()}] Step 3: Updating note with market data`)
+    // Step 5: Update note with market data
+    console.log(`[${new Date().toISOString()}] Updating note with market data`)
     const [entry, target, protection] = marketData.responses
 
     const updateData = {
