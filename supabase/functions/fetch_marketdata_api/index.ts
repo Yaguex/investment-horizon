@@ -12,10 +12,22 @@ async function processStrike(strike: StrikeRequest): Promise<StrikeResponse | nu
     strike.type === 'call' ? 'C' : 'P',
     strike.strike
   );
-  console.log(`[${new Date().toISOString()}] Processing symbol ${symbol}`);
+  console.log(`[${new Date().toISOString()}] Processing symbol ${symbol} for strike:`, strike);
 
-  const marketData = await fetchOptionData(symbol);
-  return { symbol, marketData };
+  try {
+    const marketData = await fetchOptionData(symbol);
+    console.log(`[${new Date().toISOString()}] Market data received for ${symbol}:`, marketData);
+    
+    if (!marketData) {
+      console.error(`[${new Date().toISOString()}] No market data returned for ${symbol}`);
+      return null;
+    }
+
+    return { symbol, marketData };
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching market data for ${symbol}:`, error);
+    throw error; // Re-throw to be handled by retry mechanism
+  }
 }
 
 async function processStrikeWithRetry(strike: StrikeRequest, retryAttempts = 3): Promise<StrikeResponse | null> {
