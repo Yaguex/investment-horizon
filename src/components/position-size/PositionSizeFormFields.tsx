@@ -26,7 +26,7 @@ export function PositionSizeFormFields({ control, actionOptions }: PositionSizeF
       <NumberField
         control={control}
         name="exposure"
-        label="Exposure"
+        label="Exposure (%)"
       />
       <TextField
         control={control}
@@ -36,7 +36,7 @@ export function PositionSizeFormFields({ control, actionOptions }: PositionSizeF
       <NumberField
         control={control}
         name="risk_free_yield"
-        label="Risk Free Yield"
+        label="Risk Free Yield (%)"
       />
       <NumberField
         control={control}
