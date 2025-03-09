@@ -105,7 +105,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             <NumberField
               control={form.control}
               name="nominal"
-              label="Nominal"
+              label="Nominal ($)"
             />
             <TextField
               control={form.control}
@@ -115,12 +115,12 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             <NumberField
               control={form.control}
               name="dividend_yield"
-              label="Dividend Yield (after withholding tax)"
+              label="Dividend Yield after withholding tax (%)"
             />
             <NumberField
               control={form.control}
               name="bond_yield"
-              label="Bond Yield"
+              label="Bond Yield (%)"
             />
             <NumberField
               control={form.control}
@@ -140,7 +140,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             <NumberField
               control={form.control}
               name="wiggle"
-              label="Wiggle"
+              label="Wiggle (%)"
             />
             <div className="flex justify-end space-x-2">
               <Button type="submit" disabled={isLoading}>
