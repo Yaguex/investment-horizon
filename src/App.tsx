@@ -13,6 +13,7 @@ import TradeLog from "./pages/TradeLog"
 import Allocations from "./pages/Allocations"
 import EconomicCalendar from "./pages/EconomicCalendar"
 import DIYNotes from "./pages/DIYNotes"
+import DIYDividend from "./pages/DIYDividend"
 import PositionSize from "./pages/PositionSize"
 import Test from "./pages/Test"
 
@@ -74,6 +75,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DIYNotes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/diy-dividend"
+              element={
+                <ProtectedRoute>
+                  <DIYDividend />
                 </ProtectedRoute>
               }
             />
