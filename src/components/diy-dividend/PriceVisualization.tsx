@@ -21,16 +21,15 @@ const calculateCirclePositions = (dividend: any) => {
   // Calculate total bond yield
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
+  // Calculate leverage - this was missing previously
+  const leverage = 1.2  // Default leverage value
 
   // Calculate call contracts
-  const callContracts = Math.round(
-    (100)
-  )
-
+  const callContracts = Math.round(100)  // Fixed placeholder
 
   // Calculate BE strikes with updated formulas
-  const be1Strike = dividend.strike_call + ((dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration)))
-  const be2Strike = dividend.strike_call + ((dividend.strike_call * ((7/100) * yearsUntilExpiration)))
+  const be1Strike = dividend.strike_call + ((dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration)) / leverage)
+  const be2Strike = dividend.strike_call + ((dividend.strike_call * ((7/100) * yearsUntilExpiration)) / leverage)
 
   if (putDiff >= dividend.strike_put) {
     rightPosition = 90
@@ -52,8 +51,13 @@ const calculateCirclePositions = (dividend: any) => {
 }
 
 export function PriceVisualization({ dividend }: PriceVisualizationProps) {
+  // Add error handling for dividend data
+  if (!dividend || !dividend.strike_call) {
+    console.warn("Invalid dividend data received:", dividend)
+    return <div className="text-red-500">Invalid dividend data</div>
+  }
+
   const { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike } = calculateCirclePositions(dividend)
-  
   
   // Calculate days until expiration for bond yield
   const today = new Date()
@@ -64,17 +68,15 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // Calculate total bond yield
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate call contracts
-  const callContracts = Math.round(
-    (100)
-  )
+  // Calculate call contracts 
+  const callContracts = Math.round(100)  // Fixed placeholder
 
   // Calculate put contracts
   const putContracts = callContracts
 
-  // Calculate fees
-  const callFee = callContracts * dividend.strike_call_mid * 100 * -1
-  const putFee = putContracts * dividend.strike_put_mid * 100
+  // Calculate fees - Add checks to avoid NaN values
+  const callFee = dividend.strike_call_mid ? callContracts * dividend.strike_call_mid * 100 * -1 : 0
+  const putFee = dividend.strike_put_mid ? putContracts * dividend.strike_put_mid * 100 : 0
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -176,7 +178,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${middlePosition}%` }}
           >
-            <span className="text-xs text-black"><span className="font-bold">+{callContracts}C</span> at ${dividend.strike_call_mid}</span>
+            <span className="text-xs text-black"><span className="font-bold">+{callContracts}C</span> at ${dividend.strike_call_mid || 0}</span>
             <span className="text-xs text-red-500">${formatNumber(callFee, 0)}</span>
           </div>
         )}
@@ -185,7 +187,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${leftPosition}%` }}
           >
-            <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${dividend.strike_put_mid}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${dividend.strike_put_mid || 0}</span>
             <span className="text-xs text-green-500">${formatNumber(putFee, 0)}</span>
           </div>
         )}
@@ -194,7 +196,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${rightPosition}%` }}
           >
-            <span className="text-xs text-black"><span className="font-bold">-{putContracts}C</span> at ${dividend.strike_put_mid}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{putContracts}C</span> at ${dividend.strike_put_mid || 0}</span>
             <span className="text-xs text-green-500">${formatNumber(putFee, 0)}</span>
           </div>
         )}
