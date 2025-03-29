@@ -1,11 +1,9 @@
-
 import { useForm } from "react-hook-form"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { TextField } from "@/components/diy-dividend/form-fields/TextField"
 import { NumberField } from "@/components/diy-dividend/form-fields/NumberField"
-import { SelectField } from "@/components/diy-dividend/form-fields/SelectField"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
@@ -73,7 +71,7 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
             ...data,
             id: dividend?.id,
             expiration: data.expiration || null,
-            profile_id: user.id // Explicitly set profile_id to the authenticated user's ID
+            profile_id: user.id
           },
           profile_id: user.id
         }

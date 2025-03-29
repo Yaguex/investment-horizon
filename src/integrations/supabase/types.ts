@@ -65,7 +65,6 @@ export type Database = {
       }
       diy_dividend: {
         Row: {
-          action: string | null
           bond_yield: number | null
           dividend_yield: number | null
           expiration: string | null
@@ -91,7 +90,6 @@ export type Database = {
           wiggle: number | null
         }
         Insert: {
-          action?: string | null
           bond_yield?: number | null
           dividend_yield?: number | null
           expiration?: string | null
@@ -117,7 +115,6 @@ export type Database = {
           wiggle?: number | null
         }
         Update: {
-          action?: string | null
           bond_yield?: number | null
           dividend_yield?: number | null
           expiration?: string | null
