@@ -21,18 +21,16 @@ const calculateCirclePositions = (dividend: any) => {
   // Calculate total bond yield
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate leverage (add this to resolve previous undefined leverage issue)
-  const leverage = 1 // Default to 1 if not defined
 
   // Calculate call contracts
   const callContracts = Math.round(
-    (dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration) / 
-    (dividend.strike_call_mid * 100)
+    (100)
   )
 
+
   // Calculate BE strikes with updated formulas
-  const be1Strike = dividend.strike_call + ((dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration)) / leverage)
-  const be2Strike = dividend.strike_call + ((dividend.strike_call * ((7/100) * yearsUntilExpiration)) / leverage)
+  const be1Strike = dividend.strike_call + ((dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration)))
+  const be2Strike = dividend.strike_call + ((dividend.strike_call * ((7/100) * yearsUntilExpiration)))
 
   if (putDiff >= dividend.strike_put) {
     rightPosition = 90
@@ -50,21 +48,27 @@ const calculateCirclePositions = (dividend: any) => {
     be2Position = Math.min(100, 50 + ((be2Strike - dividend.strike_call) * 40 / dividend.strike_put))
   }
 
-  return { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike, callContracts }
+  return { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike }
 }
 
 export function PriceVisualization({ dividend }: PriceVisualizationProps) {
-  const { 
-    leftPosition, 
-    middlePosition, 
-    rightPosition, 
-    be1Position, 
-    be2Position, 
-    be1Strike, 
-    be2Strike, 
-    callContracts 
-  } = calculateCirclePositions(dividend)
+  const { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike } = calculateCirclePositions(dividend)
   
+  
+  // Calculate days until expiration for bond yield
+  const today = new Date()
+  const expirationDate = dividend.expiration ? new Date(dividend.expiration) : today
+  const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  const yearsUntilExpiration = daysUntilExpiration / 365
+
+  // Calculate total bond yield
+  const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
+
+  // Calculate call contracts
+  const callContracts = Math.round(
+    (100)
+  )
+
   // Calculate put contracts
   const putContracts = callContracts
 
