@@ -21,7 +21,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Calculate entry contracts
   const entryContracts = Math.round(
-    (FORMULA GOES HERE)
+    (100)
   )
 
   // Calculate put contracts (equal to call contracts)

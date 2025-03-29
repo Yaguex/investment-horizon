@@ -24,7 +24,7 @@ const calculateCirclePositions = (dividend: any) => {
 
   // Calculate call contracts
   const callContracts = Math.round(
-    (FORMULA GOES HERE)
+    (100)
   )
 
 
