@@ -24,6 +24,9 @@ const calculateCirclePositions = (dividend: any) => {
   // Calculate leverage - this was missing previously
   const leverage = 1.2  // Default leverage value
 
+  // Calculate number of underlying shares based on current underlying price and nominal
+  const underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
+
   // Calculate call contracts
   const callContracts = Math.round(100)  // Fixed placeholder
 

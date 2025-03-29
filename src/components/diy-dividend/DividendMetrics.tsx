@@ -12,10 +12,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate number of underlying shares
-  const underlyingShares =  Math.round(
-    dividend.nominal / dividend.underlying_price
-  )
+  // Calculate number of underlying shares based on current underlying price and nominal
+  const underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
 
   // Calculate total dividend amount
   const totalDividend = dividend.nominal * (dividend.dividend_yield / 100) * yearsUntilExpiration
@@ -24,13 +22,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
 
-  // Calculate entry contracts
-  const callContracts = Math.round(
-    (100)
-  )
-
-  // Calculate put contracts (equal to call contracts)
-  const putContracts = callContracts
+  // Calculate call and put contracts. Both should match the shares owned of the underlying
+  const callContracts = Math.round(underlyingShares/100)
+  const putContracts = Math.round(underlyingShares/100)
 
   // Calculate fees
   const callFee = callContracts * dividend.strike_call_mid * 100 * -1
@@ -87,6 +81,16 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     <TooltipProvider delayDuration={100}>
       <div className="text-sm space-y-2 flex justify-between">
         <div>
+        <p className="text-black">
+            <Tooltip>
+              <TooltipTrigger>
+                Shares to own: {formatNumber(underlyingShares, 0)} shares
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Based on the nominal and the underlying's current price, this is the numbers of shares we should own outright
+              </TooltipContent>
+            </Tooltip>
+          </p>
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>

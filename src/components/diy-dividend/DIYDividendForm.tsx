@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext"
 
 interface DIYDividendFormValues {
   ticker: string
+  action: string
   nominal: number | null
   expiration: string
   dividend_yield: number | null
@@ -37,6 +38,7 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
   const form = useForm<DIYDividendFormValues>({
     defaultValues: dividend ? {
       ticker: dividend.ticker || "",
+      action: dividend.action || "",
       nominal: dividend.nominal || null,
       expiration: dividend.expiration || "",
       dividend_yield: dividend.dividend_yield || null,
@@ -46,6 +48,7 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
       wiggle: dividend.wiggle || null
     } : {
       ticker: "",
+      action: "",
       nominal: null,
       expiration: "",
       dividend_yield: null,
@@ -109,10 +112,16 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
               name="ticker"
               label="Ticker"
             />
+            <SelectField
+              control={form.control}
+              name="action"
+              label="Enter a new position or exit an existing position?"
+              options={actionOptions}
+            />
             <NumberField
               control={form.control}
               name="nominal"
-              label="Nominal ($)"
+              label="Nominal (final desired exposure) ($)"
             />
             <TextField
               control={form.control}
