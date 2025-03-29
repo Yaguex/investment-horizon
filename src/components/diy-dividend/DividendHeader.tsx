@@ -61,7 +61,7 @@ export function DividendHeader({ dividend, onEdit }: DividendHeaderProps) {
       <div className="flex items-center">
         <span className="font-bold text-lg mr-8">{dividend.ticker}</span>
         <span className="text-sm text-gray-500 mr-8">{formatDate(dividend.expiration)}</span>
-        <span className="text-sm text-gray-500 mr-8">${formatNumber(dividend.nominal, 0)} ({dividend.ticker} a trade)</span>
+        <span className="text-sm text-gray-500 mr-8">${formatNumber(dividend.nominal, 0)} ({dividend.action} a trade)</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
