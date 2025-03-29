@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
@@ -9,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface DIYDividendFormValues {
   ticker: string
@@ -30,6 +32,7 @@ interface DIYDividendFormProps {
 export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   
   const form = useForm<DIYDividendFormValues>({
     defaultValues: dividend ? {
@@ -56,6 +59,12 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
   const onSubmit = async (data: DIYDividendFormValues) => {
     try {
       setIsLoading(true)
+      
+      if (!user) {
+        toast.error("You must be logged in to save a dividend")
+        setIsLoading(false)
+        return
+      }
 
       const { error } = await supabase.functions.invoke('submit_diy_dividend', {
         body: {
@@ -63,8 +72,9 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
             ...data,
             id: dividend?.id,
             expiration: data.expiration || null,
+            profile_id: user.id // Explicitly set profile_id to the authenticated user's ID
           },
-          profile_id: (await supabase.auth.getUser()).data.user?.id
+          profile_id: user.id
         }
       })
 
@@ -74,7 +84,7 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
       }
 
       toast.success(dividend ? 'Dividend updated successfully' : 'Dividend created successfully')
-      await queryClient.invalidateQueries({ queryKey: ['diy-dividend'] })
+      await queryClient.invalidateQueries({ queryKey: ['diy-dividend', user.id] })
       form.reset()
       setIsLoading(false)
       onOpenChange(false)

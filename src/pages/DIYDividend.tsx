@@ -12,15 +12,23 @@ import { PriceVisualization } from "@/components/diy-dividend/PriceVisualization
 import { DividendMetrics } from "@/components/diy-dividend/DividendMetrics"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { toast } from "sonner"
+import { useAuth } from "@/contexts/AuthContext"
 
 const DIYDividend = () => {
   const [editDividend, setEditDividend] = useState<any>(null)
   const [newDividend, setNewDividend] = useState<any>(null)
-
+  const { user } = useAuth()
+  
   const { data: dividend, isLoading, error } = useQuery({
-    queryKey: ['diy-dividend'],
+    queryKey: ['diy-dividend', user?.id],
     queryFn: async () => {
-      console.log("Fetching DIY dividend data...")
+      console.log("Fetching DIY dividend data for user:", user?.id)
+      
+      if (!user) {
+        console.log("No authenticated user found, skipping data fetch")
+        return []
+      }
+      
       const { data, error } = await supabase
         .from('diy_dividend')
         .select('*')
@@ -32,7 +40,8 @@ const DIYDividend = () => {
       
       console.log("Dividend data fetched:", data)
       return data
-    }
+    },
+    enabled: !!user // Only run the query when the user is authenticated
   })
 
   if (isLoading) {
