@@ -1,5 +1,5 @@
 import { Circle } from "lucide-react"
-import { formatNumber } from "./utils/formatters"
+import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface PriceVisualizationProps {
@@ -29,8 +29,8 @@ const calculateCirclePositions = (dividend: any) => {
 
 
   // Calculate BE strikes with updated formulas
-  const be1Strike = dividend.strike_call + ((dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration)) / leverage)
-  const be2Strike = dividend.strike_call + ((dividend.strike_call * ((7/100) * yearsUntilExpiration)) / leverage)
+  const be1Strike = dividend.strike_call + ((dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration)))
+  const be2Strike = dividend.strike_call + ((dividend.strike_call * ((7/100) * yearsUntilExpiration)))
 
   if (putDiff >= dividend.strike_put) {
     rightPosition = 90
@@ -66,7 +66,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
 
   // Calculate call contracts
   const callContracts = Math.round(
-    (FORMULA GOES HERE)
+    (100)
   )
 
   // Calculate put contracts

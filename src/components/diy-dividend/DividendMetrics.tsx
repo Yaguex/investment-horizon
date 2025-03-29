@@ -20,7 +20,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
 
   // Calculate entry contracts
-  const entryContracts = Math.round(
+  const callContracts = Math.round(
     (100)
   )
 
