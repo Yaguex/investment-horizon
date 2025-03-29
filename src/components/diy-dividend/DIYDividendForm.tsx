@@ -5,12 +5,18 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { TextField } from "@/components/diy-dividend/form-fields/TextField"
 import { NumberField } from "@/components/diy-dividend/form-fields/NumberField"
+import { SelectField } from "@/components/diy-dividend/form-fields/SelectField"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+
+const actionOptions = [
+  { value: "Enter", label: "Enter a new position" },
+  { value: "Exit", label: "Exit an existing position" }
+]
 
 interface DIYDividendFormValues {
   ticker: string
