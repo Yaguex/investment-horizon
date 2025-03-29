@@ -1,3 +1,4 @@
+
 import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -21,10 +22,22 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate total bond yield amount
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-
-  // Calculate call and put contracts. Both should match the shares owned of the underlying
-  const callContracts = Math.round(underlyingShares/100)
-  const putContracts = Math.round(underlyingShares/100)
+  // Calculate call and put contracts based on the "action" field value
+  let callContracts, putContracts;
+  
+  if (dividend.action === "Enter") {
+    // If action is "Enter", divide by 2
+    callContracts = Math.round(underlyingShares/100/2)
+    putContracts = Math.round(underlyingShares/100/2)
+  } else if (dividend.action === "Exit") {
+    // If action is "Exit", divide by 4
+    callContracts = Math.round(underlyingShares/100/4)
+    putContracts = Math.round(underlyingShares/100/4)
+  } else {
+    // Default case (maintain original calculation)
+    callContracts = Math.round(underlyingShares/100)
+    putContracts = Math.round(underlyingShares/100)
+  }
 
   // Calculate fees
   const callFee = callContracts * dividend.strike_call_mid * 100 * -1
