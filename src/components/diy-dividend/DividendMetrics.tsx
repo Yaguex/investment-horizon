@@ -12,6 +12,11 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
+  // Calculate number of underlying shares
+  const underlyingShares =  Math.round(
+    dividend.nominal / dividend.underlying_price
+  )
+
   // Calculate total dividend amount
   const totalDividend = dividend.nominal * (dividend.dividend_yield / 100) * yearsUntilExpiration
 
