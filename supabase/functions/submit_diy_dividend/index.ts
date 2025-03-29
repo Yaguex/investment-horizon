@@ -108,6 +108,7 @@ Deno.serve(async (req) => {
 
     // Handle put strike data if present
     if (dividend.strike_put && marketData.responses?.[1]) {
+      updateData.underlying_price = marketData.responses[0]?.marketData?.underlyingPrice || null
       updateData.strike_put_mid = marketData.responses[1]?.marketData?.mid || null
       updateData.strike_put_open_interest = marketData.responses[1]?.marketData?.openInterest || null
       updateData.strike_put_iv = marketData.responses[1]?.marketData?.iv || null
