@@ -48,13 +48,13 @@ export function DividendHeader({ dividend, onEdit }: DividendHeaderProps) {
       console.error('Error cloning dividend:', error)
       toast.error('Error cloning dividend')
     }
+  }
 
+  
   // Calculate number of underlying shares
   const underlyingShares =  Math.round(
     dividend.nominal / dividend.underlying_price
   )
-
-  }
 
   const targetOTM = dividend.strike_call ? Math.round((dividend.strike_put - dividend.strike_call) / dividend.strike_call * 100) : 0
 
