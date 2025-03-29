@@ -19,6 +19,11 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
 
+  // Calculate entry contracts
+  const entryContracts = Math.round(
+    (FORMULA GOES HERE)
+  )
+
   // Calculate put contracts (equal to call contracts)
   const putContracts = callContracts
 
