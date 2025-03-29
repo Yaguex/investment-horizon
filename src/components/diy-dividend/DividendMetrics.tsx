@@ -13,30 +13,25 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate number of underlying shares based on current underlying price and nominal
-  const underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
-
   // Calculate total dividend amount
   const totalDividend = dividend.nominal * (dividend.dividend_yield / 100) * yearsUntilExpiration
 
   // Calculate total bond yield amount
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate call and put contracts based on the "action" field value
-  let callContracts, putContracts;
+  // Calculate the shares of underlying, call contracts and put contracts based on the "action" field value and whether we are willing to sell puts
+  let underlyingShares, callContracts, putContracts;
   
-  if (dividend.action === "Enter" && dividend.strike_put === null) {
+  if dividend.strike_put === null {
     // If action is "Enter" and strike_put is NULL
-    callContracts = Math.round(underlyingShares/100/2)
-    putContracts = Math.round(underlyingShares/100/2)
-  } else if (dividend.action === "Exit") {
-    // If action is "Exit", divide by 4
-    callContracts = Math.round(underlyingShares/100/4)
-    putContracts = Math.round(underlyingShares/100/4)
-  } else {
-    // Default case (maintain original calculation)
+    underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
-    putContracts = Math.round(underlyingShares/100)
+    putContracts = 0
+  } else {
+    // If action is "Enter" and strike_put is not NULL
+    underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
+    callContracts = Math.round(underlyingShares/100)
+    putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
   }
 
   // Calculate fees
@@ -97,10 +92,10 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
         <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Shares to own: {formatNumber(underlyingShares, 0)} shares
+                Shares to buy today: {formatNumber(underlyingShares, 0)} shares
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Based on the nominal and the underlying's current price, this is the numbers of shares we should own outright
+                Based on the nominal, the underlying's current price, and whether we want to enter or exit the position, this is the numbers of shares we should buy outright now to construct our DIY Dividend
               </TooltipContent>
             </Tooltip>
           </p>

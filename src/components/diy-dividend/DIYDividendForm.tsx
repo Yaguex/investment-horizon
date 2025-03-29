@@ -13,14 +13,8 @@ import { useState } from "react"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 
-const actionOptions = [
-  { value: "Enter", label: "Enter a new position" },
-  { value: "Exit", label: "Exit an existing position" }
-]
-
 interface DIYDividendFormValues {
   ticker: string
-  action: string
   nominal: number | null
   expiration: string
   dividend_yield: number | null
@@ -44,7 +38,6 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
   const form = useForm<DIYDividendFormValues>({
     defaultValues: dividend ? {
       ticker: dividend.ticker || "",
-      action: dividend.action || "",
       nominal: dividend.nominal || null,
       expiration: dividend.expiration || "",
       dividend_yield: dividend.dividend_yield || null,
@@ -54,7 +47,6 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
       wiggle: dividend.wiggle || null
     } : {
       ticker: "",
-      action: "",
       nominal: null,
       expiration: "",
       dividend_yield: null,
@@ -117,12 +109,6 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
               control={form.control}
               name="ticker"
               label="Ticker"
-            />
-            <SelectField
-              control={form.control}
-              name="action"
-              label="Enter or exit a position?"
-              options={actionOptions}
             />
             <NumberField
               control={form.control}
