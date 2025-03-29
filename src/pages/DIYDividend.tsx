@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import Header from "@/components/Header"
 import { Button } from "@/components/ui/button"
@@ -99,11 +100,7 @@ const DIYDividend = () => {
         )}
 
         <div className="space-y-6">
-          {(!dividend || dividend.length === 0) && (
-            // Dont display anything if there is no DIY Dividend saved in the database
-          )}
           {dividend && dividend.length > 0 ? (
-            // Display existing DIY Dividends saved in the database
             dividend.map((item) => (
               <Card key={item.id} className="w-full">
                 <CardContent className="p-6">
