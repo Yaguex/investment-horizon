@@ -18,29 +18,20 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate total bond yield amount
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate protection contracts
-  const protectionContracts = Math.round(dividend.nominal / dividend.strike_protection / 100)
 
-  // Calculate entry contracts
-  const entryContracts = Math.round(
-    ((totalBondYield * -1) - (protectionContracts * dividend.strike_protection_mid * 100)) / 
-    ((dividend.strike_target_mid * 100) - (dividend.strike_entry_mid * 100))
-  )
-
-  // Calculate target contracts (equal to entry contracts)
-  const targetContracts = entryContracts
+  // Calculate put contracts (equal to call contracts)
+  const putContracts = callContracts
 
   // Calculate fees
-  const protectionFee = protectionContracts * dividend.strike_protection_mid * 100
-  const entryFee = entryContracts * dividend.strike_entry_mid * 100 * -1
-  const targetFee = targetContracts * dividend.strike_target_mid * 100
-  const totalFee = entryFee + targetFee + protectionFee
+  const callFee = callContracts * dividend.strike_call_mid * 100 * -1
+  const putFee = putContracts * dividend.strike_put_mid * 100
+  const totalFee = callFee + putFee
 
   // Calculate dividend's net
   const dividendNet = totalBondYield + totalFee
 
   // Calculate max gain in dollars
-  const maxGainDollars = ((dividend.strike_target - dividend.strike_entry) * entryContracts * 100) + dividendNet - (totalFee * (dividend.wiggle/100))
+  const maxGainDollars = ((dividend.strike_put - dividend.strike_call) * callContracts * 100) + dividendNet - (totalFee * (dividend.wiggle/100))
 
   // Calculate max gain percentage
   const maxGainPercentage = (maxGainDollars / (dividend.nominal + totalFee - dividendNet + (totalFee * (dividend.wiggle/100)))) * 100
@@ -52,7 +43,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const convexity = maxGainDollars / (dividendNet - (totalFee * (dividend.wiggle/100)) + (dividend.nominal * ((dividend.bond_yield/100) * (daysUntilExpiration/365))))
 
   // Calculate leverage ratio
-  const leverage = entryContracts / ((1000000 + totalDividend - dividendNet + (totalFee * (dividend.wiggle/100))) / dividend.strike_entry / 100)
+  const leverage = callContracts / ((1000000 + totalDividend - dividendNet + (totalFee * (dividend.wiggle/100))) / dividend.strike_call / 100)
 
   // Determine the color based on dividendNet value
   const getNetColor = (value: number) => {
@@ -130,7 +121,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 Max gain: {formatNumber(maxGainPercentage, 2)}% total
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total ROI if our target is reached at expiration
+                Total ROI if our put is reached at expiration
               </TooltipContent>
             </Tooltip>
             {" "}
@@ -139,7 +130,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 (${formatNumber(maxGainDollars, 0)} total)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total money earned if our target is reached at expiration
+                Total money earned if our put is reached at expiration
               </TooltipContent>
             </Tooltip>
           </p>
@@ -173,7 +164,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Annualized ROI should we reach our target by expiration
+                Annualized ROI should we reach our put by expiration
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Max ROI<br />annualized</p>
