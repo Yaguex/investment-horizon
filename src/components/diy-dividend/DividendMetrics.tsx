@@ -25,8 +25,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate call and put contracts based on the "action" field value
   let callContracts, putContracts;
   
-  if (dividend.action === "Enter") {
-    // If action is "Enter", divide by 2
+  if (dividend.action === "Enter" && dividend.strike_put === null) {
+    // If action is "Enter" and strike_put is NULL
     callContracts = Math.round(underlyingShares/100/2)
     putContracts = Math.round(underlyingShares/100/2)
   } else if (dividend.action === "Exit") {
