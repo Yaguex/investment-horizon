@@ -52,9 +52,7 @@ export function DividendHeader({ dividend, onEdit }: DividendHeaderProps) {
 
   
   // Calculate number of underlying shares
-  const underlyingShares =  Math.round(
-    dividend.nominal / dividend.underlying_price
-  )
+  const underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
 
   const targetOTM = dividend.strike_call ? Math.round((dividend.strike_put - dividend.strike_call) / dividend.strike_call * 100) : 0
 
@@ -63,7 +61,7 @@ export function DividendHeader({ dividend, onEdit }: DividendHeaderProps) {
       <div className="flex items-center">
         <span className="font-bold text-lg mr-8">{dividend.ticker}</span>
         <span className="text-sm text-gray-500 mr-8">{formatDate(dividend.expiration)}</span>
-        <span className="text-sm text-gray-500 mr-8">${formatNumber(dividend.nominal, 0)} ({underlyingShares} shares)</span>
+        <span className="text-sm text-gray-500 mr-8">${formatNumber(dividend.nominal, 0)} ({formatNumber(underlyingShares, 0)} shares)</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
