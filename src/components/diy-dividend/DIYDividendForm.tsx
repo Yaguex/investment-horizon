@@ -111,7 +111,7 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
             <NumberField
               control={form.control}
               name="nominal"
-              label="Nominal (final desired exposure) ($)"
+              label="Nominal (total desired exposure) ($)"
             />
             <TextField
               control={form.control}
