@@ -64,7 +64,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // Calculate total bond yield
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate call contracts
+  // Calculate call contracts number
   const callContracts = Math.round(
     (100)
   )
