@@ -121,7 +121,7 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
             <SelectField
               control={form.control}
               name="action"
-              label="Enter a new position or exit an existing position?"
+              label="Enter or exit a position?"
               options={actionOptions}
             />
             <NumberField
