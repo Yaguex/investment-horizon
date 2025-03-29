@@ -48,37 +48,27 @@ Deno.serve(async (req) => {
 
     // Step 3: Prepare strikes array
     console.log(`[${new Date().toISOString()}] Preparing strikes for market data fetch:`, {
-      strike_entry: dividend.strike_entry,
-      strike_target: dividend.strike_target,
-      strike_protection: dividend.strike_protection
+      strike_call: dividend.strike_call,
+      strike_put: dividend.strike_put
     })
 
     const strikes = []
 
-    if (dividend.strike_entry) {
+    if (dividend.strike_call) {
       strikes.push({
         ticker: dividend.ticker,
         expiration: dividend.expiration,
         type: 'call',
-        strike: dividend.strike_entry
+        strike: dividend.strike_call
       })
     }
 
-    if (dividend.strike_target) {
-      strikes.push({
-        ticker: dividend.ticker,
-        expiration: dividend.expiration,
-        type: 'call',
-        strike: dividend.strike_target
-      })
-    }
-
-    if (dividend.strike_protection) {
+    if (dividend.strike_put) {
       strikes.push({
         ticker: dividend.ticker,
         expiration: dividend.expiration,
         type: 'put',
-        strike: dividend.strike_protection
+        strike: dividend.strike_put
       })
     }
 
@@ -105,35 +95,25 @@ Deno.serve(async (req) => {
     console.log(`[${new Date().toISOString()}] Updating dividend with market data`)
     const updateData: any = {}
 
-    // Handle entry strike data if present
-    if (dividend.strike_entry && marketData.responses?.[0]) {
+    // Handle call strike data if present
+    if (dividend.strike_call && marketData.responses?.[0]) {
       updateData.underlying_price = marketData.responses[0]?.marketData?.underlyingPrice || null
-      updateData.strike_entry_mid = marketData.responses[0]?.marketData?.mid || null
-      updateData.strike_entry_open_interest = marketData.responses[0]?.marketData?.openInterest || null
-      updateData.strike_entry_iv = marketData.responses[0]?.marketData?.iv || null
-      updateData.strike_entry_delta = marketData.responses[0]?.marketData?.delta || null
-      updateData.strike_entry_intrinsic_value = marketData.responses[0]?.marketData?.intrinsicValue || null
-      updateData.strike_entry_extrinsic_value = marketData.responses[0]?.marketData?.extrinsicValue || null
+      updateData.strike_call_mid = marketData.responses[0]?.marketData?.mid || null
+      updateData.strike_call_open_interest = marketData.responses[0]?.marketData?.openInterest || null
+      updateData.strike_call_iv = marketData.responses[0]?.marketData?.iv || null
+      updateData.strike_call_delta = marketData.responses[0]?.marketData?.delta || null
+      updateData.strike_call_intrinsic_value = marketData.responses[0]?.marketData?.intrinsicValue || null
+      updateData.strike_call_extrinsic_value = marketData.responses[0]?.marketData?.extrinsicValue || null
     }
 
-    // Handle target strike data if present
-    if (dividend.strike_target && marketData.responses?.[1]) {
-      updateData.strike_target_mid = marketData.responses[1]?.marketData?.mid || null
-      updateData.strike_target_open_interest = marketData.responses[1]?.marketData?.openInterest || null
-      updateData.strike_target_iv = marketData.responses[1]?.marketData?.iv || null
-      updateData.strike_target_delta = marketData.responses[1]?.marketData?.delta || null
-      updateData.strike_target_intrinsic_value = marketData.responses[1]?.marketData?.intrinsicValue || null
-      updateData.strike_target_extrinsic_value = marketData.responses[1]?.marketData?.extrinsicValue || null
-    }
-
-    // Handle protection strike data if present
-    if (dividend.strike_protection && marketData.responses?.[2]) {
-      updateData.strike_protection_mid = marketData.responses[2]?.marketData?.mid || null
-      updateData.strike_protection_open_interest = marketData.responses[2]?.marketData?.openInterest || null
-      updateData.strike_protection_iv = marketData.responses[2]?.marketData?.iv || null
-      updateData.strike_protection_delta = marketData.responses[2]?.marketData?.delta || null
-      updateData.strike_protection_intrinsic_value = marketData.responses[2]?.marketData?.intrinsicValue || null
-      updateData.strike_protection_extrinsic_value = marketData.responses[2]?.marketData?.extrinsicValue || null
+    // Handle put strike data if present
+    if (dividend.strike_put && marketData.responses?.[1]) {
+      updateData.strike_put_mid = marketData.responses[1]?.marketData?.mid || null
+      updateData.strike_put_open_interest = marketData.responses[1]?.marketData?.openInterest || null
+      updateData.strike_put_iv = marketData.responses[1]?.marketData?.iv || null
+      updateData.strike_put_delta = marketData.responses[1]?.marketData?.delta || null
+      updateData.strike_put_intrinsic_value = marketData.responses[1]?.marketData?.intrinsicValue || null
+      updateData.strike_put_extrinsic_value = marketData.responses[1]?.marketData?.extrinsicValue || null
     }
 
     const { error: updateError } = await supabase

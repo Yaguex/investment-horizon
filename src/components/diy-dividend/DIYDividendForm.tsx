@@ -14,12 +14,11 @@ interface DIYDividendFormValues {
   ticker: string
   nominal: number | null
   expiration: string
-  bond_yield: number | null
-  strike_entry: number | null
-  strike_target: number | null
-  strike_protection: number | null
-  wiggle: number | null
   dividend_yield: number | null
+  bond_yield: number | null
+  strike_call: number | null
+  strike_put: number | null
+  wiggle: number | null
 }
 
 interface DIYDividendFormProps {
@@ -37,22 +36,20 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
       ticker: dividend.ticker || "",
       nominal: dividend.nominal || null,
       expiration: dividend.expiration || "",
+      dividend_yield: dividend.dividend_yield || null,
       bond_yield: dividend.bond_yield || null,
-      strike_entry: dividend.strike_entry || null,
-      strike_target: dividend.strike_target || null,
-      strike_protection: dividend.strike_protection || null,
-      wiggle: dividend.wiggle || null,
-      dividend_yield: dividend.dividend_yield || null
+      strike_call: dividend.strike_call || null,
+      strike_put: dividend.strike_put || null,
+      wiggle: dividend.wiggle || null
     } : {
       ticker: "",
       nominal: null,
       expiration: "",
+      dividend_yield: null,
       bond_yield: null,
-      strike_entry: null,
-      strike_target: null,
-      strike_protection: null,
-      wiggle: null,
-      dividend_yield: null
+      strike_call: null,
+      strike_put: null,
+      wiggle: null
     }
   })
 
@@ -124,18 +121,13 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
             />
             <NumberField
               control={form.control}
-              name="strike_entry"
-              label="Strike Entry"
+              name="strike_call"
+              label="Strike Call"
             />
             <NumberField
               control={form.control}
-              name="strike_target"
-              label="Strike Target"
-            />
-            <NumberField
-              control={form.control}
-              name="strike_protection"
-              label="Strike Protection"
+              name="strike_put"
+              label="Strike Put"
             />
             <NumberField
               control={form.control}
