@@ -1,4 +1,4 @@
-import { formatNumber } from "@/components/diy-dividend/utils/formatters"
+import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface DividendMetricsProps {
