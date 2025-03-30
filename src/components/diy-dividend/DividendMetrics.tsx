@@ -159,7 +159,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 Total annualized ROI of our DIY Dividend structure.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">DIY Dividend<br>annualized</p>
+            <p className="text-xs text-black">DIY Dividend<br />annualized</p>
           </div>
           <div className="text-center">
             <Tooltip>
