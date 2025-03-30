@@ -65,7 +65,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const getNetColor = (value: number) => {
     if (value > 0) return "text-green-600"
     if (value < 0) return "text-red-600"
-    return "text-black"
+    return "text-black" // for values equal to 0
   }
 
   // Determine the color based on maxAnnualROI value
