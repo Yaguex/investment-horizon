@@ -1,7 +1,11 @@
-
 import { Circle } from "lucide-react"
 import { formatNumber } from "@/components/trade/utils/formatters"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip"
 
 interface PriceVisualizationProps {
   dividend: any
@@ -168,10 +172,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
                 <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Call at ${formatNumber(dividend.strike_call, 0)}
-                {dividend.strike_put !== 0 && (
-                  and Put at ${formatNumber(dividend.strike_put, 0)}
-                )}
+                <span>Call at ${formatNumber(dividend.strike_call, 0)}</span>{dividend.strike_put !== 0 && (<span> and Put at ${formatNumber(dividend.strike_put, 0)}</span>)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -179,7 +180,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         )}
 
 
-        {/* BE1 Circle */}
+        {/* BE1 Circle  */}
         {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
@@ -197,42 +198,6 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
-        {/* BE2 Circle */}
-        {dividend.strike_call !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be2Position}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-gray-300 mb-1">${Math.round(be2Strike)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                BE2 (7%): ${formatNumber(be2Strike, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
-          </div>
-        )}
-        
-        {/* Price rectangles */}
-        <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
-          {/* Red rectangle - only show if strike_put exists */}
-          {dividend.strike_put !== 0 && (
-            <div 
-              className="absolute left-0 top-0 bottom-0 bg-red-500"
-              style={{ width: `${leftPosition}%` }}
-            />
-          )}
-          {/* Green rectangle */}
-          <div 
-            className="absolute top-0 bottom-0 bg-green-500"
-            style={{ 
-              left: `${middlePosition}%`,
-              width: `${rightPosition - middlePosition}%`
-            }}
-          />
-        </div>
         
         {/* Position indicators aligned with circles */}
         {dividend.underlying_price !== 0 && (
@@ -240,7 +205,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${underlyingPosition}%` }}
           >
-            <span className="text-xs text-black">Long {formatNumber(underlyingShares, 0)} shares</span>
+            <span className="text-xs text-black">Long <span className="font-bold"></span>{formatNumber(underlyingShares, 0)}</span> shares</span>
           </div>
         )}
 
@@ -249,11 +214,9 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${callPosition}%` }}
           >
-            <span className="text-xs text-black"><span className="font-bold">-{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid || 0, 2)}</span>
-            {dividend.strike_put !== 0 && (
-              <span className="text-xs text-black"><span className="font-bold">-{putContracts}C</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
-            )}
-            <span className="text-xs text-green-500">${formatNumber(callFee, 0)}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid, 2)}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid, 2)}</span>
+            <span className="text-xs text-green-500">${formatNumber(totalFee, 0)}</span>
           </div>
         )}
         
@@ -262,7 +225,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${putPosition}%` }}
           >
-            <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid, 2)}</span>
             <span className="text-xs text-green-500">${formatNumber(putFee, 0)}</span>
           </div>
         )}
