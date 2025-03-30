@@ -36,8 +36,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate total dividend amount
   const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration  
 
-  // Calculate fees
-  const callFee = callContracts * dividend.strike_call_mid * 100 * -1
+  // Calculate option premium collected
+  const callFee = callContracts * dividend.strike_call_mid * 100
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
 
@@ -140,6 +140,17 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
             </Tooltip>
           </p>
           <p className="text-black">
+            Options premium: {" "}
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Earnings collected in premiums
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
                 Max gain: {formatNumber(maxGainPercentage, 2)}% total
@@ -166,17 +177,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Cost of the option structure minus what we will recoup through bond interests. Ideally, you should be aiming for a costless dividend
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-black">
-            Options premium: {" "}
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Outlay in premiums to enter the trade today
               </TooltipContent>
             </Tooltip>
           </p>
