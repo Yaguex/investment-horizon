@@ -41,16 +41,6 @@ const calculateCirclePositions = (dividend: any) => {
     }
   }
 
-  const putDiffForRectangle = dividend.strike_put ? dividend.strike_put - dividend.strike_call : 0
-
-  if (putDiffForRectangle >= dividend.strike_put) {
-    rightPosition = 90
-    leftPosition = 50 - ((dividend.strike_put * 40) / putDiffForRectangle)
-  } else {
-    leftPosition = 10
-    rightPosition = 50 + ((putDiffForRectangle * 40) / dividend.strike_put)
-  }
-
   // Calculate days until expiration
   const today = new Date()
   const expirationDate = dividend.expiration ? new Date(dividend.expiration) : today
@@ -73,6 +63,9 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     console.warn("Invalid dividend data received:", dividend)
     return <div className="text-red-500">Invalid dividend data</div>
   }
+
+  // Move the putDiffForRectangle calculation outside of the functions so it's accessible everywhere
+  const putDiffForRectangle = dividend.strike_put ? dividend.strike_put - dividend.strike_call : 0
 
   const { 
     leftPosition, 
@@ -129,6 +122,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   }
 
   // Calculate BE position
+  let be0Position;
   if (putDiffForRectangle >= dividend.strike_put) {
     be0Position = Math.min(100, 50 + ((be0Strike - dividend.strike_call) * 40 / putDiffForRectangle))
   } else {
