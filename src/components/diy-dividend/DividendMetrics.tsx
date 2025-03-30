@@ -99,7 +99,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Shares to buy today: {formatNumber(underlyingShares, 0)} shares ({positionSize})
+                <span>Shares to buy today: </span><span>{formatNumber(underlyingShares, 0)} shares ({positionSize})</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Based on whether we sell puts, this is the numbers of shares we should buy outright today to construct our DIY Dividend. If we sell puts, the amount to buy today will be half of the total allowed by the Nominal exposed.
@@ -107,13 +107,12 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
             </Tooltip>
           </p>
           <p className="text-black">
-            Options premium: {" "}
             <Tooltip>
               <TooltipTrigger>
-                <span className={getNetColor(totalFee)}>${formatNumber(totalFee, 0)}</span>
+                <span>Options premium: </span><span className={getNetColor(totalFee)}>${formatNumber(totalFee, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Earnings collected in option premiums
+              Earnings collected in option premiums.
               </TooltipContent>
             </Tooltip>
           </p>
