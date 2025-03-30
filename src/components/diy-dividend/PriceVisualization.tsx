@@ -1,4 +1,3 @@
-
 import { Circle } from "lucide-react"
 import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -57,18 +56,13 @@ const calculateCirclePositions = (dividend: any) => {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate BE strikes with updated formulas
+  // Calculate BE strike with risk-free rate formula
   const be1Strike = dividend.strike_call + (dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration))
-  const be2Strike = dividend.strike_call + (dividend.strike_call * ((7/100) * yearsUntilExpiration))
 
-  // Calculate BE positions
-  if (putDiffForRectangle >= dividend.strike_put) {
-    be1Position = Math.min(100, 50 + ((be1Strike - dividend.strike_call) * 40 / putDiffForRectangle))
-    be2Position = Math.min(100, 50 + ((be2Strike - dividend.strike_call) * 40 / putDiffForRectangle))
-  } else {
-    be1Position = Math.min(100, 50 + ((be1Strike - dividend.strike_call) * 40 / dividend.strike_put))
-    be2Position = Math.min(100, 50 + ((be2Strike - dividend.strike_call) * 40 / dividend.strike_put))
-  }
+  // Calculate BE position
+  const be1Position = putDiffForRectangle >= dividend.strike_put 
+    ? Math.min(100, 50 + ((be1Strike - dividend.strike_call) * 40 / putDiffForRectangle))
+    : Math.min(100, 50 + ((be1Strike - dividend.strike_call) * 40 / dividend.strike_put))
 
   return { 
     leftPosition, 
@@ -78,9 +72,7 @@ const calculateCirclePositions = (dividend: any) => {
     callPosition,
     putPosition,
     be1Position, 
-    be2Position, 
-    be1Strike, 
-    be2Strike 
+    be1Strike 
   }
 }
 
@@ -99,9 +91,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     callPosition,
     putPosition,
     be1Position, 
-    be2Position, 
-    be1Strike, 
-    be2Strike 
+    be1Strike 
   } = calculateCirclePositions(dividend)
   
   // Calculate days until expiration for bond yield
@@ -109,7 +99,6 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const expirationDate = dividend.expiration ? new Date(dividend.expiration) : today
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
-
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
   let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
@@ -177,7 +166,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
-        {/* BE1 Circle */}
+        {/* BE1 Circle - Now the only breakeven circle */}
         {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
@@ -188,25 +177,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
                 <span className="text-sm text-gray-300 mb-1">${Math.round(be1Strike)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                BE1 (risk free rate): ${formatNumber(be1Strike, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
-          </div>
-        )}
-
-        {/* BE2 Circle */}
-        {dividend.strike_call !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be2Position}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-gray-300 mb-1">${Math.round(be2Strike)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                BE2 (7%): ${formatNumber(be2Strike, 2)}
+                BE (risk free rate): ${formatNumber(be1Strike, 2)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
