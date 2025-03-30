@@ -157,7 +157,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
-        {/* Strike Call Circle */}
+        {/* Strike Call Circle (now represents both call and put) */}
         {dividend.strike_call !== 0 && callPosition && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
@@ -168,25 +168,9 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
                 <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Call strike: ${formatNumber(dividend.strike_call, 0)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
-
-        {/* Strike Put Circle */}
-        {dividend.strike_put !== 0 && putPosition && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${putPosition}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_put, 0)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Put strike: ${formatNumber(dividend.strike_put, 0)}
+                {dividend.strike_put !== 0 ? 
+                  `Call & Put strike: $${formatNumber(dividend.strike_call, 0)}` : 
+                  `Call strike: $${formatNumber(dividend.strike_call, 0)}`}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -258,23 +242,17 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
+        {/* Combined call and put information under call position */}
         {dividend.strike_call !== 0 && callPosition && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${callPosition}%` }}
           >
             <span className="text-xs text-black"><span className="font-bold">-{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid || 0, 2)}</span>
-            <span className="text-xs text-green-500">${formatNumber(callFee, 0)}</span>
-          </div>
-        )}
-        
-        {dividend.strike_put !== 0 && putPosition && (
-          <div 
-            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${putPosition}%` }}
-          >
-            <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
-            <span className="text-xs text-green-500">${formatNumber(putFee, 0)}</span>
+            {dividend.strike_put !== 0 && (
+              <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
+            )}
+            <span className="text-xs text-green-500">${formatNumber(totalFee, 0)}</span>
           </div>
         )}
       </div>
