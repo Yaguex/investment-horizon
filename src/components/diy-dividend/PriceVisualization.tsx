@@ -176,7 +176,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         )}
 
 
-        {/* BE1 Circle */}
+        {/* BE1 Circle  */}
         {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
