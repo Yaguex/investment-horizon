@@ -57,9 +57,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate Extrinsic vs Total ratio
   const extrinsicRatio = ((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 ) / totalIncome ) * 100
 
-  // Calculate leverage ratio
-  const leverage = callContracts / ((1000000 + totalDividend - dividendNet + (totalFee * (dividend.wiggle/100))) / dividend.strike_call / 100)
-
   // Determine the color based on value above or below 0
   const getNetColor = (value: number) => {
     if (value > 0) return "text-green-600"
@@ -79,13 +76,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     if (value > 50) return "text-green-600"
     if (value < 30) return "text-red-600"
     return "text-orange-500"  // for values between 30 and 50 (inclusive)
-  }
-
-  // Determine the color based on convexity value
-  const getConvexityColor = (value: number) => {
-    if (value > 4) return "text-green-600"
-    if (value < 3) return "text-red-600"
-    return "text-orange-500"  // for values between 3 and 4 (inclusive)
   }
 
   return (
@@ -171,17 +161,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Extrinsic<br />ratio</p>
-          </div>
-          <div className="text-center">
-            <Tooltip>
-              <TooltipTrigger>
-                <p className={`${getConvexityColor(convexity)} text-xl font-bold`}>{formatNumber(convexity, 1)}</p>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                How many dollars can I potentially earn for every dollar I give up at the risk-free rate. Anything above 4-to-1 is a pretty good convexity bet
-              </TooltipContent>
-            </Tooltip>
-            <p className="text-xs text-black">Convexity<br />ratio</p>
           </div>
         </div>
       </div>
