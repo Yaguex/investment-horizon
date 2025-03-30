@@ -102,7 +102,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 Shares to buy today: {formatNumber(underlyingShares, 0)} shares ({positionSize})
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Based on the nominal, the underlying's current price, and whether we want to enter or exit the position, this is the numbers of shares we should buy outright now to construct our DIY Dividend
+                Based on whether we sell puts, this is the numbers of shares we should buy outright today to construct our DIY Dividend. If we sell puts, the amount to buy today will be half of the total allowed by the Nominal exposed.
               </TooltipContent>
             </Tooltip>
           </p>
