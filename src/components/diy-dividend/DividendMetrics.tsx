@@ -171,7 +171,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 How much of the DIY Dividend's total income comes from Extrinsic value (the higher the better). If most of the income comes from intrinsic, bond yield, underlying's natural dividend, etc. then the DIY Dividend structure is not providing much alpha.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Leverage<br />ratio</p>
+            <p className="text-xs text-black">Extrinsic<br />ratio</p>
           </div>
           <div className="text-center">
             <Tooltip>
