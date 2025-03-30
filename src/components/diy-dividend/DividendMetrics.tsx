@@ -105,29 +105,20 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                <span>Dividend income: </span><span className={getNetColor(totalDividend)}>(${formatNumber(totalDividend, 0)})</span><span> ({dividend.dividend_yield}% annual)</span>
+                <span>Dividend income: </span><span className={getNetColor(totalDividend)}>${formatNumber(totalDividend, 0)}</span><span> ({dividend.dividend_yield}% annual)</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the DIY Dividend for the amount of shares to be bought today.
+                Total net money (after withholding tax) earned in dividends throughout the entire lifespan of the DIY Dividend for the amount of shares to be bought today.
               </TooltipContent>
             </Tooltip>
           </p>
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Bond income: {dividend.bond_yield}% annual
+                <span>Bond income: </span><span className={getNetColor(totalBondYield)}>${formatNumber(totalBondYield, 0)}</span><span> ({dividend.bond_yield}% annual)</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Annual interest rate of a risk free bond with a maturity similar to the dividend expiration
-              </TooltipContent>
-            </Tooltip>
-            {" "}
-            <Tooltip>
-              <TooltipTrigger>
-              <span className={getNetColor(totalBondYield)}>(${formatNumber(totalBondYield, 0)})</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total money we will earn from the bond interests throughout the entire lifespan of the dividend
+              Annual interest rate of a risk free bond with a maturity similar to the dividend expiration
               </TooltipContent>
             </Tooltip>
           </p>
