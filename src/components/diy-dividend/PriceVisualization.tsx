@@ -95,7 +95,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${dividend.underlying_price}</span>
+                <span className="text-sm text-black mb-1">${formatNumber(dividend.underlying_price, 2)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
                 Underlying price: ${formatNumber(dividend.underlying_price, 2)}
