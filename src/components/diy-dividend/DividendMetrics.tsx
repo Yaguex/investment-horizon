@@ -55,7 +55,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const maxAnnualROI = (totalIncome / dividend.nominal) * 100 * (365 / daysUntilExpiration)
 
   // Calculate Extrinsic vs Total ratio
-  const extrinsicRatio = ((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 ) / totalIncome ) * 100
+  const extrinsicRatio = (((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 )) / totalIncome ) * 100
 
   // Determine the color based on value above or below 0
   const getNetColor = (value: number) => {
@@ -160,7 +160,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 How much of the DIY Dividend's total income comes from Extrinsic value (the higher the better). If most of the income comes from intrinsic, bond yield, underlying's natural dividend, etc. then the DIY Dividend structure is not providing much alpha.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Extrinsic<br />ratio</p>
+            <p className="text-xs text-black">Extrinsic<br />vs Total</p>
           </div>
         </div>
       </div>
