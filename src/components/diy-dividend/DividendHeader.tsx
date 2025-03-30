@@ -54,8 +54,8 @@ export function DividendHeader({ dividend, onEdit }: DividendHeaderProps) {
   const underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
 
   // Calculate ITM percentage
-  const callITM = dividend.strike_call ? Math.round(((dividend.strike_call - underlying_price) / underlying_price) * 100 * -1) : 0
-  const putITM = dividend.strike_put ? Math.round(((dividend.strike_put - underlying_price) / underlying_price) * 100 * -1) : 0
+  const callITM = dividend.strike_call ? Math.round(((dividend.strike_call - dividend.underlying_price) / dividend.underlying_price) * 100 * -1) : 0
+  const putITM = dividend.strike_put ? Math.round(((dividend.strike_put - dividend.underlying_price) / dividend.underlying_price) * 100 * -1) : 0
 
   return (
     <div className="flex justify-between items-center">
