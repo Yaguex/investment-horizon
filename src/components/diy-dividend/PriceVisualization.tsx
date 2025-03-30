@@ -10,7 +10,7 @@ interface PriceVisualizationProps {
 const calculateCirclePositions = (dividend: any) => {
   const middlePosition = 50
   const underlyingPosition = 50 // Underlying price will be at 50% position
-  let leftPosition, rightPosition, be1Position, callPosition, putPosition
+  let leftPosition, rightPosition, be0Position, callPosition, putPosition
 
   // Determine which strike is farther from underlying price
   const callDiff = Math.abs(dividend.strike_call - dividend.underlying_price)
@@ -57,16 +57,6 @@ const calculateCirclePositions = (dividend: any) => {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate BE strike with updated formula
-  const be1Strike = dividend.strike_call + (dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration))
-
-  // Calculate BE position
-  if (putDiffForRectangle >= dividend.strike_put) {
-    be1Position = Math.min(100, 50 + ((be1Strike - dividend.strike_call) * 40 / putDiffForRectangle))
-  } else {
-    be1Position = Math.min(100, 50 + ((be1Strike - dividend.strike_call) * 40 / dividend.strike_put))
-  }
-
   return { 
     leftPosition, 
     middlePosition, 
@@ -74,8 +64,7 @@ const calculateCirclePositions = (dividend: any) => {
     underlyingPosition, 
     callPosition,
     putPosition,
-    be1Position,
-    be1Strike
+    be0Position
   }
 }
 
@@ -93,8 +82,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     underlyingPosition, 
     callPosition,
     putPosition,
-    be1Position,
-    be1Strike
+    be0Position
   } = calculateCirclePositions(dividend)
   
   // Calculate days until expiration for bond yield
@@ -128,6 +116,26 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const callFee = callContracts * dividend.strike_call_mid * 100
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
+
+  // Calculate Total Incom
+  const totalIncome = totalBondYield + totalFee + totalDividend
+
+  // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
+  let be0Strike;
+  if (dividend.strike_put === null) {
+    // If strike_put is NULL, we can buy into the position in full amount right away
+    be0Strike = (dividend.nominal - totalIncome) / underlyingShares
+  } else {
+    // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
+    be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
+  }
+
+  // Calculate BE position
+  if (putDiffForRectangle >= dividend.strike_put) {
+    be0Position = Math.min(100, 50 + ((be0Strike - dividend.strike_call) * 40 / putDiffForRectangle))
+  } else {
+    be0Position = Math.min(100, 50 + ((be0Strike - dividend.strike_call) * 40 / dividend.strike_put))
+  }
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -170,18 +178,18 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
-        {/* BE1 Circle */}
+        {/* BE0 Circle */}
         {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be1Position}%` }}
+            style={{ left: `${be0Position}%` }}
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-gray-300 mb-1">${Math.round(be1Strike)}</span>
+                <span className="text-sm text-gray-300 mb-1">${Math.round(be0Strike)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                BE (risk free rate): ${formatNumber(be1Strike, 2)}
+                BE (risk free rate): ${formatNumber(be0Strike, 2)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
