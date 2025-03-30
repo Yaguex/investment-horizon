@@ -168,7 +168,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getExtrinsicRatioColor(extrinsicRatio)} text-xl font-bold`}>{formatNumber(extrinsicRatio, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                How much of the DIY Dividend's income comes from Extrinsic value (the higher the better). If most of the income comes from intrinsic, bond yield, underlying's natural dividend, etc. then the DIY Dividend structure is not providing much alpha.
+                How much of the DIY Dividend's total income comes from Extrinsic value (the higher the better). If most of the income comes from intrinsic, bond yield, underlying's natural dividend, etc. then the DIY Dividend structure is not providing much alpha.
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Leverage<br />ratio</p>
