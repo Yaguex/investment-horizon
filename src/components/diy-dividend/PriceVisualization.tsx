@@ -181,7 +181,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
                 <span className="text-sm text-gray-300 mb-1">${Math.round(be0Strike)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                BE (risk free rate): ${formatNumber(be0Strike, 2)}
+                BE0 (nominal): ${formatNumber(be0Strike, 2)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
