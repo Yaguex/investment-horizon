@@ -248,7 +248,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           />
         </div>
         
-        {/* Position indicators aligned with circles  */}
+        {/* Position indicators aligned with circles */}
         {dividend.underlying_price !== 0 && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
