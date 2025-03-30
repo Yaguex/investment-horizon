@@ -168,7 +168,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
                 <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Call strike: ${formatNumber(dividend.strike_call, 2)}
+                Call & Put strike: ${formatNumber(dividend.strike_call, 0)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -254,7 +254,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${underlyingPosition}%` }}
           >
-            <span className="text-xs text-black">Long {formatNumber(underlyingShares, 0)} shares</span>
+            <span className="text-xs text-black">Long <span className="font-bold"></span>{formatNumber(underlyingShares, 0)}</span> shares</span>
           </div>
         )}
 
@@ -263,8 +263,9 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${callPosition}%` }}
           >
-            <span className="text-xs text-black"><span className="font-bold">+{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid || 0, 2)}</span>
-            <span className="text-xs text-red-500">${formatNumber(callFee, 0)}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid || 0, 2)}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{putContracts}C</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
+            <span className="text-xs text-green-500">${formatNumber(totalFee, 0)}</span>
           </div>
         )}
         
