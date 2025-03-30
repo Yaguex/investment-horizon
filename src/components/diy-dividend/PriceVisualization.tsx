@@ -168,7 +168,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
                 <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Call at ${formatNumber(dividend.strike_call, 0)} and Put at ${formatNumber(dividend.strike_put, 0)}
+                <span>Call at ${formatNumber(dividend.strike_call, 0)}</span>{dividend.strike_put !== 0 && (<span> and Put at ${formatNumber(dividend.strike_put, 0)}</span>)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -194,42 +194,6 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
-        {/* BE2 Circle */}
-        {dividend.strike_call !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be2Position}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-gray-300 mb-1">${Math.round(be2Strike)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                BE2 (7%): ${formatNumber(be2Strike, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
-          </div>
-        )}
-        
-        {/* Price rectangles */}
-        <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
-          {/* Red rectangle - only show if strike_put exists */}
-          {dividend.strike_put !== 0 && (
-            <div 
-              className="absolute left-0 top-0 bottom-0 bg-red-500"
-              style={{ width: `${leftPosition}%` }}
-            />
-          )}
-          {/* Green rectangle */}
-          <div 
-            className="absolute top-0 bottom-0 bg-green-500"
-            style={{ 
-              left: `${middlePosition}%`,
-              width: `${rightPosition - middlePosition}%`
-            }}
-          />
-        </div>
         
         {/* Position indicators aligned with circles */}
         {dividend.underlying_price !== 0 && (
