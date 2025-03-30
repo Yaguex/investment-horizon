@@ -143,7 +143,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
             Options premium: {" "}
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
+                <span className={getNetColor(totalFee)}>${formatNumber(totalFee, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Earnings collected in premiums
