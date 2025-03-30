@@ -15,7 +15,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Calculate the shares of underlying, call contracts and put contracts based on the "action" field value and whether we are willing to sell puts
   let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
-  
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
