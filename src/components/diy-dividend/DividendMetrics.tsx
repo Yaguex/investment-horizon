@@ -27,13 +27,13 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
-    positionSize = "Full position"
+    positionSize = "full position"
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
-    positionSize = "Half position"
+    positionSize = "half position"
   }
 
   // Calculate fees
