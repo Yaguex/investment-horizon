@@ -89,6 +89,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   return (
     <TooltipProvider delayDuration={100}>
+
+      {/* Below goes the small numbers in the bottom left of the display*/}
       <div className="text-sm space-y-2 flex justify-between">
         <div>
         <p className="text-black">
@@ -150,37 +152,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
               </TooltipContent>
             </Tooltip>
           </p>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
-                Max gain: {formatNumber(maxGainPercentage, 2)}% total
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total ROI if our put is reached at expiration
-              </TooltipContent>
-            </Tooltip>
-            {" "}
-            <Tooltip>
-              <TooltipTrigger>
-                (${formatNumber(maxGainDollars, 0)} total)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total money earned if our put is reached at expiration
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-black">
-          Dividend's net: {" "}
-            <Tooltip>
-              <TooltipTrigger>
-                <span className={getNetColor(dividendNet)}>${formatNumber(dividendNet, 0)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Cost of the option structure minus what we will recoup through bond interests. Ideally, you should be aiming for a costless dividend
-              </TooltipContent>
-            </Tooltip>
-          </p>
         </div>
+
+        {/* Below goes the large numbers in the bottom right of the display*/}
         <div className="flex gap-8 items-start">
           <div className="text-center">
             <Tooltip>
