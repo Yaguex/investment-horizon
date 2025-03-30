@@ -263,8 +263,8 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${callPosition}%` }}
           >
-            <span className="text-xs text-black"><span className="font-bold">+{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid || 0, 2)}</span>
-            <span className="text-xs text-red-500">${formatNumber(callFee, 0)}</span>
+            <span className="text-xs text-black"><span className="font-bold">-{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid || 0, 2)}</span>
+            <span className="text-xs text-green-500">${formatNumber(callFee, 0)}</span>
           </div>
         )}
         
