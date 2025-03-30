@@ -254,7 +254,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${underlyingPosition}%` }}
           >
-            <span className="text-xs text-black">Long {underlyingShares} shares</span>
+            <span className="text-xs text-black">Long {formatNumber(underlyingShares, 0)} shares</span>
           </div>
         )}
 
