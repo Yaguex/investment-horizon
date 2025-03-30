@@ -63,8 +63,7 @@ const calculateCirclePositions = (dividend: any) => {
     rightPosition, 
     underlyingPosition, 
     callPosition,
-    putPosition,
-    be0Position
+    putPosition
   }
 }
 
@@ -81,8 +80,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     rightPosition, 
     underlyingPosition, 
     callPosition,
-    putPosition,
-    be0Position
+    putPosition
   } = calculateCirclePositions(dividend)
   
   // Calculate days until expiration for bond yield
