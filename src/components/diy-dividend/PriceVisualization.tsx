@@ -165,10 +165,10 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 2)}</span>
+                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Call strike: ${formatNumber(dividend.strike_call, 2)}
+                Call strike: ${formatNumber(dividend.strike_call, 0)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -183,10 +183,10 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_put, 2)}</span>
+                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_put, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Put strike: ${formatNumber(dividend.strike_put, 2)}
+                Put strike: ${formatNumber(dividend.strike_put, 0)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
