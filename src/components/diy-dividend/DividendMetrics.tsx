@@ -20,18 +20,20 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
   // Calculate the shares of underlying, call contracts and put contracts based on the "action" field value and whether we are willing to sell puts
-  let underlyingShares, callContracts, putContracts;
+  let underlyingShares, callContracts, putContracts, positionSize;
   
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
+    positionSize = "Full position"
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
+    positionSize = "Half position"
   }
 
   // Calculate fees
@@ -92,7 +94,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
         <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Shares to buy today: {formatNumber(underlyingShares, 0)} shares
+                Shares to buy today: {formatNumber(underlyingShares, 0)} shares ({positionSize})
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Based on the nominal, the underlying's current price, and whether we want to enter or exit the position, this is the numbers of shares we should buy outright now to construct our DIY Dividend
