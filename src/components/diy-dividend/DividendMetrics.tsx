@@ -13,9 +13,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate total dividend amount
-  const totalDividend = dividend.nominal * (dividend.dividend_yield / 100) * yearsUntilExpiration
-
   // Calculate total bond yield amount
   const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
@@ -35,6 +32,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
     positionSize = "half position"
   }
+
+  // Calculate total dividend amount
+  const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration  
 
   // Calculate fees
   const callFee = callContracts * dividend.strike_call_mid * 100 * -1
@@ -116,7 +116,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 (${formatNumber(totalDividend, 0)} total)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the dividend if we had bought the underlying
+                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the dividend for the amount of shares to be bought today.
               </TooltipContent>
             </Tooltip>
           </p>
