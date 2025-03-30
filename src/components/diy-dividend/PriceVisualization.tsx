@@ -105,42 +105,6 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
-        {/* Strike Call Circle (Middle) */}
-        {dividend.strike_call !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${middlePosition}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${dividend.strike_call}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Call strike: ${formatNumber(dividend.strike_call, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
-        
-        {/* Strike Put Circle (Right) */}
-        {dividend.strike_put !== 0 && (
-          <div 
-            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${rightPosition}%` }}
-          >
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${dividend.strike_put}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white">
-                Put strike: ${formatNumber(dividend.strike_put, 2)}
-              </TooltipContent>
-            </Tooltip>
-            <Circle className="h-4 w-4 fill-black text-black" />
-          </div>
-        )}
-
         {/* BE1 Circle */}
         {dividend.strike_call !== 0 && (
           <div 
