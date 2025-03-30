@@ -105,7 +105,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                <span>Dividend yield: </span><span className={getNetColor(totalDividend)}>(${formatNumber(totalDividend, 0)})</span><span> ({dividend.dividend_yield}% annual)</span>
+                <span>Dividend income: </span><span className={getNetColor(totalDividend)}>(${formatNumber(totalDividend, 0)})</span><span> ({dividend.dividend_yield}% annual)</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the DIY Dividend for the amount of shares to be bought today.
@@ -115,7 +115,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Bond yield: {dividend.bond_yield}% annual
+                Bond income: {dividend.bond_yield}% annual
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Annual interest rate of a risk free bond with a maturity similar to the dividend expiration
