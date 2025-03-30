@@ -39,6 +39,10 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
 
+  // Calculate Total Incom
+  const totalIncome = totalBondYield + totalFee + totalDividend
+
+
   // Calculate dividend's net
   const dividendNet = totalBondYield + totalFee
 
@@ -57,7 +61,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate leverage ratio
   const leverage = callContracts / ((1000000 + totalDividend - dividendNet + (totalFee * (dividend.wiggle/100))) / dividend.strike_call / 100)
 
-  // Determine the color based on dividendNet value
+  // Determine the color based on value above or below 0
   const getNetColor = (value: number) => {
     if (value > 0) return "text-green-600"
     if (value < 0) return "text-red-600"
@@ -92,13 +96,24 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
       <div className="text-sm space-y-2 flex justify-between">
         <div>
-        <p className="text-black">
+          <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
                 Shares to buy today: {formatNumber(underlyingShares, 0)} shares ({positionSize})
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Based on the nominal, the underlying's current price, and whether we want to enter or exit the position, this is the numbers of shares we should buy outright now to construct our DIY Dividend
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            Options premium: {" "}
+            <Tooltip>
+              <TooltipTrigger>
+                <span className={getNetColor(totalFee)}>${formatNumber(totalFee, 0)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Earnings collected in option premiums
               </TooltipContent>
             </Tooltip>
           </p>
@@ -123,13 +138,12 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
             </Tooltip>
           </p>
           <p className="text-black">
-            Options premium: {" "}
             <Tooltip>
               <TooltipTrigger>
-                <span className={getNetColor(totalFee)}>${formatNumber(totalFee, 0)}</span>
+                <span>Total Income: </span><span className={getNetColor(totalIncome)}>${formatNumber(totalIncome, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Earnings collected in option premiums
+              Sum of option premiums, dividends and bond yield for the entire duration of the DIY Dividend lifespan.
               </TooltipContent>
             </Tooltip>
           </p>
