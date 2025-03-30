@@ -13,11 +13,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate total bond yield amount
-  const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
-
   // Calculate the shares of underlying, call contracts and put contracts based on the "action" field value and whether we are willing to sell puts
-  let underlyingShares, callContracts, putContracts, positionSize;
+  let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
   
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away
@@ -25,16 +22,17 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
     positionSize = "full position"
+    totalBondYield = 0
+    totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
     positionSize = "half position"
+    totalBondYield = (dividend.nominal/2) * (dividend.bond_yield / 100) * yearsUntilExpiration
+    totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
   }
-
-  // Calculate total dividend amount
-  const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration  
 
   // Calculate option premium collected
   const callFee = callContracts * dividend.strike_call_mid * 100
@@ -91,6 +89,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     <TooltipProvider delayDuration={100}>
 
       {/* Below goes the small numbers in the bottom left of the display*/}
+
       <div className="text-sm space-y-2 flex justify-between">
         <div>
         <p className="text-black">
@@ -106,16 +105,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Dividend yield: {dividend.dividend_yield}% annual
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Net annual dividend yield (after withholding tax)
-              </TooltipContent>
-            </Tooltip>
-            {" "}
-            <Tooltip>
-              <TooltipTrigger>
-                (${formatNumber(totalDividend, 0)} total)
+                <span>Dividend yield: </span><span className={getNetColor(totalDividend)}>(${formatNumber(totalDividend, 0)})</span><span> ({dividend.dividend_yield}% annual)</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the DIY Dividend for the amount of shares to be bought today.
@@ -134,7 +124,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
             {" "}
             <Tooltip>
               <TooltipTrigger>
-                (${formatNumber(totalBondYield, 0)} total)
+              <span className={getNetColor(totalBondYield)}>(${formatNumber(totalBondYield, 0)})</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total money we will earn from the bond interests throughout the entire lifespan of the dividend
@@ -155,6 +145,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
         </div>
 
         {/* Below goes the large numbers in the bottom right of the display*/}
+        
         <div className="flex gap-8 items-start">
           <div className="text-center">
             <Tooltip>
