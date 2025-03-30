@@ -8,10 +8,9 @@ interface PriceVisualizationProps {
 }
 
 const calculateCirclePositions = (dividend: any) => {
-  const middlePosition = 50
   const underlyingPosition = 50 // Underlying price will be at 50% position
-  let leftPosition, rightPosition, be0Position, callPosition, putPosition
-
+  let callPosition, putPosition
+  
   // Determine which strike is farther from underlying price
   const callDiff = Math.abs(dividend.strike_call - dividend.underlying_price)
   const putDiff = dividend.strike_put ? Math.abs(dividend.strike_put - dividend.underlying_price) : 0
@@ -48,9 +47,6 @@ const calculateCirclePositions = (dividend: any) => {
   const yearsUntilExpiration = daysUntilExpiration / 365
 
   return { 
-    leftPosition, 
-    middlePosition, 
-    rightPosition, 
     underlyingPosition, 
     callPosition,
     putPosition
@@ -66,11 +62,8 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
 
   // Move the putDiffForRectangle calculation outside of the functions so it's accessible everywhere
   const putDiffForRectangle = dividend.strike_put ? dividend.strike_put - dividend.strike_call : 0
-
+  
   const { 
-    leftPosition, 
-    middlePosition, 
-    rightPosition, 
     underlyingPosition, 
     callPosition,
     putPosition
@@ -108,7 +101,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
 
-  // Calculate Total Incom
+  // Calculate Total Income
   const totalIncome = totalBondYield + totalFee + totalDividend
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
@@ -121,22 +114,69 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
   }
 
-  // Calculate BE position
-  let be0Position;
-  if (putDiffForRectangle >= dividend.strike_put) {
-    be0Position = Math.min(100, 50 + ((be0Strike - dividend.strike_call) * 40 / putDiffForRectangle))
+  // NEW POSITIONING LOGIC
+  const lowestStrike = Math.min(be0Strike, dividend.strike_call);
+  const highestStrike = Math.max(be0Strike, dividend.strike_call);
+  const range = highestStrike - lowestStrike;
+  
+  // Always place underlying at 50%
+  const underlyingPos = 50;
+  
+  // Place the lowest strike at 10%
+  const lowestPos = 10;
+  
+  // Place the highest strike relative to the first two
+  let callPos, bePos;
+  
+  if (dividend.strike_call === lowestStrike) {
+    callPos = lowestPos;
+    // Position BE relative to call and underlying
+    if (be0Strike < dividend.underlying_price) {
+      // BE is between call and underlying
+      bePos = lowestPos + ((be0Strike - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
+    } else {
+      // BE is to the right of underlying
+      bePos = underlyingPos + ((be0Strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
+    }
   } else {
-    be0Position = Math.min(100, 50 + ((be0Strike - dividend.strike_call) * 40 / dividend.strike_put))
+    bePos = lowestPos;
+    // Position call relative to BE and underlying
+    if (dividend.strike_call < dividend.underlying_price) {
+      // Call is between BE and underlying
+      callPos = lowestPos + ((dividend.strike_call - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
+    } else {
+      // Call is to the right of underlying
+      callPos = underlyingPos + ((dividend.strike_call - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
+    }
+  }
+  
+  // Position put (if exists)
+  let putPos = null;
+  if (dividend.strike_put) {
+    if (dividend.strike_put < lowestStrike) {
+      // Put is the new lowest
+      putPos = 10;
+      // Adjust other positions
+      const newRange = dividend.underlying_price - dividend.strike_put;
+      callPos = putPos + ((dividend.strike_call - dividend.strike_put) / newRange * (underlyingPos - putPos));
+      bePos = putPos + ((be0Strike - dividend.strike_put) / newRange * (underlyingPos - putPos));
+    } else if (dividend.strike_put > dividend.underlying_price) {
+      // Put is to the right of underlying
+      putPos = underlyingPos + ((dividend.strike_put - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
+    } else {
+      // Put is between lowest and underlying
+      putPos = lowestPos + ((dividend.strike_put - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
+    }
   }
   
   return (
     <TooltipProvider delayDuration={100}>
       <div className="mt-12 mb-20 relative">
-        {/* Underlying Price Circle (center) */}
+        {/* Underlying Price Circle (always at 50%) */}
         {dividend.underlying_price !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${underlyingPosition}%` }}
+            style={{ left: `${underlyingPos}%` }}
           >
             <Tooltip>
               <TooltipTrigger>
@@ -150,31 +190,47 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
 
-        {/* Strike Call Circle (now represents both call and put) */}
-        {dividend.strike_call !== 0 && callPosition && (
+        {/* Strike Call Circle */}
+        {dividend.strike_call !== 0 && callPos && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${callPosition}%` }}
+            style={{ left: `${callPos}%` }}
           >
             <Tooltip>
               <TooltipTrigger>
                 <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                {dividend.strike_put !== 0 ? 
-                  `Call & Put strike: $${formatNumber(dividend.strike_call, 0)}` : 
-                  `Call strike: $${formatNumber(dividend.strike_call, 0)}`}
+                Call strike: ${formatNumber(dividend.strike_call, 0)}
+              </TooltipContent>
+            </Tooltip>
+            <Circle className="h-4 w-4 fill-black text-black" />
+          </div>
+        )}
+        
+        {/* Put Strike Circle (if exists) */}
+        {dividend.strike_put !== 0 && putPos && (
+          <div 
+            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+            style={{ left: `${putPos}%` }}
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_put, 0)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white">
+                Put strike: ${formatNumber(dividend.strike_put, 0)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
           </div>
         )}
 
-        {/* BE0 Circle */}
+        {/* BE Circle */}
         {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-            style={{ left: `${be0Position}%` }}
+            style={{ left: `${bePos}%` }}
           >
             <Tooltip>
               <TooltipTrigger>
@@ -191,18 +247,18 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         {/* Price rectangles */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
           {/* Red rectangle - only show if strike_put exists */}
-          {dividend.strike_put !== 0 && (
+          {dividend.strike_put !== 0 && putPos && (
             <div 
               className="absolute left-0 top-0 bottom-0 bg-red-500"
-              style={{ width: `${leftPosition}%` }}
+              style={{ width: `${putPos}%` }}
             />
           )}
           {/* Green rectangle */}
           <div 
             className="absolute top-0 bottom-0 bg-green-500"
             style={{ 
-              left: `${middlePosition}%`,
-              width: `${rightPosition - middlePosition}%`
+              left: `${bePos}%`,
+              width: `${callPos - bePos}%`
             }}
           />
         </div>
@@ -211,26 +267,35 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         {dividend.underlying_price !== 0 && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${underlyingPosition}%` }}
+            style={{ left: `${underlyingPos}%` }}
           >
             <span className="text-xs text-black">Long <span className="font-bold">{formatNumber(underlyingShares, 0)}</span> shares</span>
           </div>
         )}
 
-        {/* Combined call and put information under call position */}
-        {dividend.strike_call !== 0 && callPosition && (
+        {/* Call information */}
+        {dividend.strike_call !== 0 && callPos && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-            style={{ left: `${callPosition}%` }}
+            style={{ left: `${callPos}%` }}
           >
             <span className="text-xs text-black"><span className="font-bold">-{callContracts}C</span> at ${formatNumber(dividend.strike_call_mid || 0, 2)}</span>
-            {dividend.strike_put !== 0 && (
-              <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
-            )}
-            <span className="text-xs text-green-500">${formatNumber(totalFee, 0)}</span>
+            <span className="text-xs text-green-500">${formatNumber(callFee, 0)}</span>
+          </div>
+        )}
+        
+        {/* Put information (if applicable) */}
+        {dividend.strike_put !== 0 && putPos && (
+          <div 
+            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+            style={{ left: `${putPos}%` }}
+          >
+            <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
+            <span className="text-xs text-green-500">${formatNumber(putFee, 0)}</span>
           </div>
         )}
       </div>
     </TooltipProvider>
   )
 }
+
