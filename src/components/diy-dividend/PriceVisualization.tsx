@@ -165,7 +165,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           >
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 2)}</span>
+                <span className="text-sm text-black mb-1">${formatNumber(dividend.strike_call, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
                 Call strike: ${formatNumber(dividend.strike_call, 2)}
@@ -254,7 +254,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${underlyingPosition}%` }}
           >
-            <span className="text-xs text-black">Long {underlyingShares} shares</span>
+            <span className="text-xs text-black">Long {formatNumber(underlyingShares, 0) shares</span>
           </div>
         )}
 
