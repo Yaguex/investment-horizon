@@ -68,18 +68,30 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate total bond yield
-  const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate call contracts 
-  const callContracts = Math.round(100)  // Fixed placeholder
+ // Calculate the shares of underlying, call contracts and put contracts based on the "action" field value and whether we are willing to sell puts
+ let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
+ if (dividend.strike_put === null) {
+   // If strike_put is NULL, we can buy into the position in full amount right away
+   underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
+   callContracts = Math.round(underlyingShares/100)
+   putContracts = 0
+   positionSize = "full"
+   totalBondYield = 0
+   totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+ } else {
+   // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
+   underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
+   callContracts = Math.round(underlyingShares/100)
+   putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
+   positionSize = "half"
+   totalBondYield = (dividend.nominal/2) * (dividend.bond_yield / 100) * yearsUntilExpiration
+   totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+ }
 
-  // Calculate put contracts
-  const putContracts = callContracts
-
-  // Calculate fees - Add checks to avoid NaN values
-  const callFee = dividend.strike_call_mid ? callContracts * dividend.strike_call_mid * 100 * -1 : 0
-  const putFee = dividend.strike_put_mid ? putContracts * dividend.strike_put_mid * 100 : 0
+ // Calculate option premium collected
+ const callFee = callContracts * dividend.strike_call_mid * 100
+ const putFee = putContracts * dividend.strike_put_mid * 100
   
   return (
     <TooltipProvider delayDuration={100}>
