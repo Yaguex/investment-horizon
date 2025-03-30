@@ -63,7 +63,7 @@ export function DividendHeader({ dividend, onEdit }: DividendHeaderProps) {
         <span className="font-bold text-lg mr-8">{dividend.ticker}</span>
         <span className="text-sm text-gray-500 mr-8">{formatDate(dividend.expiration)}</span>
         <span className="text-sm text-gray-500 mr-8">${formatNumber(dividend.nominal, 0)}</span>
-        <span className="text-sm text-gray-500">Call {callITM}% ITM  |  Put {putITM}% ITM</span>
+        <span className="text-sm text-gray-500">Call {callITM}% ITM {dividend.strike_put && ` |  Put ${putITM}% ITM`}</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
