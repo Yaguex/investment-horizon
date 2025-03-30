@@ -21,7 +21,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
-    positionSize = "full position"
+    positionSize = "full"
     totalBondYield = 0
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
   } else {
@@ -29,7 +29,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
-    positionSize = "half position"
+    positionSize = "half"
     totalBondYield = (dividend.nominal/2) * (dividend.bond_yield / 100) * yearsUntilExpiration
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
   }
@@ -99,7 +99,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                <span>Shares to buy today: </span><span>{formatNumber(underlyingShares, 0)} shares ({positionSize})</span>
+                <span>Shares to buy today: </span><span>{formatNumber(underlyingShares, 0)} shares ({positionSize} position)</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Based on whether we sell puts, this is the numbers of shares we should buy outright today to construct our DIY Dividend. If we sell puts, the amount to buy today will be half of the total allowed by the Nominal exposed.
