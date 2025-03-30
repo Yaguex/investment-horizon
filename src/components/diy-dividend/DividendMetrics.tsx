@@ -107,7 +107,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 Dividend yield: {dividend.dividend_yield}% annual
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Net annual dividend yield, meaning after withholding tax
+                Net annual dividend yield (after withholding tax)
               </TooltipContent>
             </Tooltip>
             {" "}
@@ -116,7 +116,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 (${formatNumber(totalDividend, 0)} total)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the dividend for the amount of shares to be bought today.
+                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the DIY Dividend for the amount of shares to be bought today.
               </TooltipContent>
             </Tooltip>
           </p>
