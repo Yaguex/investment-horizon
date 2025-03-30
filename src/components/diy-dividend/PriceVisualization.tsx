@@ -87,7 +87,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   return (
     <TooltipProvider delayDuration={100}>
       <div className="mt-12 mb-20 relative">
-        {/* Underlying Price Circle (Center) */}
+        {/* Underlying Price Circle (center) */}
         {dividend.underlying_price !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
