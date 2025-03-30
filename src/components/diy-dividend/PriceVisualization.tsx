@@ -18,21 +18,9 @@ const calculateCirclePositions = (dividend: any) => {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate total bond yield
-  const totalBondYield = dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration
-
-  // Calculate leverage - this was missing previously
-  const leverage = 1.2  // Default leverage value
-
-  // Calculate number of underlying shares based on current underlying price and nominal
-  const underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
-
-  // Calculate call contracts
-  const callContracts = Math.round(100)  // Fixed placeholder
-
   // Calculate BE strikes with updated formulas
-  const be1Strike = dividend.strike_call + ((dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration)) / leverage)
-  const be2Strike = dividend.strike_call + ((dividend.strike_call * ((7/100) * yearsUntilExpiration)) / leverage)
+  const be1Strike = dividend.strike_call + (dividend.strike_call * ((dividend.bond_yield/100) * yearsUntilExpiration))
+  const be2Strike = dividend.strike_call + (dividend.strike_call * ((7/100) * yearsUntilExpiration))
 
   if (putDiff >= dividend.strike_put) {
     rightPosition = 90
