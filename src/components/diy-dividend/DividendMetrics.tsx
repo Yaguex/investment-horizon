@@ -53,10 +53,10 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const maxGainPercentage = (maxGainDollars / (dividend.nominal + totalFee - dividendNet + (totalFee * (dividend.wiggle/100)))) * 100
 
   // Calculate max annual ROI
-  const maxAnnualROI = maxGainPercentage * (365 / daysUntilExpiration)
+  const maxAnnualROI = (totalIncome / dividend.nominal) * 100 * (365 / daysUntilExpiration)
 
-  // Calculate convexity ratio
-  const convexity = maxGainDollars / (dividendNet - (totalFee * (dividend.wiggle/100)) + (dividend.nominal * ((dividend.bond_yield/100) * (daysUntilExpiration/365))))
+  // Calculate Extrinsic vs Total ratio
+  const extrinsicRatio = ((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 ) / totalIncome ) * 100
 
   // Calculate leverage ratio
   const leverage = callContracts / ((1000000 + totalDividend - dividendNet + (totalFee * (dividend.wiggle/100))) / dividend.strike_call / 100)
@@ -70,9 +70,16 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Determine the color based on maxAnnualROI value
   const getROIColor = (value: number) => {
-    if (value > 15) return "text-green-600"
-    if (value < 12) return "text-red-600"
-    return "text-orange-500"  // for values between 12 and 15 (inclusive)
+    if (value > 10) return "text-green-600"
+    if (value < 7) return "text-red-600"
+    return "text-orange-500"  // for values between 7 and 10 (inclusive)
+  }
+
+  // Determine the color based on Extrinsic vs Total Income ratio value
+  const getExtrinsicRatioColor = (value: number) => {
+    if (value > 50) return "text-green-600"
+    if (value < 30) return "text-red-600"
+    return "text-orange-500"  // for values between 30 and 50 (inclusive)
   }
 
   // Determine the color based on convexity value
@@ -80,13 +87,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     if (value > 4) return "text-green-600"
     if (value < 3) return "text-red-600"
     return "text-orange-500"  // for values between 3 and 4 (inclusive)
-  }
-
-  // Determine the color based on leverage value
-  const getLeverageColor = (value: number) => {
-    if (value > 1.50) return "text-green-600"
-    if (value < 1.20) return "text-red-600"
-    return "text-orange-500"  // for values between 1.20 and 1.50 (inclusive)
   }
 
   return (
@@ -132,7 +132,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <span>Bond income: </span><span className={getNetColor(totalBondYield)}>${formatNumber(totalBondYield, 0)}</span><span> ({dividend.bond_yield}% annual)</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-              Annual interest rate of a risk free bond with a maturity similar to the dividend expiration
+              Annual interest rate of a risk free bond with a maturity similar to the dividend expiration. If no puts were sold and a full outright allocation is purchased from the beginning, there will be no allocation to bonds (thus no bonus yield).
               </TooltipContent>
             </Tooltip>
           </p>
@@ -157,18 +157,18 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Annualized ROI should we reach our put by expiration
+                Total annualized ROI of our DIY Dividend structure.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Max ROI<br />annualized</p>
+            <p className="text-xs text-black">DIY Dividend<br>annualized</p>
           </div>
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x {formatNumber(leverage, 2)}</p>
+                <p className={`${getExtrinsicRatioColor(extrinsicRatio)} text-xl font-bold`}>{formatNumber(extrinsicRatio, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Dollar-per-dollar gain over just buying the underlying outright. The idea of Leverage comes from being able to afford to buy more Deltas (more calls) than I should have been able to afford had I not financed part of those calls through bond interests plus selling calls+puts. This allows me to kick up my exposure to the position without locking up more than the originally intended nominal (the amount I'm putting in to buy the bonds). Remember though that you have also given up on the dividend yield, so that needs to be subtracted from the nominal to properly calculate the true leverage you get. Also, you give up on the possibility or writing covered calls, but that is hard to quantify
+                How much of the DIY Dividend's income comes from Extrinsic value (the higher the better). If most of the income comes from intrinsic, bond yield, underlying's natural dividend, etc. then the DIY Dividend structure is not providing much alpha.
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Leverage<br />ratio</p>
