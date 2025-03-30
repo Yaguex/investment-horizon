@@ -80,6 +80,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
  // Calculate option premium collected
  const callFee = callContracts * dividend.strike_call_mid * 100
  const putFee = putContracts * dividend.strike_put_mid * 100
+ const totalFee = callFee + putFee
   
   return (
     <TooltipProvider delayDuration={100}>
