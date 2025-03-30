@@ -1,3 +1,4 @@
+
 import { Circle } from "lucide-react"
 import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -8,6 +9,7 @@ interface PriceVisualizationProps {
 
 const calculateCirclePositions = (dividend: any) => {
   const middlePosition = 50
+  const underlyingPosition = 50 // Underlying price will be at 50% position
   let leftPosition, rightPosition, be1Position, be2Position
 
   const putDiff = dividend.strike_put - dividend.strike_call
@@ -38,7 +40,7 @@ const calculateCirclePositions = (dividend: any) => {
     be2Position = Math.min(100, 50 + ((be2Strike - dividend.strike_call) * 40 / dividend.strike_put))
   }
 
-  return { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike }
+  return { leftPosition, middlePosition, rightPosition, underlyingPosition, be1Position, be2Position, be1Strike, be2Strike }
 }
 
 export function PriceVisualization({ dividend }: PriceVisualizationProps) {
@@ -48,7 +50,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     return <div className="text-red-500">Invalid dividend data</div>
   }
 
-  const { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike } = calculateCirclePositions(dividend)
+  const { leftPosition, middlePosition, rightPosition, underlyingPosition, be1Position, be2Position, be1Strike, be2Strike } = calculateCirclePositions(dividend)
   
   // Calculate days until expiration for bond yield
   const today = new Date()
@@ -85,6 +87,24 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   return (
     <TooltipProvider delayDuration={100}>
       <div className="mt-12 mb-20 relative">
+        {/* Underlying Price Circle (Center) */}
+        {dividend.underlying_price !== 0 && (
+          <div 
+            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+            style={{ left: `${underlyingPosition}%` }}
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="text-sm text-black mb-1">${dividend.underlying_price}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white">
+                Underlying price: ${formatNumber(dividend.underlying_price, 2)}
+              </TooltipContent>
+            </Tooltip>
+            <Circle className="h-4 w-4 fill-black text-black" />
+          </div>
+        )}
+
         {/* Strike Call Circle (Middle) */}
         {dividend.strike_call !== 0 && (
           <div 
@@ -177,6 +197,15 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         </div>
         
         {/* Position indicators aligned with circles */}
+        {dividend.underlying_price !== 0 && (
+          <div 
+            className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+            style={{ left: `${underlyingPosition}%` }}
+          >
+            <span className="text-xs text-black">Long {underlyingShares} shares</span>
+          </div>
+        )}
+
         {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
