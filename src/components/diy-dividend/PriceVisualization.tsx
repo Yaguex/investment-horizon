@@ -95,9 +95,13 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
   }
 
+  // Calculate BE1 and BE2
+  const be1Strike = dividend.underlying_price * (1 + (dividend.bond_yield/100))
+  const be2Strike = dividend.underlying_price * (1 + (7/100))
+
   // NEW POSITIONING LOGIC
-  const lowestStrike = Math.min(be0Strike, dividend.strike_call);
-  const highestStrike = Math.max(be0Strike, dividend.strike_call);
+  const lowestStrike = Math.min(be0Strike, dividend.strike_call, be1Strike, be2Strike);
+  const highestStrike = Math.max(be0Strike, dividend.strike_call, be1Strike, be2Strike);
   const range = highestStrike - lowestStrike;
   
   // Always place underlying at 50%
@@ -106,30 +110,25 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // Place the lowest strike at 10%
   const lowestPos = 10;
   
-  // Place the highest strike relative to the first two
-  let callPos, bePos;
+  // Calculate positions for BE0, call, BE1, and BE2 relative to the underlying
+  let callPos, bePos, be1Pos, be2Pos;
   
-  if (dividend.strike_call === lowestStrike) {
-    callPos = lowestPos;
-    // Position BE relative to call and underlying
-    if (be0Strike < dividend.underlying_price) {
-      // BE is between call and underlying
-      bePos = lowestPos + ((be0Strike - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
+  // Position calculation helper function
+  const calculatePosition = (strike: number) => {
+    if (strike < dividend.underlying_price) {
+      // Strike is to the left of underlying
+      return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
     } else {
-      // BE is to the right of underlying
-      bePos = underlyingPos + ((be0Strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
+      // Strike is to the right of underlying
+      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
     }
-  } else {
-    bePos = lowestPos;
-    // Position call relative to BE and underlying
-    if (dividend.strike_call < dividend.underlying_price) {
-      // Call is between BE and underlying
-      callPos = lowestPos + ((dividend.strike_call - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
-    } else {
-      // Call is to the right of underlying
-      callPos = underlyingPos + ((dividend.strike_call - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
-    }
-  }
+  };
+  
+  // Calculate positions for each point
+  callPos = calculatePosition(dividend.strike_call);
+  bePos = calculatePosition(be0Strike);
+  be1Pos = calculatePosition(be1Strike);
+  be2Pos = calculatePosition(be2Strike);
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -187,6 +186,38 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
           </div>
         )}
+        
+        {/* BE1 Circle - new */}
+        <div 
+          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+          style={{ left: `${be1Pos}%` }}
+        >
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="text-sm text-gray-300 mb-1">${Math.round(be1Strike)}</span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-black text-white">
+              BE1 (risk free rate): ${formatNumber(be1Strike, 2)}
+            </TooltipContent>
+          </Tooltip>
+          <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
+        </div>
+        
+        {/* BE2 Circle - new */}
+        <div 
+          className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+          style={{ left: `${be2Pos}%` }}
+        >
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="text-sm text-gray-300 mb-1">${Math.round(be2Strike)}</span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-black text-white">
+              BE2 (7%): ${formatNumber(be2Strike, 2)}
+            </TooltipContent>
+          </Tooltip>
+          <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
+        </div>
         
         {/* Price rectangles */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
