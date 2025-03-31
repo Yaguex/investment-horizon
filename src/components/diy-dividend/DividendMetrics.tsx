@@ -47,7 +47,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate maxAnnualROI
   let maxAnnualROI;
   if (dividend.strike_put === null) {
-    maxAnnualROI = (((totalIncome + (dividend.strike_call*callContracts*100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
+    maxAnnualROI = (((totalIncome + (dividend.strike_call * callContracts * 100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
   } else {
     maxAnnualROI = 10
   }
