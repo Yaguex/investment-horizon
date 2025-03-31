@@ -117,14 +117,12 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     if (strike === lowestStrike) return lowestPos;
     if (strike === dividend.underlying_price) return underlyingPos;
     
-    // For all other strikes, calculate position proportionally
-    // If strike is less than underlying price, map it between lowestPos and underlyingPos
-    // If strike is greater than underlying price, map it between underlyingPos and 90%
-    if (strike < dividend.underlying_price) {
-      return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
-    } else {
-      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price)) * (90 - underlyingPos);
-    }
+    // For all other strikes, use a linear scale that maps:
+    // - The lowest strike to 10%
+    // - The underlying price to 50%
+    // - Higher values continue on this scale (not limited to 90%)
+    const scale = (underlyingPos - lowestPos) / (dividend.underlying_price - lowestStrike);
+    return underlyingPos + ((strike - dividend.underlying_price) * scale);
   };
   
   // Get all positions
