@@ -43,7 +43,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const maxGainDollars = ((note.strike_target - note.strike_entry) * entryContracts * 100) + noteNet - (totalFee * (note.wiggle/100))
 
   // Calculate max gain percentage
-  const maxGainPercentage = (maxGainDollars / (note.nominal + totalFee - noteNet + (totalFee * (note.wiggle/100)))) * 100
+  const maxGainPercentage = (maxGainDollars / note.nominal) * 100
 
   // Calculate max annual ROI
   const maxAnnualROI = maxGainPercentage * (365 / daysUntilExpiration)
@@ -89,65 +89,37 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Dividend yield: {note.dividend_yield}% annual
+                Dividend income: <span className={getNetColor(totalDividend)}>${formatNumber(totalDividend, 0)}</span> ({note.dividend_yield}% annual)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Net annual dividend yield, meaning after withholding tax
-              </TooltipContent>
-            </Tooltip>
-            {" "}
-            <Tooltip>
-              <TooltipTrigger>
-                (${formatNumber(totalDividend, 0)} total)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total net money (after withholding tax) we would have earned in dividends throughout the entire lifespan of the note if we had bought the underlying
+              Total net earnings (after withholding tax) in dividends throughout the entire lifespan of the note if we had bought the underlying
               </TooltipContent>
             </Tooltip>
           </p>
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Bond yield: {note.bond_yield}% annual
+                Bond income: <span className={getNetColor(totalBondYield)}>${formatNumber(totalBondYield, 0)}</span> ({note.bond_yield}% annual)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Annual interest rate of a risk free bond with a maturity similar to the note expiration
-              </TooltipContent>
-            </Tooltip>
-            {" "}
-            <Tooltip>
-              <TooltipTrigger>
-                (${formatNumber(totalBondYield, 0)} total)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total money we will earn from the bond interests throughout the entire lifespan of the note
+                Total interests we will earn from a bond with similar maturity interests throughout the entire lifespan of the note
               </TooltipContent>
             </Tooltip>
           </p>
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Max gain: {formatNumber(maxGainPercentage, 2)}% total
+                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 1)}% total)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total ROI if our target is reached at expiration
-              </TooltipContent>
-            </Tooltip>
-            {" "}
-            <Tooltip>
-              <TooltipTrigger>
-                (${formatNumber(maxGainDollars, 0)} total)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total money earned if our target is reached at expiration
+                Total earnings if our target is reached at expiration
               </TooltipContent>
             </Tooltip>
           </p>
           <p className="text-black">
-            Note's net: {" "}
             <Tooltip>
               <TooltipTrigger>
-                <span className={getNetColor(noteNet)}>${formatNumber(noteNet, 0)}</span>
+               Note's net: <span className={getNetColor(noteNet)}>${formatNumber(noteNet, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Cost of the option structure minus what we will recoup through bond interests. Ideally, you should be aiming for a costless note
@@ -155,10 +127,9 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
             </Tooltip>
           </p>
           <p className="text-black">
-            Options premium: {" "}
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
+                Options premium: <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Outlay in premiums to enter the trade today

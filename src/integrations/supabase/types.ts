@@ -63,30 +63,81 @@ export type Database = {
         }
         Relationships: []
       }
-      countries: {
+      diy_dividend: {
         Row: {
-          continent: Database["public"]["Enums"]["continents"] | null
+          bond_yield: number | null
+          dividend_yield: number | null
+          expiration: string | null
           id: number
-          iso2: string
-          iso3: string | null
-          local_name: string | null
-          name: string | null
+          nominal: number | null
+          profile_id: string | null
+          strike_call: number | null
+          strike_call_delta: number | null
+          strike_call_extrinsic_value: number | null
+          strike_call_intrinsic_value: number | null
+          strike_call_iv: number | null
+          strike_call_mid: number | null
+          strike_call_open_interest: number | null
+          strike_put: number | null
+          strike_put_delta: number | null
+          strike_put_extrinsic_value: number | null
+          strike_put_intrinsic_value: number | null
+          strike_put_iv: number | null
+          strike_put_mid: number | null
+          strike_put_open_interest: number | null
+          ticker: string | null
+          underlying_price: number | null
+          wiggle: number | null
         }
         Insert: {
-          continent?: Database["public"]["Enums"]["continents"] | null
+          bond_yield?: number | null
+          dividend_yield?: number | null
+          expiration?: string | null
           id?: number
-          iso2: string
-          iso3?: string | null
-          local_name?: string | null
-          name?: string | null
+          nominal?: number | null
+          profile_id?: string | null
+          strike_call?: number | null
+          strike_call_delta?: number | null
+          strike_call_extrinsic_value?: number | null
+          strike_call_intrinsic_value?: number | null
+          strike_call_iv?: number | null
+          strike_call_mid?: number | null
+          strike_call_open_interest?: number | null
+          strike_put?: number | null
+          strike_put_delta?: number | null
+          strike_put_extrinsic_value?: number | null
+          strike_put_intrinsic_value?: number | null
+          strike_put_iv?: number | null
+          strike_put_mid?: number | null
+          strike_put_open_interest?: number | null
+          ticker?: string | null
+          underlying_price?: number | null
+          wiggle?: number | null
         }
         Update: {
-          continent?: Database["public"]["Enums"]["continents"] | null
+          bond_yield?: number | null
+          dividend_yield?: number | null
+          expiration?: string | null
           id?: number
-          iso2?: string
-          iso3?: string | null
-          local_name?: string | null
-          name?: string | null
+          nominal?: number | null
+          profile_id?: string | null
+          strike_call?: number | null
+          strike_call_delta?: number | null
+          strike_call_extrinsic_value?: number | null
+          strike_call_intrinsic_value?: number | null
+          strike_call_iv?: number | null
+          strike_call_mid?: number | null
+          strike_call_open_interest?: number | null
+          strike_put?: number | null
+          strike_put_delta?: number | null
+          strike_put_extrinsic_value?: number | null
+          strike_put_intrinsic_value?: number | null
+          strike_put_iv?: number | null
+          strike_put_mid?: number | null
+          strike_put_open_interest?: number | null
+          ticker?: string | null
+          underlying_price?: number | null
+          wiggle?: number | null
         }
         Relationships: []
       }

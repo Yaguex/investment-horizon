@@ -34,6 +34,10 @@ const Header = () => {
       onClick: () => navigate("/diy-notes")
     },
     {
+      label: "DIY Dividend",
+      onClick: () => navigate("/diy-dividend")
+    },
+    {
       label: "Test API",
       onClick: () => navigate("/test")
     },
