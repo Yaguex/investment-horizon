@@ -43,7 +43,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const maxGainDollars = ((note.strike_target - note.strike_entry) * entryContracts * 100) + noteNet - (totalFee * (note.wiggle/100))
 
   // Calculate max gain percentage
-  const maxGainPercentage = (maxGainDollars / (note.nominal + totalFee - noteNet + (totalFee * (note.wiggle/100)))) * 100
+  const maxGainPercentage = (maxGainDollars / note.nominal) * 100
 
   // Calculate max annual ROI
   const maxAnnualROI = maxGainPercentage * (365 / daysUntilExpiration)
@@ -109,7 +109,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 2)}%)
+                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 2)}% total)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total earnings if our target is reached at expiration
