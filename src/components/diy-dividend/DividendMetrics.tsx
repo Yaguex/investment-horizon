@@ -48,21 +48,21 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const maxAnnualROI = (((totalIncome + (dividend.strike_call * callContracts * 100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
 
 
-  // Determine the color based on value above or below 0
+  // Determine the text color based on value above or below 0
   const getNetColor = (value: number) => {
     if (value > 0) return "text-green-600"
     if (value < 0) return "text-red-600"
     return "text-black" // for values equal to 0
   }
 
-  // Determine the color based on maxAnnualROI value
+  // Determine the text color based on maxAnnualROI value
   const getROIColor = (value: number) => {
     if (value > 10) return "text-green-600"
     if (value < 7) return "text-red-600"
     return "text-orange-500"  // for values between 7 and 10 (inclusive)
   }
 
-  // Determine the color based on Extrinsic vs Total Income ratio value
+  // Determine the text color based on Extrinsic vs Total Income ratio value
   const getExtrinsicRatioColor = (value: number) => {
     if (value > 50) return "text-green-600"
     if (value < 30) return "text-red-600"
