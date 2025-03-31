@@ -122,7 +122,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <span>Total Income: </span><span className={getNetColor(totalIncome)}>${formatNumber(totalIncome, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-              Sum of option premiums, dividends and bond yield for the entire duration of the DIY Dividend lifespan.
+              Sum of option premiums, dividends and bond yield for the entire duration of the DIY Dividend lifespan. Must keep the DIY Dividend structure in place all the way to expiration to realize this max Total Income.
               </TooltipContent>
             </Tooltip>
           </p>
@@ -137,7 +137,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total annualized ROI of our DIY Dividend structure.
+                Total annualized ROI of our DIY Dividend structure to expiration. Must keep the DIY Dividend structure in place all the way to expiration to realize this max Total Income.
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">DIY Dividend<br />annualized</p>
