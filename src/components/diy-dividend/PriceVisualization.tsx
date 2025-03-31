@@ -1,4 +1,3 @@
-
 import { Circle } from "lucide-react"
 import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -45,17 +44,11 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // Move the putDiffForRectangle calculation outside of the functions so it's accessible everywhere
   const putDiffForRectangle = dividend.strike_put ? dividend.strike_put - dividend.strike_call : 0
   
-  const { 
-    underlyingPosition, 
-    callPosition
-  } = calculateCirclePositions(dividend)
-  
   // Calculate days until expiration for bond yield
   const today = new Date()
   const expirationDate = dividend.expiration ? new Date(dividend.expiration) : today
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
-
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
   let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
@@ -101,7 +94,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
 
   // POSITIONING LOGIC for the strikes in the price bar UI
   
-  // Find the lowest and highest strikes among all points
+  // Find all strikes we need to position
   const strikes = [
     dividend.underlying_price, 
     dividend.strike_call,
@@ -110,32 +103,27 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     be2Strike
   ];
   
-  // Find the lowest of all strikes for all circles
+  // Find the lowest and highest strikes
   const lowestStrike = Math.min(...strikes);
+  const highestStrike = Math.max(...strikes);
   
-  // Fix th position of the lowest strike always at 10% and the underlying always at 50%
+  // Fix the position of the lowest strike always at 10% and the underlying always at 50%
   const lowestPos = 10;
   const underlyingPos = 50;
   
-  // Calculate the positions for all other circles relative to lowestPos and underlyingPos
+  // Calculate the positions for all circles using a single unified rule
   const getRelativePosition = (strike: number) => {
-    // Here is the logic for lowestPos and underlyingPos
+    // Fixed positions for special cases
     if (strike === lowestStrike) return lowestPos;
     if (strike === dividend.underlying_price) return underlyingPos;
     
-    // For strikes less than underlying price
-    if (strike < dividend.underlying_price) {
-      return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
-    }
-    // For strikes greater than underlying price
-    else {
-      // Calculate position relative to the underlying position (50%)
-      const highestStrike = Math.max(...strikes);
-      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price)) * (90 - underlyingPos);
-    }
+    // For all other strikes, calculate position proportionally along the full range
+    // This creates a linear mapping from strike values to position percentages
+    // Map from [lowestStrike, highestStrike] to [lowestPos, 90]
+    return lowestPos + ((strike - lowestStrike) / (highestStrike - lowestStrike)) * (90 - lowestPos);
   };
   
-  // Now that we have the position formulas in place, get them:
+  // Get all positions
   const callPos = getRelativePosition(dividend.strike_call);
   const be0Pos = getRelativePosition(be0Strike);
   const be1Pos = getRelativePosition(be1Strike);
