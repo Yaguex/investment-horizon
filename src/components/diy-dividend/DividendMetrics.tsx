@@ -44,13 +44,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate Extrinsic vs Total ratio
   const extrinsicRatio = (((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 )) / totalIncome ) * 100
 
-  // Calculate maxAnnualROI
-  let maxAnnualROI;
-  if (dividend.strike_put === null) {
-    maxAnnualROI = (((totalIncome + (dividend.strike_call * callContracts * 100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
-  } else {
-    maxAnnualROI = (((totalIncome + (dividend.strike_call * callContracts * 100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
-  }
+  // Calculate maxAnnualROI. It is the same formula regardless of whether we sell Puts or not.
+  const maxAnnualROI = (((totalIncome + (dividend.strike_call * callContracts * 100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
 
 
   // Determine the color based on value above or below 0
