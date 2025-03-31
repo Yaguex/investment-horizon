@@ -47,6 +47,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate maxAnnualROI. It is the same formula regardless of whether we sell Puts or not.
   const maxAnnualROI = (((totalIncome + (dividend.strike_call * callContracts * 100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
 
+  // Calculate maxAnnualROI vs Risk free rate ratio
+  const ReturnvsBond = maxAnnualROI / dividend.bond_yield
+
 
   // Determine the text color based on value above or below 0
   const getNetColor = (value: number) => {
@@ -68,6 +71,13 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     if (value < 30) return "text-red-600"
     return "text-orange-500"  // for values between 30 and 50 (inclusive)
   }
+
+  // Determine the text color based on Return vs Bond
+  const ReturnvsBond = (value: number) => {
+    if (value > 2.8) return "text-green-600"
+    if (value < 1.8) return "text-red-600"
+    return "text-orange-500"  // for values between 30 and 50 (inclusive)
+  }  
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -152,6 +162,17 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Extrinsic<br />vs Total</p>
+          </div>
+          <div className="text-center">
+            <Tooltip>
+              <TooltipTrigger>
+                <p className={`${getExtrinsicRatioColor(ReturnvsBond)} text-xl font-bold`}>x{formatNumber(ReturnvsBond, 1)}%</p>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Return of the DIY Dividend structure, if held to maturity, over the risk free rate. The higher the return vs the risk free rate, the worthier the risk is.
+              </TooltipContent>
+            </Tooltip>
+            <p className="text-xs text-black">Return<br />vs Bond</p>
           </div>
         </div>
       </div>
