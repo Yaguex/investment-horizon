@@ -118,7 +118,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // 2. The lowest strike is always at 10%
   const lowestPos = 10;
   
-  // Calculate positions for all other circles relative to the lowest and the underlying
+  // FIXED: Calculate positions for all other circles relative to the lowest and the underlying
   const getRelativePosition = (strike: number) => {
     if (strike === lowestStrike) return lowestPos;
     if (strike === dividend.underlying_price) return underlyingPos;
@@ -128,8 +128,12 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
       // Between lowest strike and underlying
       return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
     } else {
-      // Greater than underlying
-      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price)) * (90 - underlyingPos);
+      // Greater than underlying - FIXED to be relative to underlyingPos (50%) not 90%
+      const highestMinusUnderlying = highestStrike - dividend.underlying_price;
+      const strikeMinusUnderlying = strike - dividend.underlying_price;
+      const ratio = strikeMinusUnderlying / highestMinusUnderlying;
+      // Scale from underlyingPos (50%) to 90%
+      return underlyingPos + (ratio * (90 - underlyingPos));
     }
   };
   
