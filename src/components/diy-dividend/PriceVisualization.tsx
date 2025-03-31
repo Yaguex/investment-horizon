@@ -1,3 +1,4 @@
+
 import { Circle } from "lucide-react"
 import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -119,8 +120,8 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     
     // For all other strikes, calculate position proportionally along the full range
     // This creates a linear mapping from strike values to position percentages
-    // Map from [lowestStrike, highestStrike] to [lowestPos, 90]
-    return lowestPos + ((strike - lowestStrike) / (highestStrike - lowestStrike)) * (90 - lowestPos);
+    // Map from [lowestStrike, highestStrike] to [lowestPos, underlyingPos]
+    return lowestPos + ((strike - lowestStrike) / (highestStrike - lowestStrike)) * (underlyingPos - lowestPos);
   };
   
   // Get all positions
