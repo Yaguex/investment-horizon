@@ -129,7 +129,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
       return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
     } else {
       // Greater than underlying
-      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price)) * (90 - underlyingPos);
+      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price)) * (50 + underlyingPos);
     }
   };
   
