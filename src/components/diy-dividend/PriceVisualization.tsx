@@ -99,9 +99,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const be1Strike = dividend.underlying_price * (1 + (dividend.bond_yield/100))
   const be2Strike = dividend.underlying_price * (1 + (7/100))
 
-  // NEW POSITIONING LOGIC according to the specified rules
-  // 1. Underlying price is always at 50%
-  const underlyingPos = 50;
+  // POSITIONING LOGIC for the strikes in the price bar UI
   
   // Find the lowest and highest strikes among all points
   const strikes = [
@@ -112,21 +110,23 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     be2Strike
   ];
   
+  // Find the lowest of all strikes for all circles
   const lowestStrike = Math.min(...strikes);
-  const highestStrike = Math.max(...strikes);
   
-  // 2. The lowest strike is always at 10%
+  // Fix th position of the lowest strike always at 10% and the underlying always at 50%
   const lowestPos = 10;
+  const underlyingPos = 50;
   
-  // FIXED: Calculate positions for all other circles relative to the lowest and the underlying
+  // Calculate the positions for all other circles relative to lowestPos and underlyingPos
   const getRelativePosition = (strike: number) => {
+    // Here is the logic for lowestPos and underlyingPos
     if (strike === lowestStrike) return lowestPos;
     if (strike === dividend.underlying_price) return underlyingPos;
-    
+    // Here is the logic for all other circles
     return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
   };
   
-  // Calculate positions for each circle
+  // Now that we have the position formulas in place, get them:
   const callPos = getRelativePosition(dividend.strike_call);
   const be0Pos = getRelativePosition(be0Strike);
   const be1Pos = getRelativePosition(be1Strike);
