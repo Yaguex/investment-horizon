@@ -264,7 +264,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             {dividend.strike_put !== 0 && (
               <span className="text-xs text-black"><span className="font-bold">-{putContracts}P</span> at ${formatNumber(dividend.strike_put_mid || 0, 2)}</span>
             )}
-            <span className="text-xs text-green-500">${formatNumber(totalFee, 0)}</span>
+            {/* <span className="text-xs text-green-500">${formatNumber(totalFee, 0)}</span> */}
           </div>
         )}
       </div>
