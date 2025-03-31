@@ -32,6 +32,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     positionSize = "half"
     totalBondYield = (dividend.nominal/2) * (dividend.bond_yield / 100) * yearsUntilExpiration
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+    maxAnnualROI = 0
   }
 
   // Calculate option premium collected
