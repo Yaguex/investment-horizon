@@ -113,14 +113,11 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   
   // Calculate the positions for all circles using a single unified rule
   const getRelativePosition = (strike: number) => {
-    // Fixed positions for special cases
+    // Fixed positions for lowest strike to 10% and the underlying price to 50
     if (strike === lowestStrike) return lowestPos;
     if (strike === dividend.underlying_price) return underlyingPos;
     
     // For all other strikes, use a linear scale that maps:
-    // - The lowest strike to 10%
-    // - The underlying price to 50%
-    // - Higher values continue on this scale (not limited to 90%)
     const scale = (underlyingPos - lowestPos) / (dividend.underlying_price - lowestStrike);
     return underlyingPos + ((strike - dividend.underlying_price) * scale);
   };
