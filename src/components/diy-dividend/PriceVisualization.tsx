@@ -1,4 +1,3 @@
-
 import { Circle } from "lucide-react"
 import { formatNumber } from "@/components/trade/utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -56,7 +55,6 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
   let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
   if (dividend.strike_put === null) {
@@ -85,50 +83,35 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // Calculate Total Income
   const totalIncome = totalBondYield + totalFee + totalDividend
 
-  // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  let be0Strike;
-  if (dividend.strike_put === null) {
-    // If strike_put is NULL, we can buy into the position in full amount right away
-    be0Strike = (dividend.nominal - totalIncome) / underlyingShares
-  } else {
-    // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
-    be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
-  }
-
   // Calculate BE1 and BE2
   const be1Strike = dividend.underlying_price * (1 + (dividend.bond_yield/100))
   const be2Strike = dividend.underlying_price * (1 + (7/100))
 
-  // NEW POSITIONING LOGIC
-  const lowestStrike = Math.min(be0Strike, dividend.strike_call, be1Strike, be2Strike);
-  const highestStrike = Math.max(be0Strike, dividend.strike_call, be1Strike, be2Strike);
-  const range = highestStrike - lowestStrike;
+  // Improved positioning logic
+  // Find the minimum and maximum strike prices to establish our range
+  const allStrikes = [dividend.underlying_price, dividend.strike_call, be0Strike, be1Strike, be2Strike];
+  const lowestStrike = Math.min(...allStrikes);
+  const highestStrike = Math.max(...allStrikes);
+  
+  // Fixed positions for the visualization
+  const leftEdge = 10; // Leftmost position (10%)
+  const rightEdge = 90; // Rightmost position (90%)
+  const fullWidth = rightEdge - leftEdge; // Total width of the visualization space
   
   // Always place underlying at 50%
   const underlyingPos = 50;
   
-  // Place the lowest strike at 10%
-  const lowestPos = 10;
-  
-  // Calculate positions for BE0, call, BE1, and BE2 relative to the underlying
-  let callPos, bePos, be1Pos, be2Pos;
-  
-  // Position calculation helper function
+  // Helper function to calculate relative positions based on strike price
   const calculatePosition = (strike: number) => {
-    if (strike < dividend.underlying_price) {
-      // Strike is to the left of underlying
-      return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
-    } else {
-      // Strike is to the right of underlying
-      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
-    }
+    // Calculate the position as a percentage within the full range
+    return leftEdge + ((strike - lowestStrike) / (highestStrike - lowestStrike)) * fullWidth;
   };
   
   // Calculate positions for each point
-  callPos = calculatePosition(dividend.strike_call);
-  bePos = calculatePosition(be0Strike);
-  be1Pos = calculatePosition(be1Strike);
-  be2Pos = calculatePosition(be2Strike);
+  const callPos = calculatePosition(dividend.strike_call);
+  const bePos = calculatePosition(be0Strike);
+  const be1Pos = calculatePosition(be1Strike);
+  const be2Pos = calculatePosition(be2Strike);
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -187,7 +170,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
         
-        {/* BE1 Circle - new */}
+        {/* BE1 Circle */}
         <div 
           className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
           style={{ left: `${be1Pos}%` }}
@@ -203,7 +186,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
         </div>
         
-        {/* BE2 Circle - new */}
+        {/* BE2 Circle */}
         <div 
           className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
           style={{ left: `${be2Pos}%` }}
