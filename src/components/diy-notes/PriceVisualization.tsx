@@ -100,7 +100,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
                 <span className="text-sm text-black mb-1">${note.strike_entry}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Entry strike: ${formatNumber(note.strike_entry, 2)}
+                Entry strike: ${formatNumber(note.strike_entry, 0)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -118,7 +118,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
                 <span className="text-sm text-black mb-1">${note.strike_target}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Target strike: ${formatNumber(note.strike_target, 2)}
+                Target strike: ${formatNumber(note.strike_target, 0)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />
@@ -136,7 +136,7 @@ export function PriceVisualization({ note }: PriceVisualizationProps) {
                 <span className="text-sm text-black mb-1">${note.strike_protection}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white">
-                Protection strike: ${formatNumber(note.strike_protection, 2)}
+                Protection strike: ${formatNumber(note.strike_protection, 0)}
               </TooltipContent>
             </Tooltip>
             <Circle className="h-4 w-4 fill-black text-black" />

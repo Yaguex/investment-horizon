@@ -109,7 +109,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 2)}% total)
+                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 1)}% total)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total earnings if our target is reached at expiration
