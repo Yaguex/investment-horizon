@@ -100,35 +100,45 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const be2Strike = dividend.underlying_price * (1 + (7/100))
 
   // NEW POSITIONING LOGIC
-  const lowestStrike = Math.min(be0Strike, dividend.strike_call, be1Strike, be2Strike);
-  const highestStrike = Math.max(be0Strike, dividend.strike_call, be1Strike, be2Strike);
-  const range = highestStrike - lowestStrike;
+  // Find the lowest and highest strike values among all points
+  const allStrikes = [
+    dividend.underlying_price,
+    dividend.strike_call,
+    be0Strike,
+    be1Strike,
+    be2Strike
+  ].filter(strike => strike !== undefined && strike !== null);
+  
+  const lowestStrike = Math.min(...allStrikes);
+  const highestStrike = Math.max(...allStrikes);
   
   // Always place underlying at 50%
   const underlyingPos = 50;
   
   // Place the lowest strike at 10%
   const lowestPos = 10;
+  const highestPos = 90;
   
-  // Calculate positions for BE0, call, BE1, and BE2 relative to the underlying
-  let callPos, bePos, be1Pos, be2Pos;
-  
-  // Position calculation helper function
+  // Function to calculate position based on strike value
   const calculatePosition = (strike: number) => {
+    if (strike === lowestStrike) return lowestPos;
+    if (strike === highestStrike) return highestPos;
+    
+    // If strike is lower than underlying, position between lowestPos and underlyingPos
     if (strike < dividend.underlying_price) {
-      // Strike is to the left of underlying
       return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike) * (underlyingPos - lowestPos));
-    } else {
-      // Strike is to the right of underlying
-      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (90 - underlyingPos));
+    } 
+    // If strike is higher than underlying, position between underlyingPos and highestPos
+    else {
+      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price) * (highestPos - underlyingPos));
     }
   };
   
   // Calculate positions for each point
-  callPos = calculatePosition(dividend.strike_call);
-  bePos = calculatePosition(be0Strike);
-  be1Pos = calculatePosition(be1Strike);
-  be2Pos = calculatePosition(be2Strike);
+  const callPos = calculatePosition(dividend.strike_call);
+  const bePos = calculatePosition(be0Strike);
+  const be1Pos = calculatePosition(be1Strike);
+  const be2Pos = calculatePosition(be2Strike);
   
   return (
     <TooltipProvider delayDuration={100}>
@@ -152,7 +162,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         )}
 
         {/* Strike Call Circle */}
-        {dividend.strike_call !== 0 && callPos && (
+        {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
             style={{ left: `${callPos}%` }}
@@ -187,7 +197,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
         
-        {/* BE1 Circle - new */}
+        {/* BE1 Circle - risk free rate */}
         <div 
           className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
           style={{ left: `${be1Pos}%` }}
@@ -203,7 +213,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           <Circle className="h-4 w-4" style={{ fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }} />
         </div>
         
-        {/* BE2 Circle - new */}
+        {/* BE2 Circle - 7% */}
         <div 
           className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
           style={{ left: `${be2Pos}%` }}
@@ -249,7 +259,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         )}
 
         {/* Call and Put information (consolidated) */}
-        {dividend.strike_call !== 0 && callPos && (
+        {dividend.strike_call !== 0 && (
           <div 
             className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
             style={{ left: `${callPos}%` }}
