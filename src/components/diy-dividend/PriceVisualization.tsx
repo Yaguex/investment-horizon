@@ -123,18 +123,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     if (strike === lowestStrike) return lowestPos;
     if (strike === dividend.underlying_price) return underlyingPos;
     
-    // Position is based on where this strike falls within the overall range
-    if (strike < dividend.underlying_price) {
-      // Between lowest strike and underlying
-      return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
-    } else {
-      // Greater than underlying - FIXED to be relative to underlyingPos (50%) not 90%
-      const highestMinusUnderlying = highestStrike - dividend.underlying_price;
-      const strikeMinusUnderlying = strike - dividend.underlying_price;
-      const ratio = strikeMinusUnderlying / highestMinusUnderlying;
-      // Scale from underlyingPos (50%) to 90%
-      return underlyingPos + (ratio * (90 - underlyingPos));
-    }
+    return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
   };
   
   // Calculate positions for each circle
