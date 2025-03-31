@@ -122,8 +122,17 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     // Here is the logic for lowestPos and underlyingPos
     if (strike === lowestStrike) return lowestPos;
     if (strike === dividend.underlying_price) return underlyingPos;
-    // Here is the logic for all other circles
-    return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
+    
+    // For strikes less than underlying price
+    if (strike < dividend.underlying_price) {
+      return lowestPos + ((strike - lowestStrike) / (dividend.underlying_price - lowestStrike)) * (underlyingPos - lowestPos);
+    }
+    // For strikes greater than underlying price
+    else {
+      // Calculate position relative to the underlying position (50%)
+      const highestStrike = Math.max(...strikes);
+      return underlyingPos + ((strike - dividend.underlying_price) / (highestStrike - dividend.underlying_price)) * (90 - underlyingPos);
+    }
   };
   
   // Now that we have the position formulas in place, get them:
@@ -225,21 +234,33 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
         
-        {/* Price rectangles */}
+        {/* Price rectangles with updated gradient coloring */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
-          {/* Red rectangle - only show if strike_put exists */}
-          {dividend.strike_put !== 0 && (
-            <div 
-              className="absolute left-0 top-0 bottom-0 bg-red-500"
-              style={{ width: `${callPos}%` }}
-            />
-          )}
-          {/* Green rectangle */}
+          {/* Left segment with red to gray gradient - everything left of BE0 */}
+          <div 
+            className="absolute left-0 top-0 bottom-0"
+            style={{ 
+              width: `${be0Pos}%`,
+              background: 'linear-gradient(to right, #ef4444, rgb(243 244 246))'
+            }}
+          />
+          
+          {/* Middle segment with gray to green gradient - between BE0 and Call */}
+          <div 
+            className="absolute top-0 bottom-0"
+            style={{ 
+              left: `${be0Pos}%`,
+              width: `${callPos - be0Pos}%`,
+              background: 'linear-gradient(to right, rgb(243 244 246), #22c55e)'
+            }}
+          />
+          
+          {/* Right segment always green - everything right of Call */}
           <div 
             className="absolute top-0 bottom-0 bg-green-500"
             style={{ 
-              left: `${be0Pos}%`,
-              width: `${callPos - be0Pos}%`
+              left: `${callPos}%`,
+              width: `${100 - callPos}%`
             }}
           />
         </div>
