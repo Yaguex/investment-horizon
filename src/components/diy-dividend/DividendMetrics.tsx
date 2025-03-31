@@ -166,7 +166,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getReturnvsBondColor(ReturnvsBond)} text-xl font-bold`}>x{formatNumber(ReturnvsBond, 1)}</p>
+                <p className={`${getReturnvsBondColor(ReturnvsBond)} text-xl font-bold`}>x {formatNumber(ReturnvsBond, 1)}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Return of the DIY Dividend structure, if held to maturity, over the risk free rate. The higher the return vs the risk free rate, the worthier taking the risk is.
