@@ -14,16 +14,15 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const yearsUntilExpiration = daysUntilExpiration / 365
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend, maxAnnualROI;
+  let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
   if (dividend.strike_put === null) {
-    // If strike_put is NULL, we can buy into the position in full amount right away
+    // If strike_put is NULL, we can buy into the position in full amount right away.
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
     positionSize = "full"
     totalBondYield = 0
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
-    maxAnnualROI = (((totalIncome / (dividend.strike_call*callContracts*100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
@@ -32,7 +31,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     positionSize = "half"
     totalBondYield = (dividend.nominal/2) * (dividend.bond_yield / 100) * yearsUntilExpiration
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
-    maxAnnualROI = 10
   }
 
   // Calculate option premium collected
@@ -45,6 +43,15 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Calculate Extrinsic vs Total ratio
   const extrinsicRatio = (((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 )) / totalIncome ) * 100
+
+  // Calculate maxAnnualROI
+  let maxAnnualROI;
+  if (dividend.strike_put === null) {
+    maxAnnualROI = (((totalIncome / (dividend.strike_call*callContracts*100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
+  } else {
+    maxAnnualROI = 10
+  }
+
 
   // Determine the color based on value above or below 0
   const getNetColor = (value: number) => {
