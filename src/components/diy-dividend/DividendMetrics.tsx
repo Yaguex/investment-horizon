@@ -73,7 +73,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   }
 
   // Determine the text color based on Return vs Bond
-  const ReturnvsBond = (value: number) => {
+  const getReturnvsBondColor = (value: number) => {
     if (value > 2.8) return "text-green-600"
     if (value < 1.8) return "text-red-600"
     return "text-orange-500"  // for values between 30 and 50 (inclusive)
@@ -166,7 +166,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getExtrinsicRatioColor(ReturnvsBond)} text-xl font-bold`}>x{formatNumber(ReturnvsBond, 1)}%</p>
+                <p className={`${getReturnvsBondColor(ReturnvsBond)} text-xl font-bold`}>x{formatNumber(ReturnvsBond, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Return of the DIY Dividend structure, if held to maturity, over the risk free rate. The higher the return vs the risk free rate, the worthier the risk is.
