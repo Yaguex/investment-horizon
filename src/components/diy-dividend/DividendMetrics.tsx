@@ -49,7 +49,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const extrinsicRatio = (((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 )) / totalIncome ) * 100
 
   // Calculate maxAnnualROI. It is the same formula regardless of whether we sell Puts or not.
-  const maxAnnualROI = (((totalIncome + (dividend.strike_call * callContracts * 100)) - (underlyingShares * dividend.underlying_price)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
+  const maxAnnualROI = (((totalIncome + (callContracts * dividend.strike_call * 100) + nominalForBonds) - ((underlyingShares * dividend.underlying_price) + nominalForBonds)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
 
   // Calculate maxAnnualROI vs Risk free rate ratio
   const ReturnvsBond = maxAnnualROI / dividend.bond_yield
@@ -61,7 +61,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     // if we dont have a strike_put, we use the strike_call instead
     putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_call)/100) * dividend.strike_put_mid * 100)
   } else {
-    putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_call)/100) * dividend.strike_put_mid * 100)
+    putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_put)/100) * dividend.strike_put_mid * 100)
   }
   const ReturnvsShortPut = totalIncome / (putFeeIfNotDIYDividend + (dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration))
 
@@ -96,8 +96,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Determine the text color based on Return vs Short Put
   const getReturnvsShortPutColor = (value: number) => {
-    if (value > 4) return "text-green-600"
-    if (value < 2.5) return "text-red-600"
+    if (value > 5) return "text-green-600"
+    if (value < 3) return "text-red-600"
     return "text-orange-500"  // for any other value in between
   }    
 
@@ -169,7 +169,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total annualized ROI of our DIY Dividend structure to expiration. Must keep the DIY Dividend structure in place all the way to expiration to realize this max Total Income.
+                Total annualized ROI of our DIY Dividend structure to expiration IF the trade is successful (meaning price remains above the Call Strike at expiration). Must keep the DIY Dividend structure in place all the way to expiration to realize this max Total Income.
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">DIY Dividend<br />annualized</p>
