@@ -85,13 +85,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     if (value < 1.7) return "text-red-600"
     return "text-orange-500"  // for any other value in between
   } 
-  
-   // Determine the text color based on Return vs Bond
-  const getReturnvsBondColor = (value: number) => {
-    if (value > 2.7) return "text-green-600"
-    if (value < 1.7) return "text-red-600"
-    return "text-orange-500"  // for any other value in between
-  } 
 
   // Determine the text color based on Return vs Short Put
   const getReturnvsShortPutColor = (value: number) => {
