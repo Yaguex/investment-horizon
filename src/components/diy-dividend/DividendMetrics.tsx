@@ -21,14 +21,14 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
     positionSize = "full"
-    nominalForBonds = 0 // 0 because all nominal is invested in the underlying
+    nominalForBonds = 0 // The entire nominal is invested in shares of the underlying
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
     positionSize = "half"
-    nominalForBonds = dividend.nominal/2 // only half of the nominal is invested in bonds
+    nominalForBonds = dividend.nominal/2 // only half of the nominal is available for bonds
   }
 
   // Calculate option premium collected
