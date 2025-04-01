@@ -45,13 +45,14 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate Total Income
   const totalIncome = totalBondYield + totalFee + totalDividend
 
+  // Calculate Net Profit if price remains above strike_call: how much we receive minus how much I will lose in the short call
+  const netProfit = totalIncome - (underlyingShares * (dividend.underlying_price - dividend.strike_call))
+
   // Calculate Extrinsic vs Total ratio
   const extrinsicRatio = (((dividend.strike_call_extrinsic_value * callContracts * 100 ) + (dividend.strike_put_extrinsic_value * putContracts * 100 )) / totalIncome ) * 100
 
   // Calculate maxAnnualROI. It is the same formula regardless of whether we sell Puts or not.
-  // const maxAnnualROI = (((totalIncome + (callContracts * dividend.strike_call * 100) + nominalForBonds) - ((underlyingShares * dividend.underlying_price) + nominalForBonds)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
-  //const maxAnnualROI = (totalIncome / dividend.nominal) * 100 * (365 / daysUntilExpiration)
-  const maxAnnualROI = (totalIncome - (underlyingShares * (dividend.underlying_price - dividend.strike_call)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)  
+  const maxAnnualROI = (netProfit / dividend.nominal) * 100 * (365 / daysUntilExpiration)  
 
 
   // Calculate maxAnnualROI vs Risk free rate ratio
@@ -158,6 +159,16 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
               Sum of option premiums, dividends and bond yield for the entire duration of the DIY Dividend lifespan. Must keep the DIY Dividend structure in place all the way to expiration to realize this max Total Income.
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            <Tooltip>
+              <TooltipTrigger>
+                <span>Net profit: </span><span className={getNetColor(netProfit)}>${formatNumber(netProfit, 0)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+              Net profit (Total Income - loss from assigning the ITM short calls) if price remains above Strike Call at expiration.
               </TooltipContent>
             </Tooltip>
           </p>
