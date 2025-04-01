@@ -14,7 +14,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const yearsUntilExpiration = daysUntilExpiration / 365
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
+  let underlyingShares, callContracts, putContracts, positionSize, bondExposure, totalDividend;
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away.
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
@@ -22,7 +22,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     putContracts = 0
     positionSize = "full"
     bondExposure = 0 // Do we have money to invest in bonds or not? 0 or 1
-    totalBondYield = 0
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
