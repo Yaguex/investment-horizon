@@ -21,14 +21,14 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
     positionSize = "full"
-    nominalForBonds = 0 // The entire nominal is invested in shares of the underlying
+    nominalForBonds = 0 // Since we dont have a pending short put, we dont have to freeze any capital in bonds.
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
     positionSize = "half"
-    nominalForBonds = dividend.nominal/2 // only half of the nominal is available for bonds
+    nominalForBonds = dividend.nominal/2 // Half of the nominal must be frozen in bonds through the duration of the DIY Dividend due to the pending short put.
   }
 
   // Calculate option premium collected
@@ -36,16 +36,13 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
 
-  // Total money allocated to bonds. Remember to invest option premium into bonds as well!
-  const bondCapital = nominalForBonds + totalFee
-
   // Calculate money earned through standard dividends
   const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
 
-  // Calculate money earned through bond intests. Remember to include totalFee (premiums from options) into your bond purchases
-  const totalBondYield = bondCapital * (dividend.bond_yield / 100) * yearsUntilExpiration
+  // Calculate money earned through bond intests.
+  const totalBondYield = nominalForBonds * (dividend.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate Total Incom
+  // Calculate Total Income
   const totalIncome = totalBondYield + totalFee + totalDividend
 
   // Calculate Extrinsic vs Total ratio
