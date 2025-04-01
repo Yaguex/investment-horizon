@@ -14,29 +14,33 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const yearsUntilExpiration = daysUntilExpiration / 365
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  let underlyingShares, callContracts, putContracts, positionSize, totalBondYield, totalDividend;
+  let underlyingShares, callContracts, putContracts, positionSize, totalBondYieldMultiplier;
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away.
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
     positionSize = "full"
-    totalBondYield = 0
-    totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+    totalBondYieldMultiplier = 0
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
     positionSize = "half"
-    totalBondYield = (dividend.nominal/2) * (dividend.bond_yield / 100) * yearsUntilExpiration
-    totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+    totalBondYieldMultiplier = 1 
   }
 
   // Calculate option premium collected
   const callFee = callContracts * dividend.strike_call_mid * 100
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
+
+  // Calculate money earned through standard dividends
+  const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+
+  // Calculate money earned through bond intests. Remember to include totalFee (premiums from options) into your bond purchases
+  const totalBondYield = totalBondYieldMultiplier * (((dividend.nominal/2) + totalFee) * (dividend.bond_yield / 100) * yearsUntilExpiration)
 
   // Calculate Total Incom
   const totalIncome = totalBondYield + totalFee + totalDividend
