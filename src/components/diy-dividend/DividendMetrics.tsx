@@ -13,25 +13,31 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  let underlyingShares, callContracts, putContracts, positionSize, bondExposure, totalDividend;
+  // Calculate multipliers based on whether we are willing to sell puts
+  let underlyingSharesMultiplier, putContractsMultiplier, positionSize, totalBondYieldMultiplier;
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away.
-    underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
-    callContracts = Math.round(underlyingShares/100)
-    putContracts = 0
+    putContractsMultiplier = 0
     positionSize = "full"
-    bondExposure = 0 // Do we have money to invest in bonds or not? 0 or 1
-    totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+    underlyingSharesMultiplier = 1 // 1 if full position and 2 if half position
+    totalBondYieldMultiplier = 0 // Do we have money to invest in bonds or not? 0 or 1
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
-    underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
-    callContracts = Math.round(underlyingShares/100)
-    putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
+    putContractsMultiplier = 1
     positionSize = "half"
-    bondExposure = 1 // Do we have money to invest in bonds or not? 0 or 1
-    totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+    underlyingSharesMultiplier = 2 // 1 if full position and 2 if half position
+    totalBondYieldMultiplier = 1 // Do we have money to invest in bonds or not? 0 or 1
   }
+
+  // Calculate number of underlying shares to buy right now.
+  const underlyingShares =  Math.round((dividend.nominal/underlyingSharesMultiplier) / dividend.underlying_price)
+
+  // Calculate dollars earned through organic dividends
+  const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
+
+  // Calculate number of Call and Put contracts
+  const callContracts = Math.round(underlyingShares/100)
+  const putContracts = putContractsMultiplier * (Math.round(((dividend.nominal/2) / dividend.strike_put)/100))
 
   // Calculate option premium collected
   const callFee = callContracts * dividend.strike_call_mid * 100
@@ -39,7 +45,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const totalFee = callFee + putFee
 
   // Calculate income from bond yield. Use bondExposure to equal it to 0 in case we do not have money to invest in bonds. We will also use totalFee to buy more bonds.
-  const totalBondYield = bondExposure * (((dividend.nominal/2)+totalFee) * (dividend.bond_yield / 100) * yearsUntilExpiration)
+  const totalBondYield = totalBondYieldMultiplier * (((dividend.nominal/2)+totalFee) * (dividend.bond_yield / 100) * yearsUntilExpiration)
 
   // Calculate Total Incom
   const totalIncome = totalBondYield + totalFee + totalDividend
