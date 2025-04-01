@@ -71,15 +71,15 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Determine the text color based on Extrinsic vs Total Income ratio value
   const getExtrinsicRatioColor = (value: number) => {
-    if (value > 50) return "text-green-600"
-    if (value < 30) return "text-red-600"
+    if (value > 35) return "text-green-600"
+    if (value < 25) return "text-red-600"
     return "text-orange-500"  // for any other value in between
   }
 
   // Determine the text color based on Return vs Bond
   const getReturnvsBondColor = (value: number) => {
-    if (value > 2.8) return "text-green-600"
-    if (value < 1.8) return "text-red-600"
+    if (value > 2.7) return "text-green-600"
+    if (value < 1.7) return "text-red-600"
     return "text-orange-500"  // for any other value in between
   }  
 
