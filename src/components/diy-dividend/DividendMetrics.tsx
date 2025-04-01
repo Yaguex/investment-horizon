@@ -14,21 +14,21 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const yearsUntilExpiration = daysUntilExpiration / 365
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  let underlyingShares, callContracts, putContracts, positionSize, totalBondYieldMultiplier;
+  let underlyingShares, callContracts, putContracts, positionSize, nominalForBonds;
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away.
     underlyingShares =  Math.round(dividend.nominal / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
     positionSize = "full"
-    totalBondYieldMultiplier = 0
+    nominalForBonds = 0 // 0 because all nominal is invested in the underlying
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     underlyingShares =  Math.round((dividend.nominal/2) / dividend.underlying_price)
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
     positionSize = "half"
-    totalBondYieldMultiplier = 1 
+    nominalForBonds = dividend.nominal/2 // only half of the nominal is invested in bonds
   }
 
   // Calculate option premium collected
@@ -36,11 +36,14 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
 
+  // Total money allocated to bonds. Remember to invest option premium into bonds as well!
+  const bondCapital = nominalForBonds + totalFee
+
   // Calculate money earned through standard dividends
   const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
 
   // Calculate money earned through bond intests. Remember to include totalFee (premiums from options) into your bond purchases
-  const totalBondYield = totalBondYieldMultiplier * (((dividend.nominal/2) + totalFee) * (dividend.bond_yield / 100) * yearsUntilExpiration)
+  const totalBondYield = bondCapital * (dividend.bond_yield / 100) * yearsUntilExpiration
 
   // Calculate Total Incom
   const totalIncome = totalBondYield + totalFee + totalDividend
