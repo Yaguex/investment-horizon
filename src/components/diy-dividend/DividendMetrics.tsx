@@ -50,7 +50,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Calculate maxAnnualROI. It is the same formula regardless of whether we sell Puts or not.
   // const maxAnnualROI = (((totalIncome + (callContracts * dividend.strike_call * 100) + nominalForBonds) - ((underlyingShares * dividend.underlying_price) + nominalForBonds)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)
-  const maxAnnualROI = (totalIncome / dividend.nominal) * 100 * (365 / daysUntilExpiration)
+  //const maxAnnualROI = (totalIncome / dividend.nominal) * 100 * (365 / daysUntilExpiration)
+  const maxAnnualROI = (totalIncome - (underlyingShares * (dividend.underlying_price - dividend.strike_call)) / dividend.nominal) * 100 * (365 / daysUntilExpiration)  
+
 
   // Calculate maxAnnualROI vs Risk free rate ratio
   const ReturnvsBond = maxAnnualROI / dividend.bond_yield
