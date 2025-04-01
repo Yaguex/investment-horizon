@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import { corsHeaders } from './utils.ts'
 
@@ -54,6 +55,7 @@ Deno.serve(async (req) => {
 
     const strikes = []
 
+    // Always add call strike if provided
     if (dividend.strike_call) {
       strikes.push({
         ticker: dividend.ticker,
@@ -61,8 +63,20 @@ Deno.serve(async (req) => {
         type: 'call',
         strike: dividend.strike_call
       })
+
+      // Add put with the same strike as call if strike_put is null
+      // This way we fetch put data but don't store strike_put value itself
+      if (dividend.strike_put === null) {
+        strikes.push({
+          ticker: dividend.ticker,
+          expiration: dividend.expiration,
+          type: 'put',
+          strike: dividend.strike_call  // Using call strike for put data
+        })
+      }
     }
 
+    // If strike_put is provided, also add it normally
     if (dividend.strike_put) {
       strikes.push({
         ticker: dividend.ticker,
@@ -97,7 +111,7 @@ Deno.serve(async (req) => {
 
     // Handle call strike data if present
     if (dividend.strike_call && marketData.responses?.[0]) {
-      updateData.underlying_Mprice = marketData.responses[0]?.marketData?.underlyingPrice || null
+      updateData.underlying_price = marketData.responses[0]?.marketData?.underlyingPrice || null
       updateData.strike_call_mid = marketData.responses[0]?.marketData?.mid || null
       updateData.strike_call_open_interest = marketData.responses[0]?.marketData?.openInterest || null
       updateData.strike_call_iv = marketData.responses[0]?.marketData?.iv || null
@@ -106,15 +120,25 @@ Deno.serve(async (req) => {
       updateData.strike_call_extrinsic_value = marketData.responses[0]?.marketData?.extrinsicValue || null
     }
 
-    // Handle put strike data if present
-    if (dividend.strike_put && marketData.responses?.[1]) {
-      updateData.underlying_price = marketData.responses[0]?.marketData?.underlyingPrice || null
-      updateData.strike_put_mid = marketData.responses[1]?.marketData?.mid || null
-      updateData.strike_put_open_interest = marketData.responses[1]?.marketData?.openInterest || null
-      updateData.strike_put_iv = marketData.responses[1]?.marketData?.iv || null
-      updateData.strike_put_delta = marketData.responses[1]?.marketData?.delta || null
-      updateData.strike_put_intrinsic_value = marketData.responses[1]?.marketData?.intrinsicValue || null
-      updateData.strike_put_extrinsic_value = marketData.responses[1]?.marketData?.extrinsicValue || null
+    // Handle put strike data
+    // The response index depends on whether we have one or two strikes
+    const putResponseIndex = dividend.strike_call ? (dividend.strike_put ? 1 : 1) : 0;
+    
+    // Now we always process put data if it exists in the response,
+    // regardless of whether strike_put was provided in the original dividend
+    if (marketData.responses?.[putResponseIndex]) {
+      // Don't update the strike_put field itself if it was null
+      if (dividend.strike_put !== null) {
+        updateData.strike_put = dividend.strike_put;
+      }
+      
+      updateData.underlying_price = updateData.underlying_price || marketData.responses[putResponseIndex]?.marketData?.underlyingPrice || null
+      updateData.strike_put_mid = marketData.responses[putResponseIndex]?.marketData?.mid || null
+      updateData.strike_put_open_interest = marketData.responses[putResponseIndex]?.marketData?.openInterest || null
+      updateData.strike_put_iv = marketData.responses[putResponseIndex]?.marketData?.iv || null
+      updateData.strike_put_delta = marketData.responses[putResponseIndex]?.marketData?.delta || null
+      updateData.strike_put_intrinsic_value = marketData.responses[putResponseIndex]?.marketData?.intrinsicValue || null
+      updateData.strike_put_extrinsic_value = marketData.responses[putResponseIndex]?.marketData?.extrinsicValue || null
     }
 
     const { error: updateError } = await supabase
