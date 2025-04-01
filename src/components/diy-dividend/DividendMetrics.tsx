@@ -14,19 +14,21 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const yearsUntilExpiration = daysUntilExpiration / 365
 
   // Calculate multipliers based on whether we are willing to sell puts
-  let underlyingSharesMultiplier, putContractsMultiplier, positionSize, totalBondYieldMultiplier;
+  let underlyingSharesMultiplier, putContractsMultiplier, positionSize, totalBondYieldMultiplier, putFee;
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away.
     putContractsMultiplier = 0
     positionSize = "full"
     underlyingSharesMultiplier = 1 // 1 if full position and 2 if half position
     totalBondYieldMultiplier = 0 // Do we have money to invest in bonds or not? 0 or 1
+    putFee = 0
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     putContractsMultiplier = 1
     positionSize = "half"
     underlyingSharesMultiplier = 2 // 1 if full position and 2 if half position
     totalBondYieldMultiplier = 1 // Do we have money to invest in bonds or not? 0 or 1
+    putFee = putContracts * dividend.strike_put_mid * 100
   }
 
   // Calculate number of underlying shares to buy right now.
@@ -41,7 +43,6 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Calculate option premium collected
   const callFee = callContracts * dividend.strike_call_mid * 100
-  const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
 
   // Calculate income from bond yield. Use bondExposure to equal it to 0 in case we do not have money to invest in bonds. We will also use totalFee to buy more bonds.
