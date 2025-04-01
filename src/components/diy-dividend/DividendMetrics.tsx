@@ -21,6 +21,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     callContracts = Math.round(underlyingShares/100)
     putContracts = 0
     positionSize = "full"
+    bondExposure = 0 // Do we have money to invest in bonds or not? 0 or 1
     totalBondYield = 0
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
   } else {
@@ -29,7 +30,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     callContracts = Math.round(underlyingShares/100)
     putContracts = Math.round(((dividend.nominal/2) / dividend.strike_put)/100)
     positionSize = "half"
-    totalBondYield = (dividend.nominal/2) * (dividend.bond_yield / 100) * yearsUntilExpiration
+    bondExposure = 1 // Do we have money to invest in bonds or not? 0 or 1
     totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
   }
 
@@ -37,6 +38,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const callFee = callContracts * dividend.strike_call_mid * 100
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
+
+  // Calculate income from bond yield. Use bondExposure to equal it to 0 in case we do not have money to invest in bonds. We will also use totalFee to buy more bonds.
+  const totalBondYield = bondExposure * (((dividend.nominal/2)+totalFee) * (dividend.bond_yield / 100) * yearsUntilExpiration)
 
   // Calculate Total Incom
   const totalIncome = totalBondYield + totalFee + totalDividend
