@@ -55,7 +55,14 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const ReturnvsBond = maxAnnualROI / dividend.bond_yield
 
   // Calculate maxAnnualROI vs Risk free rate ratio
-  const putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_put)/100) * dividend.strike_put_mid * 100) // Calculate how many short puts we'd have if we didnt go for a DIY Dividend structure.
+  // Calculate how many short puts we'd have if we didnt go for a DIY Dividend structure.
+  let putFeeIfNotDIYDividend;
+  if (dividend.strike_put === null) {
+    // if we dont have a strike_put, we use the strike_call instead
+    putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_call)/100) * dividend.strike_put_mid * 100)
+  } else {
+    putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_put)/100) * dividend.strike_put_mid * 100)
+  }
   const ReturnvsShortPut = totalIncome / (putFeeIfNotDIYDividend + (dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration))
 
 
