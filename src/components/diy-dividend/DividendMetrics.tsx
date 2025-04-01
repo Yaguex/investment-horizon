@@ -37,7 +37,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Calculate number of Call and Put contracts
   const callContracts = Math.round(underlyingShares/100)
-  const putContracts = putContractsMultiplier * (Math.round(((dividend.nominal/2) / dividend.strike_put)/100))
+  const putContracts = putContractsMultiplier * (Math.round(((dividend.nominal/underlyingSharesMultiplier) / dividend.strike_put)/100))
 
   // Calculate option premium collected
   const callFee = callContracts * dividend.strike_call_mid * 100
@@ -45,7 +45,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const totalFee = callFee + putFee
 
   // Calculate income from bond yield. Use bondExposure to equal it to 0 in case we do not have money to invest in bonds. We will also use totalFee to buy more bonds.
-  const totalBondYield = totalBondYieldMultiplier * (((dividend.nominal/2)+totalFee) * (dividend.bond_yield / 100) * yearsUntilExpiration)
+  const totalBondYield = totalBondYieldMultiplier * (((dividend.nominal/underlyingSharesMultiplier)+totalFee) * (dividend.bond_yield / 100) * yearsUntilExpiration)
 
   // Calculate Total Incom
   const totalIncome = totalBondYield + totalFee + totalDividend
