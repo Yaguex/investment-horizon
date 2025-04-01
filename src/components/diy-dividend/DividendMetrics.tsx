@@ -31,7 +31,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     nominalForBonds = dividend.nominal/2 // Half of the nominal must be frozen in bonds through the duration of the DIY Dividend due to the pending short put.
   }
 
-  // Calculate option premium collected
+  // Calculate option premium collected.
   const callFee = callContracts * dividend.strike_call_mid * 100
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
