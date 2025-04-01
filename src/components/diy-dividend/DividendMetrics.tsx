@@ -54,6 +54,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate maxAnnualROI vs Risk free rate ratio
   const ReturnvsBond = maxAnnualROI / dividend.bond_yield
 
+  // Calculate maxAnnualROI vs Risk free rate ratio
+  const ReturnvsShortPut = totalIncome / (putFee + (dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration))
+
 
   // Determine the text color based on value above or below 0
   const getNetColor = (value: number) => {
@@ -81,7 +84,21 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     if (value > 2.7) return "text-green-600"
     if (value < 1.7) return "text-red-600"
     return "text-orange-500"  // for any other value in between
-  }  
+  } 
+  
+   // Determine the text color based on Return vs Bond
+  const getReturnvsBondColor = (value: number) => {
+    if (value > 2.7) return "text-green-600"
+    if (value < 1.7) return "text-red-600"
+    return "text-orange-500"  // for any other value in between
+  } 
+
+  // Determine the text color based on Return vs Short Put
+  const getReturnvsShortPutColor = (value: number) => {
+    if (value > 2) return "text-green-600"
+    if (value < 1.5) return "text-red-600"
+    return "text-orange-500"  // for any other value in between
+  }    
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -177,6 +194,17 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Return<br />vs Bond</p>
+          </div>
+          <div className="text-center">
+            <Tooltip>
+              <TooltipTrigger>
+                <p className={`${getReturnvsShortPutColor(ReturnvsShortPut)} text-xl font-bold`}>x {formatNumber(ReturnvsShortPut, 1)}</p>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Return of the DIY Dividend structure, if held to maturity, over the risk free rate. The higher the return vs the risk free rate, the worthier taking the risk is.
+              </TooltipContent>
+            </Tooltip>
+            <p className="text-xs text-black">Return<br />vs Short Put</p>
           </div>
         </div>
       </div>
