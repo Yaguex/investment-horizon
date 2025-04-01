@@ -61,7 +61,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
     // if we dont have a strike_put, we use the strike_call instead
     putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_call)/100) * dividend.strike_put_mid * 100)
   } else {
-    putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_put)/100) * dividend.strike_put_mid * 100)
+    putFeeIfNotDIYDividend = Math.round(((dividend.nominal / dividend.strike_call)/100) * dividend.strike_put_mid * 100)
   }
   const ReturnvsShortPut = totalIncome / (putFeeIfNotDIYDividend + (dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration))
 
@@ -202,7 +202,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getReturnvsShortPutColor(ReturnvsShortPut)} text-xl font-bold`}>x {formatNumber(ReturnvsShortPut, 1)}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Return of the DIY Dividend structure, if held to maturity, over the risk free rate. The higher the return vs the risk free rate, the worthier taking the risk is.
+                How much the DIY Dividend would return vs simply selling puts and freezing nominal in bonds
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Return<br />vs Short Put</p>
