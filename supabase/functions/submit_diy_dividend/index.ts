@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
 
     // Handle call strike data if present
     if (dividend.strike_call && marketData.responses?.[0]) {
-      updateData.underlying_price = marketData.responses[0]?.marketData?.underlyingPrice || null
+      updateData.underlying_Mprice = marketData.responses[0]?.marketData?.underlyingPrice || null
       updateData.strike_call_mid = marketData.responses[0]?.marketData?.mid || null
       updateData.strike_call_open_interest = marketData.responses[0]?.marketData?.openInterest || null
       updateData.strike_call_iv = marketData.responses[0]?.marketData?.iv || null
