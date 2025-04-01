@@ -36,6 +36,9 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const putFee = putContracts * dividend.strike_put_mid * 100
   const totalFee = callFee + putFee
 
+  // What would be the Put premium
+  const putFeeAtCallStrike = putContracts * dividend.strike_put_mid * 100  
+
   // Calculate money earned through standard dividends
   const totalDividend = underlyingShares * dividend.underlying_price * (dividend.dividend_yield / 100) * yearsUntilExpiration
 
@@ -55,7 +58,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   const ReturnvsBond = maxAnnualROI / dividend.bond_yield
 
   // Calculate maxAnnualROI vs Risk free rate ratio
-  const ReturnvsShortPut = totalIncome / (putFee + (dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration))
+  const ReturnvsShortPut = totalIncome / (putFeeAtCallStrike + (dividend.nominal * (dividend.bond_yield / 100) * yearsUntilExpiration))
 
 
   // Determine the text color based on value above or below 0
