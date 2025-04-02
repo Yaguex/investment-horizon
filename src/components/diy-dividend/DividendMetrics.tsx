@@ -45,7 +45,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Calculate Total Income
   const totalIncome = totalBondYield + totalFee + totalDividend
 
-  // Calculate Net Profit if price remains above strike_call: how much we receive minus how much I will lose in the short call
+  // Calculate Net Profit if price remains above strike_call: how much income we've receive minus how much I will lose in the short call
   const netProfit = totalIncome - (underlyingShares * (dividend.underlying_price - dividend.strike_call))
 
   // Calculate Extrinsic vs Total ratio
