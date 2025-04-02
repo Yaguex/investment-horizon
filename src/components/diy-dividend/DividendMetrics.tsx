@@ -167,7 +167,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <span>Net profit: </span><span className={getNetColor(netProfit)}>${formatNumber(netProfit, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-              Net profit (Total Income - loss from assigning the ITM short calls) if price remains above Strike Call at expiration.
+              Net profit (Total Income - loss from assigning the ITM short calls) if the trade is successful, meaning if price remains above Strike Call at expiration.
               </TooltipContent>
             </Tooltip>
           </p>
@@ -215,7 +215,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getReturnvsShortPutColor(ReturnvsShortPut)} text-xl font-bold`}>x {formatNumber(ReturnvsShortPut, 1)}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                How much the DIY Dividend would return vs simply selling puts and freezing nominal in bonds
+                How much the DIY Dividend would return vs simply selling puts plus freezing nominal in bonds
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Return vs<br />Short Put</p>
