@@ -100,7 +100,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
   // Determine the text color based on Return vs Short Put
   const getReturnvsShortPutColor = (value: number) => {
     if (value > 1.5) return "text-green-600"
-    if (value < 1) return "text-red-600"
+    if (value < 1.1) return "text-red-600"
     return "text-orange-500"  // for any other value in between
   }    
 
@@ -215,7 +215,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 <p className={`${getReturnvsShortPutColor(ReturnvsShortPut)} text-xl font-bold`}>x {formatNumber(ReturnvsShortPut, 1)}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                How much the DIY Dividend would return vs simply selling puts plus freezing nominal in bonds
+                DIY Dividend's ROI vs simply selling OTM puts plus freezing nominal in bonds. If equal, then the simplicity of Short Puts + Bonds is preferable.
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Return vs<br />Short Put</p>
