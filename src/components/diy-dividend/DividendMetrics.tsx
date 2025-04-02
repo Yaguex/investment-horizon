@@ -85,8 +85,8 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
 
   // Determine the text color based on Extrinsic vs Total Income ratio value
   const getExtrinsicRatioColor = (value: number) => {
-    if (value > 35) return "text-green-600"
-    if (value < 25) return "text-red-600"
+    if (value > 40) return "text-green-600"
+    if (value < 30) return "text-red-600"
     return "text-orange-500"  // for any other value in between
   }
 
@@ -185,7 +185,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 Total annualized ROI of our DIY Dividend structure to expiration IF the trade is successful (meaning price remains above the Call Strike at expiration). Must keep the DIY Dividend structure in place all the way to expiration to realize this max Total Income.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">DIY Dividend<br />annualized</p>
+            <p className="text-xs text-black">ROI<br />annualized</p>
           </div>
           <div className="text-center">
             <Tooltip>
@@ -196,7 +196,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 How much of the DIY Dividend's total income comes from Extrinsic value (the higher the better). If most of the income comes from intrinsic, bond yield, underlying's natural dividend, etc. then the DIY Dividend structure is not providing much alpha.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Extrinsic<br />vs Total</p>
+            <p className="text-xs text-black">Extrinsic vs<br />Total</p>
           </div>
           <div className="text-center">
             <Tooltip>
@@ -207,7 +207,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 Return of the DIY Dividend structure, if held to maturity, over the risk free rate. The higher the return vs the risk free rate, the worthier taking the risk is.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Return<br />vs Bond</p>
+            <p className="text-xs text-black">Return vs<br />Risk Free</p>
           </div>
           <div className="text-center">
             <Tooltip>
@@ -218,7 +218,7 @@ export function DividendMetrics({ dividend }: DividendMetricsProps) {
                 How much the DIY Dividend would return vs simply selling puts and freezing nominal in bonds
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Return<br />vs Short Put</p>
+            <p className="text-xs text-black">Return vs<br />Short Put</p>
           </div>
         </div>
       </div>
