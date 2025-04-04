@@ -30,7 +30,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   }
   const totalPremium = calculatePremium()
 
-  const maxAnnualROI = formatNumber(((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration)), 1)
+  const maxAnnualROI = ((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration))
   
   // Return positive for sell actions, negative for buy actions
   const action = position.action?.toLowerCase() || ''
@@ -71,16 +71,6 @@ export function PositionMetrics({ position }: positionMetricsProps) {
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Total net premium paid
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-red-600">
-            <Tooltip>
-              <TooltipTrigger>
-                Commission: ${formatNumber(calculateCommission(), 0)}
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total commission cost
               </TooltipContent>
             </Tooltip>
           </p>
