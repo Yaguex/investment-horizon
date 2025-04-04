@@ -16,7 +16,6 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   const contracts = Math.round(position.nominal / position.strike_entry / 100)
   
   // Calculate premiums from options
-  const totalPremium = calculatePremium()
   const calculatePremium = () => {
     const action = position.action?.toLowerCase() || ''
     const premium = (position.premium_entry - position.premium_exit) * contracts * 100
@@ -29,6 +28,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
     }
     return roundedPremium
   }
+  const totalPremium = calculatePremium()
 
   const maxAnnualROI = formatNumber(((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration)), 1)
   const action = position.action?.toLowerCase() || ''
