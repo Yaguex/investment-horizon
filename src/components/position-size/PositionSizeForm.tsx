@@ -17,7 +17,7 @@ import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
 import { useAuth } from "@/contexts/AuthContext"
 
-const ACTION_OPTIONS = [
+const actionOptions = [
   { value: "Buy call", label: "Buy call" },
   { value: "Buy put", label: "Buy put" },
   { value: "Sell call", label: "Sell call" },
@@ -107,28 +107,28 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
             <TextField
-              control={control}
+              control={form.control}
               name="ticker"
               label="Ticker"
             />
             <SelectField
-              control={control}
+              control={form.control}
               name="action"
               label="Action"
               options={actionOptions}
             />
             <NumberField
-              control={control}
+              control={form.control}
               name="nominal"
               label="Nominal (total desired exposure) ($)"
             />
             <TextField
-              control={control}
+              control={form.control}
               name="expiration"
               label="Expiration (YYYY-MM-DD)"
             />
             <NumberField
-              control={control}
+              control={form.control}
               name="risk_free_yield"
               label="Risk Free Yield (%)"
             />
@@ -138,12 +138,12 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
                     label="Bond Yield (%)"
                   />
             <NumberField
-              control={control}
+              control={form.control}
               name="strike_entry"
               label="Strike Entry"
             />
             <NumberField
-              control={control}
+              control={form.control}
               name="strike_exit"
               label="Strike Exit"
             />
