@@ -31,9 +31,9 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   const totalPremium = calculatePremium()
 
   const maxAnnualROI = formatNumber(((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration)), 1)
-  const action = position.action?.toLowerCase() || ''
   
   // Return positive for sell actions, negative for buy actions
+  const action = position.action?.toLowerCase() || ''
   const isSellAction = action.includes('sell')
   return isSellAction ? Math.abs(maxAnnualROI) : -Math.abs(maxAnnualROI)
 

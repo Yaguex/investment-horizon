@@ -9,8 +9,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { note, profile_id } = await req.json();
-    console.log('[submit_position_size] Input data:', { note, profile_id });
+    const { position, profile_id } = await req.json();
+    console.log('[submit_position_size] Input data:', { position, profile_id });
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -22,19 +22,19 @@ Deno.serve(async (req) => {
 
     // 1. First save/update position size data
     console.log('[submit_position_size] Saving position size data');
-    if (note.id) {
+    if (position.id) {
       const { error: updateError } = await supabase
         .from('position_size')
         .update({
-          ticker: note.ticker,
-          exposure: note.exposure,
-          expiration: note.expiration || null,
-          risk_free_yield: note.risk_free_yield,
-          strike_entry: note.strike_entry,
-          strike_exit: note.strike_exit,
-          action: note.action,
+          ticker: position.ticker,
+          nominal: position.nominal,
+          expiration: position.expiration || null,
+          bond_yield: position.bond_yield,
+          strike_entry: position.strike_entry,
+          strike_exit: position.strike_exit,
+          action: position.action,
         })
-        .eq('id', note.id);
+        .eq('id', position.id);
 
       if (updateError) throw updateError;
     } else {
@@ -42,20 +42,20 @@ Deno.serve(async (req) => {
         .from('position_size')
         .insert([{
           profile_id,
-          ticker: note.ticker,
-          exposure: note.exposure,
-          expiration: note.expiration || null,
-          risk_free_yield: note.risk_free_yield,
-          strike_entry: note.strike_entry,
-          strike_exit: note.strike_exit,
-          action: note.action,
+          ticker: position.ticker,
+          nominal: position.nominal,
+          expiration: position.expiration || null,
+          bond_yield: position.bond_yield,
+          strike_entry: position.strike_entry,
+          strike_exit: position.strike_exit,
+          action: position.action,
         }]);
 
       if (insertError) throw insertError;
     }
 
     // 2. Prepare market data request
-    if (!note.ticker || !note.expiration) {
+    if (!position.ticker || !position.expiration) {
       console.log('[submit_position_size] Missing required fields for market data');
       return new Response(
         JSON.stringify({ success: true }),
@@ -64,49 +64,49 @@ Deno.serve(async (req) => {
     }
 
     const strikes = [];
-    const isCall = note.action.toLowerCase().includes('call');
+    const isCall = position.action.toLowerCase().includes('call');
     const type = isCall ? 'call' : 'put';
 
     // New safeguard logic for API calls
     console.log('[submit_position_size] Preparing strikes for market data fetch:', {
-      strike_entry: note.strike_entry,
-      strike_exit: note.strike_exit
+      strike_entry: position.strike_entry,
+      strike_exit: position.strike_exit
     });
 
-    if (note.strike_entry && note.strike_exit) {
+    if (position.strike_entry && position.strike_exit) {
       // Both strikes present - add them in a single array
       console.log('[submit_position_size] Both strikes present, preparing single API call');
       strikes.push(
         {
-          ticker: note.ticker,
-          expiration: note.expiration,
+          ticker: position.ticker,
+          expiration: position.expiration,
           type,
-          strike: note.strike_entry
+          strike: position.strike_entry
         },
         {
-          ticker: note.ticker,
-          expiration: note.expiration,
+          ticker: position.ticker,
+          expiration: position.expiration,
           type,
-          strike: note.strike_exit
+          strike: position.strike_exit
         }
       );
-    } else if (note.strike_entry) {
+    } else if (position.strike_entry) {
       // Only entry strike present
       console.log('[submit_position_size] Only entry strike present');
       strikes.push({
-        ticker: note.ticker,
-        expiration: note.expiration,
+        ticker: position.ticker,
+        expiration: position.expiration,
         type,
-        strike: note.strike_entry
+        strike: position.strike_entry
       });
-    } else if (note.strike_exit) {
+    } else if (position.strike_exit) {
       // Only exit strike present
       console.log('[submit_position_size] Only exit strike present');
       strikes.push({
-        ticker: note.ticker,
-        expiration: note.expiration,
+        ticker: position.ticker,
+        expiration: position.expiration,
         type,
-        strike: note.strike_exit
+        strike: position.strike_exit
       });
     }
 
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
     const updateData: any = {};
     
     // Handle entry strike data if present
-    if (note.strike_entry && marketData.responses[0]) {
+    if (position.strike_entry && marketData.responses[0]) {
       updateData.premium_entry = marketData.responses[0]?.marketData?.mid || null;
       // Store absolute value of delta_entry
       updateData.delta_entry = marketData.responses[0]?.marketData?.delta ? Math.abs(marketData.responses[0].marketData.delta) : null;
@@ -152,8 +152,8 @@ Deno.serve(async (req) => {
     }
 
     // Handle exit strike data if present
-    if (note.strike_exit && marketData.responses[note.strike_entry ? 1 : 0]) {
-      const exitResponse = note.strike_entry ? marketData.responses[1] : marketData.responses[0];
+    if (position.strike_exit && marketData.responses[position.strike_entry ? 1 : 0]) {
+      const exitResponse = position.strike_entry ? marketData.responses[1] : marketData.responses[0];
       updateData.premium_exit = exitResponse?.marketData?.mid || null;
       // Store absolute value of delta_exit
       updateData.delta_exit = exitResponse?.marketData?.delta ? Math.abs(exitResponse.marketData.delta) : null;
@@ -165,9 +165,9 @@ Deno.serve(async (req) => {
       .from('position_size')
       .update(updateData)
       .eq('profile_id', profile_id)
-      .eq('ticker', note.ticker)
-      .eq('expiration', note.expiration)
-      .eq('strike_entry', note.strike_entry);
+      .eq('ticker', position.ticker)
+      .eq('expiration', position.expiration)
+      .eq('strike_entry', position.strike_entry);
 
     if (marketDataUpdateError) throw marketDataUpdateError;
 
