@@ -91,7 +91,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     // be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
   }
-  const be0Strike = (((underlyingShares * dividend.underlying_price) - (putContracts * dividend.strike_put * 100)) - netProfit ) / (underlyingShares + (putContracts * 100))
+  const be0Strike = (((underlyingShares * dividend.underlying_price) + (putContracts * dividend.strike_put * 100)) - netProfit ) / (underlyingShares + (putContracts * 100))
 
   
   // Calculate BE1 and BE2 strikes based on the provided formulas
