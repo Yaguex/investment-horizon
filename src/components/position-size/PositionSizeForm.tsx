@@ -26,11 +26,6 @@ const ACTION_OPTIONS = [
   { value: "Sell put spread", label: "Sell put spread" },
 ]
 
-interface PositionSizeFormFieldsProps {
-  control: Control<PositionSizeFormValues>
-  actionOptions: { value: string; label: string }[]
-}
-
 interface PositionSizeFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -40,6 +35,7 @@ interface PositionSizeFormProps {
 export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   
   const form = useForm<PositionSizeFormValues>({
     defaultValues: position ? {
@@ -64,6 +60,12 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
   const onSubmit = async (data: PositionSizeFormValues) => {
     try {
       setIsLoading(true)
+
+      if (!user) {
+        toast.error("You must be logged in to save a dividend")
+        setIsLoading(false)
+        return
+      }
 
       const { error } = await supabase.functions.invoke('submit_position_size', {
         body: {
