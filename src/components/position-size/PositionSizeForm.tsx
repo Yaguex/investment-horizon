@@ -13,6 +13,7 @@ import { Control } from "react-hook-form"
 import { TextField } from "./form-fields/TextField"
 import { NumberField } from "./form-fields/NumberField"
 import { SelectField } from "./form-fields/SelectField"
+import { formatNumber } from "./utils/formatters"
 
 const ACTION_OPTIONS = [
   { value: "Buy call", label: "Buy call" },
