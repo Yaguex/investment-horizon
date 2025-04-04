@@ -14,7 +14,21 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   const daysToExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
 
   const contracts = Math.round(position.nominal / position.strike_entry / 100)
+  
+  // Calculate premiums from options
   const totalPremium = calculatePremium()
+  const calculatePremium = () => {
+    const action = position.action?.toLowerCase() || ''
+    const premium = (position.premium_entry - position.premium_exit) * contracts * 100
+    const roundedPremium = Math.round(premium)
+    
+    if (action.includes('sell')) {
+      return Math.abs(roundedPremium)
+    } else if (action.includes('buy')) {
+      return -Math.abs(roundedPremium)
+    }
+    return roundedPremium
+  }
 
   const maxAnnualROI = formatNumber(((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration)), 1)
   const action = position.action?.toLowerCase() || ''
@@ -42,19 +56,6 @@ export function PositionMetrics({ position }: positionMetricsProps) {
     if (value > -0.6 && value <= -0.3) return "text-orange-500"
     if (value <= -0.6) return "text-red-600"
     return "text-black"
-  }
-
-  const calculatePremium = () => {
-    const action = position.action?.toLowerCase() || ''
-    const premium = (position.premium_entry - position.premium_exit) * contracts * 100
-    const roundedPremium = Math.round(premium)
-    
-    if (action.includes('sell')) {
-      return Math.abs(roundedPremium)
-    } else if (action.includes('buy')) {
-      return -Math.abs(roundedPremium)
-    }
-    return roundedPremium
   }
 
   const normalizedDelta = position.delta_entry ? Math.round((maxAnnualROI / position.delta_entry / 100) * 100) / 100 : 0
