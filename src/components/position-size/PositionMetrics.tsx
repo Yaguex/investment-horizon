@@ -7,7 +7,7 @@ interface positionMetricsProps {
   position: any
 }
 
-export function positionMetrics({ position }: positionMetricsProps) {
+export function PositionMetrics({ position }: positionMetricsProps) {
 
   const contracts = Math.round(position.nominal / position.strike_entry / 100)
 
