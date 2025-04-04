@@ -96,7 +96,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
 
   // POSITIONING LOGIC for the strikes in the price bar UI
   
-  // Find all strikes we need to position
+  // Find all strikes we need to position...
   const strikes = [
     dividend.underlying_price, 
     dividend.strike_call,
