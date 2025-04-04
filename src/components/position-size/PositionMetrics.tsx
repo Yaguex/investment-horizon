@@ -19,7 +19,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
     
     const totalPremium = calculatePremium()
 
-    const maxAnnualROI = formatNumber(((totalPremium / dividend.nominal) * 100 * (365 / daysUntilExpiration)), 1)
+    const maxAnnualROI = formatNumber(((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration)), 1)
     const action = position.action?.toLowerCase() || ''
     const isSellAction = action.includes('sell')
 
