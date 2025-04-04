@@ -1,3 +1,4 @@
+import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useQuery } from "@tanstack/react-query"

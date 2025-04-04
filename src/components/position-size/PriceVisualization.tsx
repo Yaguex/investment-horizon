@@ -5,6 +5,7 @@ import { PriceCircle } from "./visualization/PriceCircle"
 import { PriceRangeBar } from "./visualization/PriceRangeBar"
 import { PositionIndicator } from "./visualization/PositionIndicator"
 import { BECircle } from "./visualization/BECircle"
+import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
 
 interface PriceVisualizationProps {
