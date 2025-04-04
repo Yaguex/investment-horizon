@@ -105,7 +105,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
             <NumberField
               control={form.control}
               name="nominal"
-              label="Nominal ($)"
+              label="Nominal (total desired exposure) ($)"
             />
             <TextField
               control={form.control}
