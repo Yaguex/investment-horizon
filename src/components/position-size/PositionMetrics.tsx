@@ -11,7 +11,7 @@ interface positionMetricsProps {
 export function PositionMetrics({ position }: positionMetricsProps) {
   const today = new Date()
   const expirationDate = new Date(position.expiration)
-  const daysToExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
+  const daysUntilExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
 
   const contracts = Math.round(position.nominal / position.strike_entry / 100)
   
