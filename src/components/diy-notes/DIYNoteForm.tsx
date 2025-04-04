@@ -89,6 +89,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
     }
   }
 
+  // The Form fields go below
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">
