@@ -82,7 +82,8 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   let be0Strike;
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away
-    be0Strike = (dividend.nominal - totalIncome) / underlyingShares
+    be0Strike = (((underlyingShares * dividend.underlying_price) - (putContracts * dividend.strike_put * 100)) - totalIncome ) / (underlyingShares + (putContracts * 100))
+    // be0Strike = (dividend.nominal - totalIncome) / underlyingShares
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
