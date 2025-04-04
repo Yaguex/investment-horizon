@@ -200,7 +200,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
         
-        {/* BE2 Circle - 7% */}
+        {/* BE2 Circle - 7% portfolio benchmark */}
         {dividend.underlying_price !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
