@@ -4,8 +4,6 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
-import { PositionSizeFormFields } from "./PositionSizeFormFields"
-import { PositionSizeFormValues } from "./types"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -17,6 +15,22 @@ import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
 import { useAuth } from "@/contexts/AuthContext"
 
+interface PositionSizeFormValues {
+  ticker: string
+  nominal: number | null
+  expiration: string
+  bond_yield: number | null
+  strike_entry: number | null
+  strike_exit: number | null
+  action: string
+}
+
+interface PositionSizeFormProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  position?: any
+}
+
 const actionOptions = [
   { value: "Buy call", label: "Buy call" },
   { value: "Buy put", label: "Buy put" },
@@ -27,12 +41,6 @@ const actionOptions = [
   { value: "Sell call spread", label: "Sell call spread" },
   { value: "Sell put spread", label: "Sell put spread" },
 ]
-
-interface PositionSizeFormProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  position?: any
-}
 
 export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
@@ -129,14 +137,9 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
             />
             <NumberField
               control={form.control}
-              name="risk_free_yield"
-              label="Risk Free Yield (%)"
+              name="bond_yield"
+              label="Bond Yield (%)"
             />
-            <NumberField
-                    control={form.control}
-                    name="bond_yield"
-                    label="Bond Yield (%)"
-                  />
             <NumberField
               control={form.control}
               name="strike_entry"
