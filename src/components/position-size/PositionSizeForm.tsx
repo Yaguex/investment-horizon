@@ -105,7 +105,7 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
     }
   }
 
-  // The Form fields go below
+  // The Form fields go below...
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">
