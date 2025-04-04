@@ -10,7 +10,7 @@ interface positionHeaderProps {
   onEdit: (position: any) => void
 }
 
-export function positionHeader({ position, onEdit }: positionHeaderProps) {
+export function PositionHeader({ position, onEdit }: positionHeaderProps) {
   const queryClient = useQueryClient()
 
   const handleDelete = async () => {
