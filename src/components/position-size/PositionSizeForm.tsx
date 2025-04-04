@@ -9,6 +9,10 @@ import { PositionSizeFormValues } from "./types"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { Control } from "react-hook-form"
+import { TextField } from "./form-fields/TextField"
+import { NumberField } from "./form-fields/NumberField"
+import { SelectField } from "./form-fields/SelectField"
 
 const ACTION_OPTIONS = [
   { value: "Buy call", label: "Buy call" },
@@ -20,6 +24,11 @@ const ACTION_OPTIONS = [
   { value: "Sell call spread", label: "Sell call spread" },
   { value: "Sell put spread", label: "Sell put spread" },
 ]
+
+interface PositionSizeFormFieldsProps {
+  control: Control<PositionSizeFormValues>
+  actionOptions: { value: string; label: string }[]
+}
 
 interface PositionSizeFormProps {
   open: boolean
@@ -83,6 +92,7 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
     }
   }
 
+  // The Form fields go below
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">
@@ -91,9 +101,46 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            <PositionSizeFormFields 
-              control={form.control}
-              actionOptions={ACTION_OPTIONS}
+            <TextField
+              control={control}
+              name="ticker"
+              label="Ticker"
+            />
+            <SelectField
+              control={control}
+              name="action"
+              label="Action"
+              options={actionOptions}
+            />
+            <NumberField
+              control={control}
+              name="nominal"
+              label="Nominal (total desired exposure) ($)"
+            />
+            <TextField
+              control={control}
+              name="expiration"
+              label="Expiration (YYYY-MM-DD)"
+            />
+            <NumberField
+              control={control}
+              name="risk_free_yield"
+              label="Risk Free Yield (%)"
+            />
+            <NumberField
+                    control={form.control}
+                    name="bond_yield"
+                    label="Bond Yield (%)"
+                  />
+            <NumberField
+              control={control}
+              name="strike_entry"
+              label="Strike Entry"
+            />
+            <NumberField
+              control={control}
+              name="strike_exit"
+              label="Strike Exit"
             />
             <div className="flex justify-end space-x-2">
               <Button type="submit" disabled={isLoading}>
