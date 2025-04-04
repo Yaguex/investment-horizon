@@ -78,6 +78,10 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // Calculate Total Income
   const totalIncome = totalBondYield + totalFee + totalDividend
 
+  // Calculate Net Profit if price remains above strike_call: how much income we've receive minus how much I will lose in the short call
+  const netProfit = totalIncome - (underlyingShares * (dividend.underlying_price - dividend.strike_call))
+
+
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
   // let be0Strike;
   if (dividend.strike_put === null) {
@@ -87,7 +91,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
     // be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
   }
-  const be0Strike = (((underlyingShares * dividend.underlying_price) - (putContracts * dividend.strike_put * 100)) - totalIncome ) / (underlyingShares + (putContracts * 100))
+  const be0Strike = (((underlyingShares * dividend.underlying_price) - (putContracts * dividend.strike_put * 100)) - netProfit ) / (underlyingShares + (putContracts * 100))
 
   
   // Calculate BE1 and BE2 strikes based on the provided formulas
