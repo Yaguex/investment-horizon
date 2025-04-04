@@ -1,25 +1,25 @@
 import { Copy, Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { formatDate } from "../diy-notes/utils/formatters"
+import { formatDate } from "../position-size/utils/formatters"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 
-interface NoteHeaderProps {
-  note: any
-  onEdit: (note: any) => void
+interface positionHeaderProps {
+  position: any
+  onEdit: (position: any) => void
 }
 
-export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
+export function positionHeader({ position, onEdit }: positionHeaderProps) {
   const queryClient = useQueryClient()
 
   const handleDelete = async () => {
     try {
-      console.log('Deleting position size:', note.id)
+      console.log('Deleting position size:', position.id)
       const { error } = await supabase
         .from('position_size')
         .delete()
-        .eq('id', note.id)
+        .eq('id', position.id)
 
       if (error) throw error
 
@@ -34,12 +34,12 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
 
   const handleClone = async () => {
     try {
-      // Create a new note object without the id
-      const { id, ...noteWithoutId } = note
+      // Create a new position object without the id
+      const { id, ...positionWithoutId } = position
 
       const { error } = await supabase
         .from('position_size')
-        .insert([noteWithoutId])
+        .insert([positionWithoutId])
 
       if (error) throw error
 
@@ -54,9 +54,10 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center">
-        <span className="font-bold text-lg mr-8">{note.ticker}</span>
-        <span className="text-sm text-gray-500 mr-8">{formatDate(note.expiration)}</span>
-        <span className="text-sm text-gray-500 mr-8">{note.action}</span>
+        <span className="font-bold text-lg mr-8">{position.ticker}</span>
+        <span className="text-sm text-gray-500 mr-8">{formatDate(position.expiration)}</span>
+        <span className="text-sm text-gray-500 mr-8">${formatNumber(position.nominal, 0)}</span>
+        <span className="text-sm text-gray-500 mr-8">{position.action}</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
@@ -72,7 +73,7 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="cursor-pointer" onClick={() => onEdit(note)}>
+              <button className="cursor-pointer" onClick={() => onEdit(position)}>
                 <Edit className="h-5 w-5" />
               </button>
             </TooltipTrigger>

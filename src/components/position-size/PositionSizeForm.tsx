@@ -24,27 +24,27 @@ const ACTION_OPTIONS = [
 interface PositionSizeFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  note?: any
+  position?: any
 }
 
-export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormProps) {
+export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
   
   const form = useForm<PositionSizeFormValues>({
-    defaultValues: note ? {
-      ticker: note.ticker || "",
-      exposure: note.exposure || null,
-      expiration: note.expiration || "",
-      risk_free_yield: note.risk_free_yield || null,
-      strike_entry: note.strike_entry || null,
-      strike_exit: note.strike_exit || null,
-      action: note.action || ""
+    defaultValues: position ? {
+      ticker: position.ticker || "",
+      nominal: position.nominal || null,
+      expiration: position.expiration || "",
+      bond_yield: position.bond_yield || null,
+      strike_entry: position.strike_entry || null,
+      strike_exit: position.strike_exit || null,
+      action: position.action || ""
     } : {
       ticker: "",
-      exposure: null,
+      nominal: null,
       expiration: "",
-      risk_free_yield: null,
+      bond_yield: null,
       strike_entry: null,
       strike_exit: null,
       action: ""
@@ -57,9 +57,9 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
 
       const { error } = await supabase.functions.invoke('submit_position_size', {
         body: {
-          note: {
+          position: {
             ...data,
-            id: note?.id,
+            id: position?.id,
             expiration: data.expiration || null,
           },
           profile_id: (await supabase.auth.getUser()).data.user?.id
@@ -71,7 +71,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         return
       }
 
-      toast.success(note ? 'Position size updated successfully' : 'Position size created successfully')
+      toast.success(position ? 'Position size updated successfully' : 'Position size created successfully')
       await queryClient.invalidateQueries({ queryKey: ['position-sizes'] })
       form.reset()
       onOpenChange(false)
@@ -87,7 +87,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>
-          <SheetTitle>{note ? 'Edit' : 'New'} Position Size</SheetTitle>
+          <SheetTitle>{position ? 'Edit' : 'New'} Position Size</SheetTitle>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
@@ -100,7 +100,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : null}
-                {note ? 'Update' : 'Create'} Position Size
+                {position ? 'Update' : 'Create'} Position Size
               </Button>
             </div>
           </form>

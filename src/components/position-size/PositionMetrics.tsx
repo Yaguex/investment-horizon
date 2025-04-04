@@ -3,47 +3,27 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 
-interface NoteMetricsProps {
-  note: any
+interface positionMetricsProps {
+  position: any
 }
 
-export function NoteMetrics({ note }: NoteMetricsProps) {
-  const { data: latestBalance } = useQuery({
-    queryKey: ['latest-balance'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('portfolio_data')
-        .select('balance')
-        .order('month', { ascending: false })
-        .limit(1)
-      return data?.[0]?.balance || 0
-    }
-  })
+export function positionMetrics({ position }: positionMetricsProps) {
 
-  const exposureAmount = latestBalance ? (note.exposure * latestBalance) / 100 : 0
-  const contracts = Math.round((latestBalance * (note.exposure/100)) / (note.strike_entry) / 100)
+  const contracts = Math.round(position.nominal / position.strike_entry / 100)
 
   const calculateROI = () => {
     const today = new Date()
-    const expirationDate = new Date(note.expiration)
+    const expirationDate = new Date(position.expiration)
     const daysToExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
     
     const totalPremium = calculatePremium()
-    const totalCommission = calculateCommission()
-    const exposureValue = note.underlying_price_entry * contracts
 
-    if (!exposureValue || !daysToExpiration) return 0
-
-    const annualROI = ((totalPremium + totalCommission) / exposureValue) * (365 / daysToExpiration)
-
-    const action = note.action?.toLowerCase() || ''
+    const maxAnnualROI = formatNumber(((totalPremium / dividend.nominal) * 100 * (365 / daysUntilExpiration)), 1)
+    const action = position.action?.toLowerCase() || ''
     const isSellAction = action.includes('sell')
-    
-    // Round to 1 decimal
-    const roundedROI = Math.round(annualROI * 10) / 10
 
     // Return positive for sell actions, negative for buy actions
-    return isSellAction ? Math.abs(roundedROI) : -Math.abs(roundedROI)
+    return isSellAction ? Math.abs(maxAnnualROI) : -Math.abs(maxAnnualROI)
   }
 
   const getROIColor = (value: number) => {
@@ -66,16 +46,9 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
     return "text-black"
   }
 
-  const calculateCommission = () => {
-    const isSpread = note.action?.toLowerCase().includes('spread')
-    const baseCommission = (contracts * 1.25) + 100
-    const commission = isSpread ? baseCommission * 2 : baseCommission
-    return -Math.abs(Math.round(commission))
-  }
-
   const calculatePremium = () => {
-    const action = note.action?.toLowerCase() || ''
-    const premium = (note.premium_entry - note.premium_exit) * contracts * 100
+    const action = position.action?.toLowerCase() || ''
+    const premium = (position.premium_entry - position.premium_exit) * contracts * 100
     const roundedPremium = Math.round(premium)
     
     if (action.includes('sell')) {
@@ -87,22 +60,12 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   }
 
   const roi = calculateROI()
-  const normalizedDelta = note.delta_entry ? Math.round((roi / note.delta_entry / 100) * 100) / 100 : 0
+  const normalizedDelta = position.delta_entry ? Math.round((roi / position.delta_entry / 100) * 100) / 100 : 0
 
   return (
     <TooltipProvider delayDuration={100}>
       <div className="text-sm space-y-2 flex justify-between">
         <div>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
-                Exposure: {note.exposure}% (${formatNumber(exposureAmount, 0)})
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Percentage of portfolio at risk
-              </TooltipContent>
-            </Tooltip>
-          </p>
           <p className={calculatePremium() > 0 ? "text-green-600" : "text-red-600"}>
             <Tooltip>
               <TooltipTrigger>

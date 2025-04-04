@@ -5,16 +5,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { PositionSizeForm } from "@/components/position-size/PositionSizeForm"
 import { useQuery } from "@tanstack/react-query"
-import { NoteHeader } from "@/components/position-size/NoteHeader"
+import { PositionHeader } from "@/components/position-size/PositionHeader"
 import { PriceVisualization } from "@/components/position-size/PriceVisualization"
-import { NoteMetrics } from "@/components/position-size/NoteMetrics"
+import { PositionMetrics } from "@/components/position-size/PositionMetrics"
 import { supabase } from "@/integrations/supabase/client"
 
 const PositionSize = () => {
-  const [editNote, setEditNote] = useState<any>(null)
-  const [isNewNoteOpen, setIsNewNoteOpen] = useState(false)
+  const [editPosition, setEditPosition] = useState<any>(null)
+  const [isNewPositionOpen, setIsNewPositionOpen] = useState(false)
 
-  const { data: notes, isLoading } = useQuery({
+  const { data: positions, isLoading } = useQuery({
     queryKey: ['position-sizes'],
     queryFn: async () => {
       console.log('Fetching position sizes...')
@@ -48,31 +48,31 @@ const PositionSize = () => {
       <main className="container mx-auto px-6 pt-24 pb-8">
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-foreground">Position Size</h1>
-          <Button size="lg" className="px-6" onClick={() => setIsNewNoteOpen(true)}>
+          <Button size="lg" className="px-6" onClick={() => setIsNewPositionOpen(true)}>
             New Sizing
           </Button>
         </div>
         
         <PositionSizeForm 
-          open={isNewNoteOpen}
-          onOpenChange={setIsNewNoteOpen}
+          open={isNewPositionOpen}
+          onOpenChange={setIsNewPositionOpen}
         />
 
-        {editNote && (
+        {editPosition && (
           <PositionSizeForm 
             open={true}
-            onOpenChange={() => setEditNote(null)}
-            note={editNote}
+            onOpenChange={() => setEditPosition(null)}
+            position={editPosition}
           />
         )}
 
         <div className="space-y-6">
-          {notes?.map((note) => (
-            <Card key={note.id} className="w-full">
+          {positions?.map((position) => (
+            <Card key={position.id} className="w-full">
               <CardContent className="p-6">
-                <NoteHeader note={note} onEdit={setEditNote} />
-                <PriceVisualization note={note} />
-                <NoteMetrics note={note} />
+                <PositionHeader position={position} onEdit={setEditPosition} />
+                <PriceVisualization position={position} />
+                <PositionMetrics position={position} />
               </CardContent>
             </Card>
           ))}
