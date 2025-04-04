@@ -220,6 +220,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         
         {/* Price rectangles with updated gradient coloring */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
+          
           {/* Left segment with red to gray gradient - everything left of BE0 */}
           <div 
             className="absolute left-0 top-0 bottom-0"
@@ -247,6 +248,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
               width: `${100 - callPos}%`
             }}
           />
+          
         </div>
         
         {/* Position indicators aligned with circles */}
