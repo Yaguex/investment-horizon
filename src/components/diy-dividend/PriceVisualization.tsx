@@ -79,15 +79,16 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   const totalIncome = totalBondYield + totalFee + totalDividend
 
   // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  let be0Strike;
+  // let be0Strike;
   if (dividend.strike_put === null) {
     // If strike_put is NULL, we can buy into the position in full amount right away
-    be0Strike = (((underlyingShares * dividend.underlying_price) - (putContracts * dividend.strike_put * 100)) - totalIncome ) / (underlyingShares + (putContracts * 100))
     // be0Strike = (dividend.nominal - totalIncome) / underlyingShares
   } else {
     // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
-    be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
+    // be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
   }
+  const be0Strike = (((underlyingShares * dividend.underlying_price) - (putContracts * dividend.strike_put * 100)) - totalIncome ) / (underlyingShares + (putContracts * 100))
+
   
   // Calculate BE1 and BE2 strikes based on the provided formulas
   const be1Strike = dividend.underlying_price * (1 + (dividend.bond_yield/100))
