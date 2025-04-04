@@ -15,7 +15,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
 
   const contracts = Math.round(position.nominal / position.strike_entry / 100)
   
-  // Calculate premiums from options
+  // Calculate premiums from options.
   const calculatePremium = () => {
     const action = position.action?.toLowerCase() || ''
     const premium = (position.premium_entry - position.premium_exit) * contracts * 100
