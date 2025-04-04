@@ -15,6 +15,7 @@ import { NumberField } from "./form-fields/NumberField"
 import { SelectField } from "./form-fields/SelectField"
 import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
+import { useAuth } from "@/contexts/AuthContext"
 
 const ACTION_OPTIONS = [
   { value: "Buy call", label: "Buy call" },
