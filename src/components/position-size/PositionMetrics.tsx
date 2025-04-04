@@ -9,23 +9,20 @@ interface positionMetricsProps {
 }
 
 export function PositionMetrics({ position }: positionMetricsProps) {
+  const today = new Date()
+  const expirationDate = new Date(position.expiration)
+  const daysToExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
 
   const contracts = Math.round(position.nominal / position.strike_entry / 100)
+  const totalPremium = calculatePremium()
 
-  const calculateROI = () => {
-    const today = new Date()
-    const expirationDate = new Date(position.expiration)
-    const daysToExpiration = Math.max(1, Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
-    
-    const totalPremium = calculatePremium()
+  const maxAnnualROI = formatNumber(((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration)), 1)
+  const action = position.action?.toLowerCase() || ''
+  
+  // Return positive for sell actions, negative for buy actions
+  const isSellAction = action.includes('sell')
+  return isSellAction ? Math.abs(maxAnnualROI) : -Math.abs(maxAnnualROI)
 
-    const maxAnnualROI = formatNumber(((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration)), 1)
-    const action = position.action?.toLowerCase() || ''
-    const isSellAction = action.includes('sell')
-
-    // Return positive for sell actions, negative for buy actions
-    return isSellAction ? Math.abs(maxAnnualROI) : -Math.abs(maxAnnualROI)
-  }
 
   const getROIColor = (value: number) => {
     if (value > 10) return "text-green-600"
@@ -60,8 +57,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
     return roundedPremium
   }
 
-  const roi = calculateROI()
-  const normalizedDelta = position.delta_entry ? Math.round((roi / position.delta_entry / 100) * 100) / 100 : 0
+  const normalizedDelta = position.delta_entry ? Math.round((maxAnnualROI / position.delta_entry / 100) * 100) / 100 : 0
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -92,10 +88,10 @@ export function PositionMetrics({ position }: positionMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getROIColor(roi)} text-xl font-bold`}>{formatNumber(roi, 1)}%</p>
+                <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Premium Annual ROI
+                ROI annualized
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Premium<br />Annual ROI</p>
