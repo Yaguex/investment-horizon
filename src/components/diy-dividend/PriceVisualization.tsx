@@ -226,26 +226,26 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute left-0 top-0 bottom-0"
             style={{ 
               width: `${be0Pos}%`,
-              background: 'linear-gradient(to right, #ef4444, rgb(243 244 246))'
+              background: `linear-gradient(to right, #ef4444, rgb(243 244 246) 80px)`
             }}
           />
           
-          {/* Middle segment with gray to green gradient - between BE0 and Call */}
+          {/* Middle segment with gray to green gradient - between BE0 and Underlying Price */}
           <div 
             className="absolute top-0 bottom-0"
             style={{ 
               left: `${be0Pos}%`,
-              width: `${callPos - be0Pos}%`,
-              background: 'linear-gradient(to right, rgb(243 244 246), #22c55e)'
+              width: `${underlyingPos - be0Pos}%`,
+              background: `linear-gradient(to right, rgb(243 244 246), #22c55e 80px)`
             }}
           />
           
-          {/* Right segment always green - everything right of Call */}
+          {/* Right segment always green - everything right of Underlying Price */}
           <div 
             className="absolute top-0 bottom-0 bg-green-500"
             style={{ 
-              left: `${callPos}%`,
-              width: `${100 - callPos}%`
+              left: `${underlyingPos}%`,
+              width: `${100 - underlyingPos}%`
             }}
           />
           
