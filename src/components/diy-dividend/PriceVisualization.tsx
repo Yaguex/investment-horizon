@@ -226,7 +226,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             className="absolute left-0 top-0 bottom-0"
             style={{ 
               width: `${be0Pos}%`,
-              background: `linear-gradient(to right, #ef4444, #f3f4f6)`
+              background: `linear-gradient(90deg, rgba(239,68,68,1) 0%, rgba(239,68,68,1) 90%, rgba(243,244,246,1) 100%)`
             }}
           />
           
@@ -236,7 +236,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
             style={{ 
               left: `${be0Pos}%`,
               width: `${underlyingPos - be0Pos}%`,
-              background: `linear-gradient(to right, #f3f4f6, #22c55e)`
+              background: `linear-gradient(90deg, rgba(243,244,246,1) 0%, rgba(34,197,94,1) 10%, rgba(34,197,94,1) 100%)`
             }}
           />
           
