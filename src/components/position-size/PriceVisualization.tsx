@@ -108,8 +108,8 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
   const be1Strike = position.underlying_price_entry + ((exposureAmount*((position.risk_free_yield*yearsUntilExpiration)/100))/contracts/100)
   const be2Strike = position.underlying_price_entry + ((exposureAmount*(7*yearsUntilExpiration/100))/contracts/100)
 
-  // Calculate positions using new function
-  const positions = calculatePositions(position, {
+  // Calculate element positions in bar using new function
+  const circlePositions = calculatePositions(position, {
     be0: be0Strike,
     be1: be1Strike,
     be2: be2Strike
@@ -121,7 +121,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         {/* Underlying Price Circle (Middle) */}
         <PriceCircle 
           price={position.underlying_price_entry}
-          position={positions.middlePosition}
+          position={circlePositions.middlePosition}
           label="Underlying price"
         />
         
@@ -129,7 +129,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         {/* Strike Entry Circle */}
         <PriceCircle 
           price={position.strike_entry}
-          position={positions.leftPosition}
+          position={circlePositions.leftPosition}
           label="Entry strike"
         />
         
@@ -137,7 +137,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         {position.action.includes('spread') && (
           <PriceCircle 
             price={position.strike_exit}
-            position={positions.rightPosition}
+            position={circlePositions.rightPosition}
             label="Exit strike"
           />
         )}
@@ -145,31 +145,31 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         {/* BE Circles */}
         <BECircle 
           price={be0Strike}
-          position={be0Position}
+          position={circlePositions.be0Position}
           beNumber={0}
         />
         <BECircle 
           price={be1Strike}
-          position={be1Position}
+          position={circlePositions.be1Position}
           beNumber={1}
         />
         <BECircle 
           price={be2Strike}
-          position={be2Position}
+          position={circlePositions.be2Position}
           beNumber={2}
         />
         
         {/* Price range bar */}
         <PriceRangeBar 
-          leftPosition={positions.leftPosition}
-          middlePosition={positions.middlePosition}
-          rightPosition={positions.rightPosition}
+          leftPosition={circlePositions.leftPosition}
+          middlePosition={circlePositions.middlePosition}
+          rightPosition={circlePositions.rightPosition}
           action={position.action}
         />
         
         {/* Position indicators */}
         <PositionIndicator
-          position={positions.leftPosition}
+          position={circlePositions.leftPosition}
           contracts={contracts}
           premium={position.premium_entry}
           type="entry"
@@ -177,7 +177,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         
         {position.action.includes('spread') && (
           <PositionIndicator
-            position={positions.rightPosition}
+            position={circlePositions.rightPosition}
             contracts={contracts}
             premium={position.premium_exit}
             type="exit"
