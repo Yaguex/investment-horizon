@@ -161,13 +161,12 @@ Deno.serve(async (req) => {
     }
 
     console.log('[submit_position_size] Updating position with market data:', updateData);
+    
+    // Update the database entry by ID
     const { error: marketDataUpdateError } = await supabase
       .from('position_size')
       .update(updateData)
-      .eq('profile_id', profile_id)
-      .eq('ticker', position.ticker)
-      .eq('expiration', position.expiration)
-      .eq('strike_entry', position.strike_entry);
+      .eq('id', position.id);  // Using position.id instead of multiple field matching
 
     if (marketDataUpdateError) throw marketDataUpdateError;
 
