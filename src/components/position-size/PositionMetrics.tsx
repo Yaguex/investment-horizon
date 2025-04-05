@@ -31,7 +31,8 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   const totalPremium = calculatePremium()
 
   // Calculate ROI
-  const maxAnnualROI = ((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration))
+  let maxAnnualROI;
+  maxAnnualROI = ((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration))
   // And express it positive for sell actions, negative for buy actions
   if (position.action.includes('sell') || position.action.includes('Sell')) {
     maxAnnualROI = Math.abs(maxAnnualROI)
@@ -80,7 +81,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
     <TooltipProvider delayDuration={100}>
       <div className="text-sm space-y-2 flex justify-between">
         
-        
+
         {/* Below goes the small numbers in the bottom left of the display*/}
         <div>
           <p className={calculatePremium() > 0 ? "text-green-600" : "text-red-600"}>
