@@ -75,7 +75,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   }
 
   const roi = calculateROI()
-  const normalizedDelta = position.delta_entry ? Math.round((roi / position.delta_entry / 100) * 100) / 100 : 0
+  const normalizedDelta = Math.abs(position.delta_entry ? Math.round((roi / position.delta_entry / 100) * 100) / 100 : 0)
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -84,13 +84,23 @@ export function PositionMetrics({ position }: positionMetricsProps) {
 
         {/* Below goes the small numbers in the bottom left of the display*/}
         <div>
-          <p className={calculatePremium() > 0 ? "text-green-600" : "text-red-600"}>
+        <p>
             <Tooltip>
               <TooltipTrigger>
-                Premium: ${formatNumber(calculatePremium(), 0)}
+                Premium: <span className={calculatePremium() > 0 ? "text-green-600" : "text-red-600"}>${formatNumber(calculatePremium(), 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total net premium paid
+                Total premium paid or received
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p>
+            <Tooltip>
+              <TooltipTrigger>
+                IV entry strike: {formatNumber(position.iv_entry, 0)}%
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                The IV of the entry strike for the selected maturity.
               </TooltipContent>
             </Tooltip>
           </p>
@@ -105,7 +115,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
                 <p className={`${getROIColor(roi)} text-xl font-bold`}>{formatNumber(roi, 1)}%</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Premium Annual ROI
+                Premium Annual ROI of the premium paid or received. This is only based on the premium, not price behaviour.
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Premium<br />Annual ROI</p>
@@ -116,22 +126,12 @@ export function PositionMetrics({ position }: positionMetricsProps) {
                 <p className={`${getDeltaColor(normalizedDelta)} text-xl font-bold`}>{normalizedDelta}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                Delta normalized for position size
+                ROI normalized by Delta. Explanation: When selling options, the Annual ROI must be normalized by Delta because, for example, 10% ROI with a position of Delta 0.5 is not nearly as good as 10% ROI with a position of Delta 0.2. The higher the ROI at a lower Delta, the better. Sometimes, even if ROI might be good, if the Delta is very high it might not be worth taking the risk because there are too high chances of the options ending ITM and thus getting exercised to buy the underlying. Since Delta already has IV baked in, there's no need to include IV again in this calculation. Using Delta is enough since it already accounts for IV.
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Delta<br />Normalized</p>
           </div>
-          <div className="text-center">
-            <Tooltip>
-              <TooltipTrigger>
-                <p className="text-black text-xl font-bold">{contracts}</p>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Number of contracts in the position
-              </TooltipContent>
-            </Tooltip>
-            <p className="text-xs text-black">Contracts</p>
-          </div>
+          
         </div>
       </div>
     </TooltipProvider>
