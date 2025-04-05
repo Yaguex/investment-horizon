@@ -271,17 +271,17 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         {/* BE Circles */}
         <BECircle 
           price={be0Strike}
-          position={circlePositions.be0Position}
+          position={circlePositions.be0}
           beNumber={0}
         />
         <BECircle 
           price={be1Strike}
-          position={circlePositions.be1Position}
+          position={circlePositions.be1}
           beNumber={1}
         />
         <BECircle 
           price={be2Strike}
-          position={circlePositions.be2Position}
+          position={circlePositions.be2}
           beNumber={2}
         />
         
