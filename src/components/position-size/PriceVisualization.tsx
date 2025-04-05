@@ -27,13 +27,13 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
   const yearsUntilExpiration = daysUntilExpiration / 365
 
   // Calculate underlyingPrice and contracts
-  const underlyingPrice = position.underlying_price_entry
-  const contracts = Math.round(position.nominal / position.strike_entry / 100)
+  const underlyingPrice = Number(position.underlying_price_entry) || 0
+  const contracts = Math.round(Number(position.nominal || 0) / Number(position.strike_entry || 1) / 100)
 
   // Calculate premiums from options.
   const calculatePremium = () => {
     const action = position.action?.toLowerCase() || ''
-    const premium = (position.premium_entry - position.premium_exit) * contracts * 100
+    const premium = (Number(position.premium_entry || 0) - Number(position.premium_exit || 0)) * contracts * 100
     const roundedPremium = Math.round(premium)
     // Convert premium into a debit or credit, depending on whether we are buying or selling options
     if (action.includes('sell')) {
@@ -45,10 +45,9 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
   }
   const totalPremium = calculatePremium()
 
-
   // Calculate BE strikes
-  const be0Strike = position.strike_entry - (totalPremium/contracts/100)
-  const be1Strike = be0Strike * (1 + (position.bond_yield/100))
+  const be0Strike = Number(position.strike_entry || 0) - (totalPremium/contracts/100)
+  const be1Strike = be0Strike * (1 + (Number(position.bond_yield || 0)/100))
   const be2Strike = be0Strike * (1 + (7/100))
 
   // Calculate positions for all circles
@@ -60,16 +59,16 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
     
     // 2. Gather all strikes we need to position
     const strikes = [
-      position.strike_entry,
-      position.action.includes('spread') ? position.strike_exit : null,
+      Number(position.strike_entry || 0),
+      position.action.includes('spread') ? Number(position.strike_exit || 0) : null,
       be0Strike,
       be1Strike,
       be2Strike
     ].filter(strike => strike !== null && strike !== undefined)
     
     // Find the lowest and highest strikes
-    const lowestStrike = Math.min(...strikes)
-    const highestStrike = Math.max(...strikes)
+    const lowestStrike = Math.min(...strikes as number[])
+    const highestStrike = Math.max(...strikes as number[])
     
     // 3. Calculate which one is furthest away from underlyingPrice
     const lowestDiff = Math.abs(lowestStrike - underlyingPrice)
@@ -96,9 +95,9 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
     }
     
     return {
-      entryPosition: calculateStrikePosition(position.strike_entry),
+      entryPosition: calculateStrikePosition(Number(position.strike_entry || 0)),
       exitPosition: position.action.includes('spread') 
-        ? calculateStrikePosition(position.strike_exit) 
+        ? calculateStrikePosition(Number(position.strike_exit || 0)) 
         : null,
       underlyingPosition: underlyingPos,
       be0Position: calculateStrikePosition(be0Strike),
@@ -234,7 +233,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
       <div className="mt-12 mb-10 relative">
         {/* Underlying Price Circle (Middle) */}
         <PriceCircle 
-          price={position.underlying_price_entry}
+          price={underlyingPrice}
           position={circlePositions.underlyingPosition}
           label="Underlying price"
         />
@@ -242,7 +241,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         
         {/* Strike Entry Circle */}
         <PriceCircle 
-          price={position.strike_entry}
+          price={Number(position.strike_entry || 0)}
           position={circlePositions.entryPosition}
           label="Entry strike"
         />
@@ -250,7 +249,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         {/* Strike Exit Circle (only for spreads) */}
         {position.action.includes('spread') && circlePositions.exitPosition !== null && (
           <PriceCircle 
-            price={position.strike_exit}
+            price={Number(position.strike_exit || 0)}
             position={circlePositions.exitPosition}
             label="Exit strike"
           />
@@ -285,7 +284,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         <PositionIndicator
           position={circlePositions.entryPosition}
           contracts={contracts}
-          premium={position.premium_entry}
+          premium={Number(position.premium_entry || 0)}
           type="entry"
         />
         
@@ -293,7 +292,7 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
           <PositionIndicator
             position={circlePositions.exitPosition}
             contracts={contracts}
-            premium={position.premium_exit}
+            premium={Number(position.premium_exit || 0)}
             type="exit"
           />
         )}
