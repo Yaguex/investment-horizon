@@ -49,9 +49,9 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
 
 
   // Calculate BE strikes
-  const be0Strike = position.strike_exit - (totalPremium/contracts/100)
-  const be1Strike = (1 + (position.bond_yield/100)) * (position.strike_exit - (totalPremium/contracts/100))
-  const be2Strike = (1 + (7/100)) * (position.strike_exit - (totalPremium/contracts/100))
+  const be0Strike = position.strike_entry - (totalPremium/contracts/100)
+  const be1Strike = (1 + (position.bond_yield/100)) * (position.strike_entry - (totalPremium/contracts/100))
+  const be2Strike = (1 + (7/100)) * (position.strike_entry - (totalPremium/contracts/100))
 
   // Calculate positions for all circles
   const circlePositions = calculateCirclePositions(position, underlyingPrice, be0Strike, be1Strike, be2Strike)
