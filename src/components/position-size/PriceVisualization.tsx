@@ -28,7 +28,8 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
 
   // Calculate underlyingPrice and contracts
   const underlyingPrice = position.underlying_price_entry
-  const contracts = formatNumber((position.nominal / position.strike_entry / 100), 0)
+  const contractsraw = position.nominal / position.strike_entry / 100
+  const contracts = formatNumber(contractsraw, 0)
 
 
   // Calculate premiums from options.
