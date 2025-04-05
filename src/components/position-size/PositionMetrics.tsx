@@ -83,7 +83,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
         
 
         {/* Below goes the small numbers in the bottom left of the display*/}
-        <div class="mt-2 relative">
+        <div className="mt-2 relative">
         <p>
             <Tooltip>
               <TooltipTrigger>
