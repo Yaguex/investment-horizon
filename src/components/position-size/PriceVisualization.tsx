@@ -1,15 +1,141 @@
-import { TooltipProvider } from "@/components/ui/tooltip"
+
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
-import { PriceCircle } from "./visualization/PriceCircle"
-import { PriceRangeBar } from "./visualization/PriceRangeBar"
-import { PositionIndicator } from "./visualization/PositionIndicator"
-import { BECircle } from "./visualization/BECircle"
-import { formatDate } from "./utils/formatters"
-import { formatNumber } from "./utils/formatters"
+import { Circle } from "lucide-react"
+import { formatDate, formatNumber } from "./utils/formatters"
 
 interface PriceVisualizationProps {
   position: any
+}
+
+interface PriceCircleProps {
+  price: number
+  position: number
+  label: string
+  variant?: 'primary' | 'secondary'
+}
+
+function PriceCircle({ price, position, label, variant = 'primary' }: PriceCircleProps) {
+  const style = variant === 'primary' 
+    ? { fill: 'rgb(0,0,0)', color: 'rgb(0,0,0)' }
+    : { fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }
+
+  return (
+    <div 
+      className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+      style={{ left: `${position}%` }}
+    >
+      <Tooltip>
+        <TooltipTrigger>
+          <span className={`text-sm mb-1 ${variant === 'primary' ? 'text-black' : 'text-gray-300'}`}>
+            ${Math.round(price)}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="bg-black text-white">
+          {label}: ${price}
+        </TooltipContent>
+      </Tooltip>
+      <Circle className="h-4 w-4" style={style} />
+    </div>
+  )
+}
+
+interface BECircleProps {
+  price: number
+  position: number
+  beNumber: number
+}
+
+function BECircle({ price, position, beNumber }: BECircleProps) {
+  const style = { fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }
+  const clampedPosition = Math.max(0, Math.min(100, position))
+
+  return (
+    <div 
+      className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+      style={{ left: `${clampedPosition}%` }}
+    >
+      <Tooltip>
+        <TooltipTrigger>
+          <span className="text-sm mb-1 text-gray-300">
+            ${Math.round(price)}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="bg-black text-white">
+          BE {beNumber}: ${price.toFixed(2)}
+        </TooltipContent>
+      </Tooltip>
+      <Circle className="h-4 w-4" style={style} />
+    </div>
+  )
+}
+
+interface PriceRangeBarProps {
+  leftPosition: number
+  middlePosition: number
+  rightPosition: number
+  action: string
+}
+
+function PriceRangeBar({ leftPosition, middlePosition, rightPosition, action }: PriceRangeBarProps) {
+  const isSpread = action.includes('spread')
+  const isBuy = action.toLowerCase().includes('buy')
+  const isPut = action.toLowerCase().includes('put')
+  
+  // Determine the color based on whether it's a buy or sell
+  const color = isBuy ? 'bg-green-500' : 'bg-red-500'
+  
+  // Calculate start and end positions based on action type
+  let start: number, end: number
+  
+  if (isSpread) {
+    // For spreads, use the calculated positions directly
+    start = Math.min(leftPosition, rightPosition)
+    end = Math.max(leftPosition, rightPosition)
+  } else {
+    // For single options
+    start = leftPosition
+    if (isPut) {
+      // Puts stretch to 0%
+      end = 0
+    } else {
+      // Calls stretch to 100%
+      end = 100
+    }
+  }
+  
+  return (
+    <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
+      <div 
+        className={`absolute top-0 bottom-0 ${color}`}
+        style={{ 
+          left: `${Math.min(start, end)}%`,
+          width: `${Math.abs(end - start)}%`
+        }}
+      />
+    </div>
+  )
+}
+
+interface PositionIndicatorProps {
+  position: number
+  contracts: number
+  premium: number
+  type: 'entry' | 'exit'
+}
+
+function PositionIndicator({ position, contracts, premium, type }: PositionIndicatorProps) {
+  return (
+    <div 
+      className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+      style={{ left: `${position}%` }}
+    >
+      <span className="text-xs text-black">
+        <span className="font-bold">{type === 'entry' ? '-' : '+'}{contracts}P</span> for ${formatNumber(premium, 2)}
+      </span>
+    </div>
+  )
 }
 
 const calculatePositions = (position: any, beStrikes: { be0: number; be1: number; be2: number }) => {
