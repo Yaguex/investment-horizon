@@ -78,16 +78,11 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
   // Calculate Total Income
   const totalIncome = totalBondYield + totalFee + totalDividend
 
-  // Calculate the shares of underlying, call contracts and put contracts based on whether we are willing to sell puts
-  // let be0Strike;
-  if (dividend.strike_put === null) {
-    // If strike_put is NULL, we can buy into the position in full amount right away
-    // be0Strike = (dividend.nominal - totalIncome) / underlyingShares
-  } else {
-    // If strike_put is not NULL, we can only buy into the position in half, since the other half would be assigned if the short put triggers.
-    // be0Strike = (dividend.nominal - totalIncome) / (underlyingShares + (100*putContracts))
-  }
-  const be0Strike = (((underlyingShares * dividend.underlying_price) - (putContracts * dividend.strike_put * 100)) - totalIncome ) / (underlyingShares + (putContracts * 100))
+  // Calculate Net Profit if price remains above strike_call: how much income we've receive minus how much I will lose in the short call
+  const netProfit = totalIncome - (underlyingShares * (dividend.underlying_price - dividend.strike_call))
+
+  // Calculate BE0 at maturity
+  const be0Strike = (((underlyingShares * dividend.underlying_price) + (putContracts * dividend.strike_put * 100)) - netProfit ) / (underlyingShares + (putContracts * 100))
 
   
   // Calculate BE1 and BE2 strikes based on the provided formulas
@@ -96,7 +91,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
 
   // POSITIONING LOGIC for the strikes in the price bar UI
   
-  // Find all strikes we need to position
+  // Find all strikes we need to position...
   const strikes = [
     dividend.underlying_price, 
     dividend.strike_call,
@@ -205,7 +200,7 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
           </div>
         )}
         
-        {/* BE2 Circle - 7% */}
+        {/* BE2 Circle - 7% portfolio benchmark */}
         {dividend.underlying_price !== 0 && (
           <div 
             className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
@@ -225,33 +220,35 @@ export function PriceVisualization({ dividend }: PriceVisualizationProps) {
         
         {/* Price rectangles with updated gradient coloring */}
         <div className="w-full bg-gray-100 rounded-lg h-4 relative overflow-hidden">
+          
           {/* Left segment with red to gray gradient - everything left of BE0 */}
           <div 
             className="absolute left-0 top-0 bottom-0"
             style={{ 
               width: `${be0Pos}%`,
-              background: 'linear-gradient(to right, #ef4444, rgb(243 244 246))'
+              background: `linear-gradient(90deg, rgba(239,68,68,1) 0%, rgba(239,68,68,1) 60%, rgba(243,244,246,1) 100%)`
             }}
           />
           
-          {/* Middle segment with gray to green gradient - between BE0 and Call */}
+          {/* Middle segment with gray to green gradient - between BE0 and Underlying Price */}
           <div 
             className="absolute top-0 bottom-0"
             style={{ 
               left: `${be0Pos}%`,
-              width: `${callPos - be0Pos}%`,
-              background: 'linear-gradient(to right, rgb(243 244 246), #22c55e)'
+              width: `${underlyingPos - be0Pos}%`,
+              background: `linear-gradient(90deg, rgba(243,244,246,1) 0%, rgba(34,197,94,1) 40%, rgba(34,197,94,1) 100%)`
             }}
           />
           
-          {/* Right segment always green - everything right of Call */}
+          {/* Right segment always green - everything right of Underlying Price */}
           <div 
             className="absolute top-0 bottom-0 bg-green-500"
             style={{ 
-              left: `${callPos}%`,
-              width: `${100 - callPos}%`
+              left: `${underlyingPos}%`,
+              width: `${100 - underlyingPos}%`
             }}
           />
+          
         </div>
         
         {/* Position indicators aligned with circles */}

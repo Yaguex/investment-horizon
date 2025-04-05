@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface DIYNoteFormValues {
   ticker: string
@@ -31,6 +32,7 @@ interface DIYNoteFormProps {
 export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   
   const form = useForm<DIYNoteFormValues>({
     defaultValues: note ? {
@@ -59,6 +61,12 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   const onSubmit = async (data: DIYNoteFormValues) => {
     try {
       setIsLoading(true)
+
+      if (!user) {
+        toast.error("You must be logged in to save a dividend")
+        setIsLoading(false)
+        return
+      }
 
       const { error } = await supabase.functions.invoke('submit_diy_notes', {
         body: {
@@ -89,6 +97,7 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
     }
   }
 
+  // The Form fields go below
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">

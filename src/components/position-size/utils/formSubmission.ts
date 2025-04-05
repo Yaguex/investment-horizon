@@ -1,4 +1,4 @@
-import { PositionSizeFormValues } from "../types"
+import { PositionSizeFormValues } from "../PositionSizeForm.tsx"
 import { supabase } from "@/integrations/supabase/client"
 import { getOptionTypes } from "./optionTypes"
 

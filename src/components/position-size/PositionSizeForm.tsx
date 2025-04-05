@@ -4,13 +4,34 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
-import { PositionSizeFormFields } from "./PositionSizeFormFields"
-import { PositionSizeFormValues } from "./types"
 import { supabase } from "@/integrations/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { Control } from "react-hook-form"
+import { TextField } from "./form-fields/TextField"
+import { NumberField } from "./form-fields/NumberField"
+import { SelectField } from "./form-fields/SelectField"
+import { formatDate } from "./utils/formatters"
+import { formatNumber } from "./utils/formatters"
+import { useAuth } from "@/contexts/AuthContext"
 
-const ACTION_OPTIONS = [
+export interface PositionSizeFormValues {
+  ticker: string
+  nominal: number | null
+  expiration: string
+  bond_yield: number | null
+  strike_entry: number | null
+  strike_exit: number | null
+  action: string
+}
+
+interface PositionSizeFormProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  position?: any
+}
+
+const actionOptions = [
   { value: "Buy call", label: "Buy call" },
   { value: "Buy put", label: "Buy put" },
   { value: "Sell call", label: "Sell call" },
@@ -21,30 +42,25 @@ const ACTION_OPTIONS = [
   { value: "Sell put spread", label: "Sell put spread" },
 ]
 
-interface PositionSizeFormProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  note?: any
-}
-
-export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormProps) {
+export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   
   const form = useForm<PositionSizeFormValues>({
-    defaultValues: note ? {
-      ticker: note.ticker || "",
-      exposure: note.exposure || null,
-      expiration: note.expiration || "",
-      risk_free_yield: note.risk_free_yield || null,
-      strike_entry: note.strike_entry || null,
-      strike_exit: note.strike_exit || null,
-      action: note.action || ""
+    defaultValues: position ? {
+      ticker: position.ticker || "",
+      nominal: position.nominal || null,
+      expiration: position.expiration || "",
+      bond_yield: position.bond_yield || null,
+      strike_entry: position.strike_entry || null,
+      strike_exit: position.strike_exit || null,
+      action: position.action || ""
     } : {
       ticker: "",
-      exposure: null,
+      nominal: null,
       expiration: "",
-      risk_free_yield: null,
+      bond_yield: null,
       strike_entry: null,
       strike_exit: null,
       action: ""
@@ -55,11 +71,17 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
     try {
       setIsLoading(true)
 
+      if (!user) {
+        toast.error("You must be logged in to save a dividend")
+        setIsLoading(false)
+        return
+      }
+
       const { error } = await supabase.functions.invoke('submit_position_size', {
         body: {
-          note: {
+          position: {
             ...data,
-            id: note?.id,
+            id: position?.id,
             expiration: data.expiration || null,
           },
           profile_id: (await supabase.auth.getUser()).data.user?.id
@@ -71,7 +93,7 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
         return
       }
 
-      toast.success(note ? 'Position size updated successfully' : 'Position size created successfully')
+      toast.success(position ? 'Position size updated successfully' : 'Position size created successfully')
       await queryClient.invalidateQueries({ queryKey: ['position-sizes'] })
       form.reset()
       onOpenChange(false)
@@ -87,20 +109,52 @@ export function PositionSizeForm({ open, onOpenChange, note }: PositionSizeFormP
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>
-          <SheetTitle>{note ? 'Edit' : 'New'} Position Size</SheetTitle>
+          <SheetTitle>{position ? 'Edit' : 'New'} Position Size</SheetTitle>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            <PositionSizeFormFields 
+            <TextField
               control={form.control}
-              actionOptions={ACTION_OPTIONS}
+              name="ticker"
+              label="Ticker"
+            />
+            <SelectField
+              control={form.control}
+              name="action"
+              label="Action"
+              options={actionOptions}
+            />
+            <NumberField
+              control={form.control}
+              name="nominal"
+              label="Nominal (total desired exposure) ($)"
+            />
+            <TextField
+              control={form.control}
+              name="expiration"
+              label="Expiration (YYYY-MM-DD)"
+            />
+            <NumberField
+              control={form.control}
+              name="bond_yield"
+              label="Bond Yield (%)"
+            />
+            <NumberField
+              control={form.control}
+              name="strike_entry"
+              label="Strike Entry"
+            />
+            <NumberField
+              control={form.control}
+              name="strike_exit"
+              label="Strike Exit"
             />
             <div className="flex justify-end space-x-2">
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : null}
-                {note ? 'Update' : 'Create'} Position Size
+                {position ? 'Update' : 'Create'} Position Size
               </Button>
             </div>
           </form>

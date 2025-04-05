@@ -94,7 +94,8 @@ export function DIYDividendForm({ open, onOpenChange, dividend }: DIYDividendFor
       setIsLoading(false)
     }
   }
-
+  
+  // The Form fields go below
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">

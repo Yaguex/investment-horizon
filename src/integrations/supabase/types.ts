@@ -422,17 +422,17 @@ export type Database = {
       position_size: {
         Row: {
           action: string | null
+          bond_yield: number | null
           delta_entry: number | null
           delta_exit: number | null
           expiration: string | null
-          exposure: number | null
           id: number
           iv_entry: number | null
           iv_exit: number | null
+          nominal: number | null
           premium_entry: number | null
           premium_exit: number | null
           profile_id: string | null
-          risk_free_yield: number | null
           strike_entry: number | null
           strike_exit: number | null
           ticker: string | null
@@ -440,17 +440,17 @@ export type Database = {
         }
         Insert: {
           action?: string | null
+          bond_yield?: number | null
           delta_entry?: number | null
           delta_exit?: number | null
           expiration?: string | null
-          exposure?: number | null
           id?: number
           iv_entry?: number | null
           iv_exit?: number | null
+          nominal?: number | null
           premium_entry?: number | null
           premium_exit?: number | null
           profile_id?: string | null
-          risk_free_yield?: number | null
           strike_entry?: number | null
           strike_exit?: number | null
           ticker?: string | null
@@ -458,17 +458,17 @@ export type Database = {
         }
         Update: {
           action?: string | null
+          bond_yield?: number | null
           delta_entry?: number | null
           delta_exit?: number | null
           expiration?: string | null
-          exposure?: number | null
           id?: number
           iv_entry?: number | null
           iv_exit?: number | null
+          nominal?: number | null
           premium_entry?: number | null
           premium_exit?: number | null
           profile_id?: string | null
-          risk_free_yield?: number | null
           strike_entry?: number | null
           strike_exit?: number | null
           ticker?: string | null
