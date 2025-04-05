@@ -30,22 +30,28 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
   const underlyingPrice = position.underlying_price_entry
   const contracts = formatNumber((position.nominal / position.strike_entry / 100), 0)
 
-  // Calculate premium and convert it into a credit or debit depending on whether we are buying or selling options
-  const premiumraw = (position.premium_entry - position.premium_exit) * contracts * 100
-  let premium = 0;  // Default to zero
-  if (action.toLowerCase().includes('sell')) {
-    premium = Math.abs(premiumraw);
-  } else if (action.toLowerCase().includes('buy')) {
-    premium = -Math.abs(premiumraw);
-  } else {
-    console.warn('Unknown action type, neither a buy or a sell:', action);
-  }
 
-   // Calculate BE strikes
-  const be0Strike = position.strike_exit - (premium/contracts/100)
-  const be1Strike = (1 + (position.bond_yield/100)) * (position.strike_exit - (premium/contracts/100))
-  const be2Strike = (1 + (7/100)) * (position.strike_exit - (premium/contracts/100))
-  
+  // Calculate premiums from options.
+  const calculatePremium = () => {
+    const action = position.action?.toLowerCase() || ''
+    const premium = (position.premium_entry - position.premium_exit) * contracts * 100
+    const roundedPremium = Math.round(premium)
+    // Convert premium into a debit or credit, depending on whether we are buying or selling options
+    if (action.includes('sell')) {
+      return Math.abs(roundedPremium)
+    } else if (action.includes('buy')) {
+      return -Math.abs(roundedPremium)
+    }
+    return roundedPremium
+  }
+  const totalPremium = calculatePremium()
+
+
+  // Calculate BE strikes
+  const be0Strike = position.strike_exit - (totalPremium/contracts/100)
+  const be1Strike = (1 + (position.bond_yield/100)) * (position.strike_exit - (totalPremium/contracts/100))
+  const be2Strike = (1 + (7/100)) * (position.strike_exit - (totalPremium/contracts/100))
+
   // Calculate positions for all circles
   const circlePositions = calculateCirclePositions(position, underlyingPrice, be0Strike, be1Strike, be2Strike)
 
