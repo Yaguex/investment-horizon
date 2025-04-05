@@ -159,21 +159,39 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
     )
   }
 
-  interface PositionIndicatorProps {
-    position: number
-    contracts: number
-    premium: number
-    type: 'entry' | 'exit'
+  // Function for displaying the position text with the correct prefix and option type
+  function getPositionIndicatorText(position: any, type: 'entry' | 'exit', contracts: number) {
+    const action = position.action?.toLowerCase() || ''
+    const isBuy = action.includes('buy')
+    const isCall = action.includes('call')
+    const optionType = isCall ? 'C' : 'P'
+    
+    // Determine sign based on the buy/sell action and entry/exit position
+    let sign = ''
+    
+    if (type === 'entry') {
+      sign = isBuy ? '+' : '-'
+    } else { // type === 'exit'
+      sign = isBuy ? '-' : '+'
+    }
+    
+    return `${sign}${contracts}${optionType}`
   }
 
-  function PositionIndicator({ position, contracts, premium, type }: PositionIndicatorProps) {
+  function PositionPriceDisplay({ position, type, contracts, posX }: { position: any, type: 'entry' | 'exit', contracts: number, posX: number }) {
+    const premium = type === 'entry' 
+      ? Number(position.premium_entry || 0) 
+      : Number(position.premium_exit || 0)
+    
+    const displayText = getPositionIndicatorText(position, type, contracts)
+    
     return (
       <div 
         className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-        style={{ left: `${position}%` }}
+        style={{ left: `${posX}%` }}
       >
         <span className="text-xs text-black">
-          <span className="font-bold">{type === 'entry' ? '-' : '+'}{contracts}P</span> for ${formatNumber(premium, 2)}
+          <span className="font-bold">{displayText}</span> for ${formatNumber(premium, 2)}
         </span>
       </div>
     )
@@ -280,20 +298,20 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
           action={position.action}
         />
         
-        {/* Position indicators */}
-        <PositionIndicator
-          position={circlePositions.entryPosition}
-          contracts={contracts}
-          premium={Number(position.premium_entry || 0)}
+        {/* Position indicators with updated logic */}
+        <PositionPriceDisplay
+          position={position}
           type="entry"
+          contracts={contracts}
+          posX={circlePositions.entryPosition}
         />
         
         {position.action.includes('spread') && circlePositions.exitPosition !== null && (
-          <PositionIndicator
-            position={circlePositions.exitPosition}
-            contracts={contracts}
-            premium={Number(position.premium_exit || 0)}
+          <PositionPriceDisplay
+            position={position}
             type="exit"
+            contracts={contracts}
+            posX={circlePositions.exitPosition}
           />
         )}
       </div>
