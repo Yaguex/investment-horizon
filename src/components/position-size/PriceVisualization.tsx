@@ -41,7 +41,6 @@ if (action.toLowerCase().includes('sell')) {
   console.warn('Unknown action type, neither a buy or a sell:', action);
 }
 
-
 // Calculate BE strikes
 const be0Strike = ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
 const be1Strike = (1 + (position.bond_yield/100)) * ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
