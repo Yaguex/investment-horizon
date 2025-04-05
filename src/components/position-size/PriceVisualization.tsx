@@ -41,11 +41,11 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
     console.warn('Unknown action type, neither a buy or a sell:', action);
   }
 
-  // Calculate BE strikes
-  const be0Strike = ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
-  const be1Strike = (1 + (position.bond_yield/100)) * ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
-  const be2Strike = (1 + (7/100)) * ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
-
+   // Calculate BE strikes
+  const be0Strike = position.strike_exit - (premium/contracts/100)
+  const be1Strike = (1 + (position.bond_yield/100)) * (position.strike_exit - (premium/contracts/100))
+  const be2Strike = (1 + (7/100)) * (position.strike_exit - (premium/contracts/100))
+  
   // Calculate positions for all circles
   const circlePositions = calculateCirclePositions(position, underlyingPrice, be0Strike, be1Strike, be2Strike)
 
