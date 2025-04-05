@@ -124,6 +124,20 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
           position={positions.middlePosition}
           label="Underlying price"
         />
+        <div 
+            className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+            style={{ left: `${underlyingPos}%` }}
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="text-sm text-black mb-1">${formatNumber(dividend.underlying_price, 2)}</span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white">
+                Underlying price: ${formatNumber(dividend.underlying_price, 2)}
+              </TooltipContent>
+            </Tooltip>
+            <Circle className="h-4 w-4 fill-black text-black" />
+          </div>
         
         {/* Strike Entry Circle */}
         <PriceCircle 
@@ -144,17 +158,17 @@ export function PriceVisualization({ position }: PriceVisualizationProps) {
         {/* BE Circles */}
         <BECircle 
           price={be0Strike}
-          position={positions.be0Position}
+          position={be0Position}
           beNumber={0}
         />
         <BECircle 
           price={be1Strike}
-          position={positions.be1Position}
+          position={be1Position}
           beNumber={1}
         />
         <BECircle 
           price={be2Strike}
-          position={positions.be2Position}
+          position={be2Position}
           beNumber={2}
         />
         
