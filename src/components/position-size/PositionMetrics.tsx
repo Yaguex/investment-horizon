@@ -1,3 +1,4 @@
+
 import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -34,12 +35,12 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   let maxAnnualROI;
   maxAnnualROI = ((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration))
   // And express it positive for sell actions, negative for buy actions
-  if (position.action.includes('sell') || position.action.includes('Sell')) {
+  const actionLowerCase = position.action?.toLowerCase() || ''
+  if (actionLowerCase.includes('sell')) {
     maxAnnualROI = Math.abs(maxAnnualROI)
-  } else if (action.includes('buy') || position.action.includes('Buy')) {
+  } else if (actionLowerCase.includes('buy')) {
     maxAnnualROI = -Math.abs(maxAnnualROI)
   }
-
 
   const getROIColor = (value: number) => {
     if (value > 10) return "text-green-600"
@@ -61,17 +62,16 @@ export function PositionMetrics({ position }: positionMetricsProps) {
     return "text-black"
   }
 
-  const calculatePremium = () => {
-    const action = position.action?.toLowerCase() || ''
-    const premium = (position.premium_entry - position.premium_exit) * contracts * 100
-    const roundedPremium = Math.round(premium)
+  const calculateROI = () => {
+    const actionLowerCase = position.action?.toLowerCase() || ''
+    let roi = ((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration))
     
-    if (action.includes('sell')) {
-      return Math.abs(roundedPremium)
-    } else if (action.includes('buy')) {
-      return -Math.abs(roundedPremium)
+    if (actionLowerCase.includes('sell')) {
+      return Math.abs(roi)
+    } else if (actionLowerCase.includes('buy')) {
+      return -Math.abs(roi)
     }
-    return roundedPremium
+    return roi
   }
 
   const roi = calculateROI()
