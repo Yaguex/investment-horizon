@@ -15,8 +15,7 @@ import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
 import { useAuth } from "@/contexts/AuthContext"
 
-
-interface PositionSizeFormValues {
+export interface PositionSizeFormValues {
   ticker: string
   nominal: number | null
   expiration: string
@@ -106,7 +105,6 @@ export function PositionSizeForm({ open, onOpenChange, position }: PositionSizeF
     }
   }
 
-  // The Form fields go below...
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[540px]">
