@@ -15,6 +15,7 @@ import { formatDate } from "./utils/formatters"
 import { formatNumber } from "./utils/formatters"
 import { useAuth } from "@/contexts/AuthContext"
 
+
 interface PositionSizeFormValues {
   ticker: string
   nominal: number | null
