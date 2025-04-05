@@ -16,59 +16,49 @@ interface PriceCircleProps {
   variant?: 'primary' | 'secondary'
 }
 
-function PriceCircle({ price, position, label, variant = 'primary' }: PriceCircleProps) {
-  const style = variant === 'primary' 
-    ? { fill: 'rgb(0,0,0)', color: 'rgb(0,0,0)' }
-    : { fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }
 
-  return (
-    <div 
-      className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-      style={{ left: `${position}%` }}
-    >
-      <Tooltip>
-        <TooltipTrigger>
-          <span className={`text-sm mb-1 ${variant === 'primary' ? 'text-black' : 'text-gray-300'}`}>
-            ${Math.round(price)}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent className="bg-black text-white">
-          {label}: ${price}
-        </TooltipContent>
-      </Tooltip>
-      <Circle className="h-4 w-4" style={style} />
-    </div>
-  )
+// Lower case the wording the Action form dropdown for better use within the code
+const action = position.action?.toLowerCase() || ''
+
+// Calculate days until expiration
+const today = new Date()
+const expirationDate = position.expiration ? new Date(position.expiration) : today
+const daysUntilExpiration = Math.max(0, (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+const yearsUntilExpiration = daysUntilExpiration / 365
+
+// Calculate underlyingPrice and contracts
+const underlyingPrice = position.underlying_price_entry
+const contracts = formatNumber((position.nominal / position.strike_entry / 100), 0)
+
+// Calculate premium and convert it into a credit or debit depending on whether we are buying or selling options
+const premiumraw = (position.premium_entry - position.premium_exit) * contracts * 100
+let premium = 0;  // Default to zero
+if (action.toLowerCase().includes('sell')) {
+  premium = Math.abs(premiumraw);
+} else if (action.toLowerCase().includes('buy')) {
+  premium = -Math.abs(premiumraw);
+} else {
+  console.warn('Unknown action type, neither a buy or a sell:', action);
 }
+
+
+// Calculate BE strikes
+const be0Strike = ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
+const be1Strike = (1 + (position.bond_yield/100)) * ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
+const be2Strike = (1 + (7/100)) * ((position.strike_exit  * contracts * 100) + premium) / (contracts * 100)
+
+// Calculate element positions in bar using new function
+const circlePositions = calculatePositions(position, {
+  be0: be0Strike,
+  be1: be1Strike,
+  be2: be2Strike
+})
+
 
 interface BECircleProps {
   price: number
   position: number
   beNumber: number
-}
-
-function BECircle({ price, position, beNumber }: BECircleProps) {
-  const style = { fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }
-  const clampedPosition = Math.max(0, Math.min(100, position))
-
-  return (
-    <div 
-      className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
-      style={{ left: `${clampedPosition}%` }}
-    >
-      <Tooltip>
-        <TooltipTrigger>
-          <span className="text-sm mb-1 text-gray-300">
-            ${Math.round(price)}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent className="bg-black text-white">
-          BE {beNumber}: ${price.toFixed(2)}
-        </TooltipContent>
-      </Tooltip>
-      <Circle className="h-4 w-4" style={style} />
-    </div>
-  )
 }
 
 interface PriceRangeBarProps {
@@ -125,22 +115,10 @@ interface PositionIndicatorProps {
   type: 'entry' | 'exit'
 }
 
-function PositionIndicator({ position, contracts, premium, type }: PositionIndicatorProps) {
-  return (
-    <div 
-      className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
-      style={{ left: `${position}%` }}
-    >
-      <span className="text-xs text-black">
-        <span className="font-bold">{type === 'entry' ? '-' : '+'}{contracts}P</span> for ${formatNumber(premium, 2)}
-      </span>
-    </div>
-  )
-}
 
 const calculatePositions = (position: any, beStrikes: { be0: number; be1: number; be2: number }) => {
   const middlePosition = 50 // underlying_price_entry is always at 50%
-  const underlyingPrice = position.underlying_price_entry
+
   
   // Collect all valid strikes
   const strikes = [
@@ -193,53 +171,67 @@ const calculatePositions = (position: any, beStrikes: { be0: number; be1: number
   }
 }
 
-const calculatePremium = (position: any, contracts: number) => {
-  const action = position.action?.toLowerCase() || ''
-  const premium = (position.premium_entry - position.premium_exit) * contracts * 100
-  const roundedPremium = Math.round(premium)
-  
-  if (action.includes('sell')) {
-    return Math.abs(roundedPremium)
-  } else if (action.includes('buy')) {
-    return -Math.abs(roundedPremium)
-  }
-  return roundedPremium
+function PositionIndicator({ position, contracts, premium, type }: PositionIndicatorProps) {
+  return (
+    <div 
+      className="absolute -translate-x-1/2 top-8 flex flex-col items-center"
+      style={{ left: `${position}%` }}
+    >
+      <span className="text-xs text-black">
+        <span className="font-bold">{type === 'entry' ? '-' : '+'}{contracts}P</span> for ${formatNumber(premium, 2)}
+      </span>
+    </div>
+  )
 }
 
-export function PriceVisualization({ position }: PriceVisualizationProps) {
-  const { data: latestBalance = 0 } = useQuery({
-    queryKey: ['latest-balance'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('portfolio_data')
-        .select('balance')
-        .order('month', { ascending: false })
-        .limit(1)
-      return data?.[0]?.balance || 0
-    }
-  })
+function PriceCircle({ price, position, label, variant = 'primary' }: PriceCircleProps) {
+  const style = variant === 'primary' 
+    ? { fill: 'rgb(0,0,0)', color: 'rgb(0,0,0)' }
+    : { fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }
 
-  const contracts = Math.round((latestBalance * (position.exposure/100)) / (position.strike_entry) / 100)
-  const premium = calculatePremium(position, contracts)
-  
-  // Calculate days until expiration
-  const today = new Date()
-  const expirationDate = position.expiration ? new Date(position.expiration) : today
-  const daysUntilExpiration = Math.max(0, (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  const yearsUntilExpiration = daysUntilExpiration / 365
-  
-  // Calculate BE strikes
-  const exposureAmount = latestBalance ? (position.exposure * latestBalance) / 100 : 0
-  const be0Strike = position.underlying_price_entry - (premium/contracts/100)
-  const be1Strike = position.underlying_price_entry + ((exposureAmount*((position.risk_free_yield*yearsUntilExpiration)/100))/contracts/100)
-  const be2Strike = position.underlying_price_entry + ((exposureAmount*(7*yearsUntilExpiration/100))/contracts/100)
+  return (
+    <div 
+      className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+      style={{ left: `${position}%` }}
+    >
+      <Tooltip>
+        <TooltipTrigger>
+          <span className={`text-sm mb-1 ${variant === 'primary' ? 'text-black' : 'text-gray-300'}`}>
+            ${Math.round(price)}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="bg-black text-white">
+          {label}: ${price}
+        </TooltipContent>
+      </Tooltip>
+      <Circle className="h-4 w-4" style={style} />
+    </div>
+  )
+}
 
-  // Calculate element positions in bar using new function
-  const circlePositions = calculatePositions(position, {
-    be0: be0Strike,
-    be1: be1Strike,
-    be2: be2Strike
-  })
+function BECircle({ price, position, beNumber }: BECircleProps) {
+  const style = { fill: 'rgba(0,0,0,0.2)', color: 'rgba(0,0,0,0.2)' }
+  const clampedPosition = Math.max(0, Math.min(100, position))
+
+  return (
+    <div 
+      className="absolute -translate-x-1/2 -top-6 flex flex-col items-center z-10"
+      style={{ left: `${clampedPosition}%` }}
+    >
+      <Tooltip>
+        <TooltipTrigger>
+          <span className="text-sm mb-1 text-gray-300">
+            ${Math.round(price)}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="bg-black text-white">
+          BE {beNumber}: ${price.toFixed(2)}
+        </TooltipContent>
+      </Tooltip>
+      <Circle className="h-4 w-4" style={style} />
+    </div>
+  )
+}
   
   return (
     <TooltipProvider delayDuration={100}>
