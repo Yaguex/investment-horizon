@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import { corsHeaders } from './utils.ts'
 
@@ -17,27 +18,38 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Step 1: Save/Update note
-    console.log(`[${new Date().toISOString()}] Step 1: Saving note to database`)
-    const { data: savedNote, error: saveError } = note.id 
-      ? await supabase
-          .from('diy_notes')
-          .update(note)
-          .eq('id', note.id)
-          .select()
-          .single()
-      : await supabase
-          .from('diy_notes')
-          .insert([{ ...note, profile_id }])
-          .select()
-          .single()
+    // Step 1: If updating an existing note, first delete the record
+    if (note.id) {
+      console.log(`[${new Date().toISOString()}] Deleting existing note with ID ${note.id}`)
+      const { error: deleteError } = await supabase
+        .from('diy_notes')
+        .delete()
+        .eq('id', note.id)
+      
+      if (deleteError) {
+        console.error(`[${new Date().toISOString()}] Error deleting existing note:`, deleteError)
+        throw deleteError
+      }
+    }
+
+    // Step 2: Insert new note record
+    console.log(`[${new Date().toISOString()}] Inserting new note record`)
+    const { data: savedNote, error: saveError } = await supabase
+      .from('diy_notes')
+      .insert([{ 
+        ...note, 
+        profile_id,
+        id: note.id // Keep the same ID if it was an update
+      }])
+      .select()
+      .single()
 
     if (saveError) {
       console.error(`[${new Date().toISOString()}] Error saving note:`, saveError)
       throw saveError
     }
 
-    // Step 2: Validate required fields and prepare market data request
+    // Step 3: Validate required fields and prepare market data request
     if (!note.ticker || !note.expiration) {
       console.log(`[${new Date().toISOString()}] Missing required fields for market data`)
       return new Response(
@@ -46,7 +58,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Step 3: Prepare strikes array
+    // Step 4: Prepare strikes array
     console.log(`[${new Date().toISOString()}] Preparing strikes for market data fetch:`, {
       strike_entry: note.strike_entry,
       strike_target: note.strike_target,
@@ -90,7 +102,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Step 4: Fetch market data
+    // Step 5: Fetch market data
     console.log(`[${new Date().toISOString()}] Fetching market data for strikes:`, strikes)
     const { data: marketData, error: marketDataError } = await supabase.functions.invoke('fetch_marketdata_api', {
       body: { strikes }
@@ -101,7 +113,7 @@ Deno.serve(async (req) => {
       throw new Error("Function failure")
     }
 
-    // Step 5: Update note with market data using Position Size's methodology
+    // Step 6: Update note with market data using Position Size's methodology
     console.log(`[${new Date().toISOString()}] Updating note with market data`)
     const updateData: any = {}
 
