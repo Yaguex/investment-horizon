@@ -2,10 +2,10 @@
 import { corsHeaders } from './utils.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-console.log(`[${new Date().toISOString()}] Submit position size function initialized`);
+console.log('[VERY FIRST LOG] Submit position size function INITIALIZED - FIRST ENTRY POINT');
 
 Deno.serve(async (req) => {
-  console.log(`[${new Date().toISOString()}] [submit_position_size] Received request: ${req.method} ${req.url}`);
+  console.log(`[${new Date().toISOString()}] [submit_position_size] FIRST CONSOLE LOG: Received request: ${req.method} ${req.url}`);
   
   if (req.method === 'OPTIONS') {
     console.log(`[${new Date().toISOString()}] [submit_position_size] Handling OPTIONS request for CORS`);
