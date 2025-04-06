@@ -89,10 +89,10 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Dividend income: <span className={getNetColor(totalDividend)}>${formatNumber(totalDividend, 0)}</span> ({note.dividend_yield}% annual)
+                Hypothetical dividends: <span className={getNetColor(totalDividend)}>${formatNumber(totalDividend, 0)}</span> ({note.dividend_yield}% annual)
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-              Total net earnings (after withholding tax) in dividends throughout the entire lifespan of the note if we had bought the underlying
+              Dividend earnings (after withholding tax) throughout the entire lifespan of the note if we had bought the underlying instead of going for the DIY Note.
               </TooltipContent>
             </Tooltip>
           </p>
