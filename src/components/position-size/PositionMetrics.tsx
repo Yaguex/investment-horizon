@@ -100,7 +100,7 @@ export function PositionMetrics({ position }: positionMetricsProps) {
                 IV entry strike: ({formatNumber(position.iv_entry, 2)} * 100)%
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                The IV of the entry strike for the selected maturity. We need to compare with the underlying's Historical IV to determine whether vol is high today.
+                The IV of the entry strike for the selected maturity. We need to compare with the underlying's Historical IV to determine whether vol is high at this moment. The higher the IV vs Historical IV, the higher the premiums.
               </TooltipContent>
             </Tooltip>
           </p>
