@@ -31,6 +31,9 @@ export function PositionMetrics({ position }: positionMetricsProps) {
   }
   const totalPremium = calculatePremium()
 
+   // Calculate IV Stike
+   const IV = (position.iv_entry)*100
+
   // Calculate ROI
   let maxAnnualROI;
   maxAnnualROI = ((totalPremium / position.nominal) * 100 * (365 / daysUntilExpiration))
@@ -97,10 +100,10 @@ export function PositionMetrics({ position }: positionMetricsProps) {
           <p>
             <Tooltip>
               <TooltipTrigger>
-                IV entry strike: {formatNumber(position.iv_entry, 0)}%
+                IV entry strike: {formatNumber(IV, 0)}%
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                The IV of the entry strike for the selected maturity.
+                The IV of the entry strike for the selected maturity. We need to compare with the underlying's Historical IV to determine whether vol is high at this moment. The higher the IV vs Historical IV, the higher the premiums.
               </TooltipContent>
             </Tooltip>
           </p>
