@@ -26,16 +26,16 @@ const Header = () => {
       onClick: () => navigate("/position-size")
     },
     {
-      label: "Economic Calendar",
-      onClick: () => navigate("/economic-calendar")
-    },
-    {
       label: "DIY Notes",
       onClick: () => navigate("/diy-notes")
     },
     {
       label: "DIY Dividend",
       onClick: () => navigate("/diy-dividend")
+    },
+    {
+      label: "Economic Calendar",
+      onClick: () => navigate("/economic-calendar")
     },
     {
       label: "Test API",
