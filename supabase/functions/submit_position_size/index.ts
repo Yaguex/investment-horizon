@@ -1,5 +1,5 @@
 
-import { corsHeaders } from '../fetch_marketdata_api/utils.ts';
+import { corsHeaders } from './utils.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 console.log("Submit position size function initialized");
