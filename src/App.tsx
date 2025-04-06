@@ -63,14 +63,6 @@ const App = () => (
               }
             />
             <Route
-              path="/economic-calendar"
-              element={
-                <ProtectedRoute>
-                  <EconomicCalendar />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/diy-notes"
               element={
                 <ProtectedRoute>
@@ -83,6 +75,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DIYDividend />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/economic-calendar"
+              element={
+                <ProtectedRoute>
+                  <EconomicCalendar />
                 </ProtectedRoute>
               }
             />
