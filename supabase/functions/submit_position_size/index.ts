@@ -68,12 +68,31 @@ Deno.serve(async (req) => {
       console.log(`[${new Date().toISOString()}] [submit_position_size] Successfully deleted existing position with ID: ${position.id}`);
     }
 
-    // 2. Insert new position data
+    // 2. For new positions, get the next available ID
+    let nextId;
+    if (!position.id) {
+      const { data: maxIdResult, error: maxIdError } = await supabase
+        .from('position_size')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (maxIdError && maxIdError.code !== 'PGRST116') { // PGRST116 is "No rows returned"
+        console.error('[submit_position_size] Error getting max ID:', maxIdError);
+        throw maxIdError;
+      }
+      
+      nextId = maxIdResult ? maxIdResult.id + 1 : 1;
+      console.log(`[${new Date().toISOString()}] [submit_position_size] Generated new ID for position: ${nextId}`);
+    }
+
+    // 3. Insert new position data
     console.log('[submit_position_size] Inserting new position data');
     const { error: insertError, data: insertedData } = await supabase
       .from('position_size')
       .insert([{
-        id: position.id, // Will be null for new positions
+        id: position.id || nextId, // Use existing ID or next available ID
         profile_id,
         ticker: position.ticker,
         nominal: position.nominal,
