@@ -1,3 +1,4 @@
+
 import { corsHeaders } from '../fetch_marketdata_api/utils.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
@@ -20,41 +21,49 @@ Deno.serve(async (req) => {
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. First save/update position size data
-    console.log('[submit_position_size] Saving position size data');
+    // 1. First delete any existing data for this position if updating
     if (position.id) {
-      const { error: updateError } = await supabase
+      console.log('[submit_position_size] Deleting existing position data for ID:', position.id);
+      const { error: deleteError } = await supabase
         .from('position_size')
-        .update({
-          ticker: position.ticker,
-          nominal: position.nominal,
-          expiration: position.expiration || null,
-          bond_yield: position.bond_yield,
-          strike_entry: position.strike_entry,
-          strike_exit: position.strike_exit,
-          action: position.action,
-        })
+        .delete()
         .eq('id', position.id);
 
-      if (updateError) throw updateError;
-    } else {
-      const { error: insertError } = await supabase
-        .from('position_size')
-        .insert([{
-          profile_id,
-          ticker: position.ticker,
-          nominal: position.nominal,
-          expiration: position.expiration || null,
-          bond_yield: position.bond_yield,
-          strike_entry: position.strike_entry,
-          strike_exit: position.strike_exit,
-          action: position.action,
-        }]);
-
-      if (insertError) throw insertError;
+      if (deleteError) {
+        console.error('[submit_position_size] Error deleting position:', deleteError);
+        throw deleteError;
+      }
     }
 
-    // 2. Prepare market data request
+    // 2. Insert new position data
+    console.log('[submit_position_size] Inserting new position data');
+    const { error: insertError, data: insertedData } = await supabase
+      .from('position_size')
+      .insert([{
+        id: position.id, // Will be null for new positions
+        profile_id,
+        ticker: position.ticker,
+        nominal: position.nominal,
+        expiration: position.expiration || null,
+        bond_yield: position.bond_yield,
+        strike_entry: position.strike_entry,
+        strike_exit: position.strike_exit,
+        action: position.action,
+      }])
+      .select();
+
+    if (insertError) {
+      console.error('[submit_position_size] Error inserting position:', insertError);
+      throw insertError;
+    }
+
+    // Get the inserted position ID
+    const positionId = insertedData?.[0]?.id;
+    position.id = positionId;
+    
+    console.log('[submit_position_size] Successfully saved position with ID:', positionId);
+
+    // 3. Prepare market data request
     if (!position.ticker || !position.expiration) {
       console.log('[submit_position_size] Missing required fields for market data');
       return new Response(
@@ -118,7 +127,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 3. Fetch market data with a single API call
+    // 4. Fetch market data with a single API call
     console.log('[submit_position_size] Fetching market data for strikes:', strikes);
     const marketDataResponse = await fetch(
       `${supabaseUrl}/functions/v1/fetch_marketdata_api`,
@@ -139,7 +148,7 @@ Deno.serve(async (req) => {
       throw new Error('Function failure');
     }
 
-    // 4. Update position with market data
+    // 5. Update position with market data
     const updateData: any = {};
     
     // Handle entry strike data if present
@@ -166,7 +175,7 @@ Deno.serve(async (req) => {
     const { error: marketDataUpdateError } = await supabase
       .from('position_size')
       .update(updateData)
-      .eq('id', position.id);  // Using position.id instead of multiple field matching
+      .eq('id', positionId);
 
     if (marketDataUpdateError) throw marketDataUpdateError;
 
