@@ -103,7 +103,7 @@ export function PositionHeader({ position, onEdit }: positionHeaderProps) {
         <span className="text-sm text-gray-500 mr-8">{formatDate(position.expiration)}</span>
         <span className="text-sm text-gray-500 mr-8">${formatNumber(position.nominal, 0)}</span>
         <span className="text-sm text-gray-500 mr-8">{position.action}</span>
-        <span className="text-sm text-gray-500">Entry {strikeEntryOTM}% {strikeMoniness} {position.strike_exit (<span> | Exit {strikeExitOTM}% {strikeMoniness}</span>)</span>
+        <span className="text-sm text-gray-500">Entry {strikeEntryMoniness}% {strikeMoniness} {position.strike_exit !== 0 && (<span> | Exit {strikeExitMoniness}% {strikeMoniness}</span>)</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
