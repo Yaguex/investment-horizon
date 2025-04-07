@@ -52,7 +52,7 @@ export function PositionHeader({ position, onEdit }: positionHeaderProps) {
     }
   }
 
-  // Calculate ITM and OTM percentages
+  // Calculate Moniness percentages
   let strikeEntryMoniness, strikeExitMoniness, strikeMoniness;
   if (actionLowerCase.includes('buy') && actionLowerCase.includes('call')) {
     if (position.strike_entry >=  position.underlying_price_entry) {
