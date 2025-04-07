@@ -53,6 +53,7 @@ export function PositionHeader({ position, onEdit }: positionHeaderProps) {
   }
 
   // Calculate Moniness percentages
+  const actionLowerCase = position.action?.toLowerCase() || ''
   let strikeEntryMoniness, strikeExitMoniness, strikeMoniness;
   if (actionLowerCase.includes('buy') && actionLowerCase.includes('call')) {
     if (position.strike_entry >=  position.underlying_price_entry) {
