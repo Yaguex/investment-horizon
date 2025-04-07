@@ -52,9 +52,49 @@ export function PositionHeader({ position, onEdit }: positionHeaderProps) {
     }
   }
 
-  const strikeEntryOTM = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
-  const strikeExitOTM = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
-
+  // Calculate ITM and OTM percentages
+  let strikeEntryMoniness, strikeExitMoniness, strikeMoniness;
+  if (actionLowerCase.includes('buy') && actionLowerCase.includes('call')) {
+    if (position.strike_entry >=  position.underlying_price_entry) {
+    strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+    strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+    strikeMoniness = "OTM"
+    else {
+    strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+    strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+    strikeMoniness = "ITM"
+    }
+  } else if (actionLowerCase.includes('sell') && actionLowerCase.includes('call')) {
+    if (position.strike_entry >=  position.underlying_price_entry) {
+      strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+      strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+      strikeMoniness = "OTM"
+      else {
+      strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+      strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+      strikeMoniness = "ITM"
+      }
+  } else if (actionLowerCase.includes('buy') && actionLowerCase.includes('put')) {
+    if (position.strike_entry >=  position.underlying_price_entry) {
+      strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+      strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+      strikeMoniness = "ITM"
+      else {
+      strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+      strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+      strikeMoniness = "OTM"
+      }
+  } else if (actionLowerCase.includes('sell') && actionLowerCase.includes('put')) {
+    if (position.strike_entry >=  position.underlying_price_entry) {
+      strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+      strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * 1) / position.underlying_price_entry * 100) : 0
+      strikeMoniness = "ITM"
+      else {
+      strikeEntryMoniness = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+      strikeExitMoniness = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+      strikeMoniness = "OTM"
+      }
+  }
 
   return (
     <div className="flex justify-between items-center">
@@ -63,7 +103,7 @@ export function PositionHeader({ position, onEdit }: positionHeaderProps) {
         <span className="text-sm text-gray-500 mr-8">{formatDate(position.expiration)}</span>
         <span className="text-sm text-gray-500 mr-8">${formatNumber(position.nominal, 0)}</span>
         <span className="text-sm text-gray-500 mr-8">{position.action}</span>
-        <span className="text-sm text-gray-500">Entry {strikeEntryOTM}% OTM | Exit {strikeExitOTM}% OTM</span>
+        <span className="text-sm text-gray-500">Entry {strikeEntryOTM}% {strikeMoniness} {position.strike_exit (<span> | Exit {strikeExitOTM}% {strikeMoniness}</span>)</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
