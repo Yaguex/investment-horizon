@@ -52,6 +52,10 @@ export function PositionHeader({ position, onEdit }: positionHeaderProps) {
     }
   }
 
+  const strikeEntryOTM = position.strike_entry ? Math.round(((position.strike_entry - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+  const strikeExitOTM = position.strike_exit ? Math.round(((position.strike_exit - position.underlying_price_entry) * -1) / position.underlying_price_entry * 100) : 0
+
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center">
@@ -59,6 +63,7 @@ export function PositionHeader({ position, onEdit }: positionHeaderProps) {
         <span className="text-sm text-gray-500 mr-8">{formatDate(position.expiration)}</span>
         <span className="text-sm text-gray-500 mr-8">${formatNumber(position.nominal, 0)}</span>
         <span className="text-sm text-gray-500 mr-8">{position.action}</span>
+        <span className="text-sm text-gray-500">Entry {strikeEntryOTM}% OTM | Exit {strikeExitOTM}% OTM</span>
       </div>
       <TooltipProvider>
         <div className="flex gap-2">
