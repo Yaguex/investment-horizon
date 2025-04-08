@@ -30,13 +30,10 @@ const calculateCirclePositions = (note: any) => {
     ((totalBondYield * -1) - (protectionContracts * note.strike_protection_mid * 100)) / 
     ((note.strike_target_mid * 100) - (note.strike_entry_mid * 100))
   )
-
-  / Calculate leverage (leverage vs underlying)
-  const leverage = maxGainDollars / (((note.nominal / note.underlying_price) * (note.strike_target - note.strike_entry)) + totalDividend)
-
+  
   // Calculate BE strikes with updated formulas
-  const be1Strike = note.strike_entry + ((note.strike_entry * ((note.bond_yield/100) * yearsUntilExpiration)) / leverage)
-  const be2Strike = note.strike_entry + ((note.strike_entry * ((7/100) * yearsUntilExpiration)) / leverage)
+  const be1Strike = note.strike_entry * (1 + ((note.bond_yield/100) * yearsUntilExpiration))
+  const be2Strike = note.strike_entry * (1 + ((7/100) * yearsUntilExpiration))
 
   if (targetDiff >= protectionDiff) {
     rightPosition = 90
