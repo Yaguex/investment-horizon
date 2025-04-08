@@ -49,7 +49,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   // Calculate max annual ROI
   const maxAnnualROI = maxGainPercentage * (365 / daysUntilExpiration)
 
-  // Calculate leverage vs underlying
+  // Calculate leverage (leverage vs underlying)
   const leverage = maxGainDollars / ((note.nominal * (note.strike_target - note.strike_entry)) + totalDividend)
 
   // Calculate convexity (leverage vs bond)
