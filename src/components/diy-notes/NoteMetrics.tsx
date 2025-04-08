@@ -53,7 +53,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const leverage = maxGainDollars / ((note.nominal * (note.strike_target - note.strike_entry)) + totalDividend)
 
   // Calculate convexity (leverage vs bond)
-  const convexity = maxGainDollars / (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365)))
+  const convexity = maxAnnualROI / note.bond_yield
 
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
@@ -110,16 +110,6 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <p className="text-black">
             <Tooltip>
               <TooltipTrigger>
-                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 1)}% total)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total earnings if our target is reached at expiration
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
                Note's net: <span className={getNetColor(noteNet)}>${formatNumber(noteNet, 0)}</span>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
@@ -134,6 +124,16 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Outlay in premiums to enter the trade today
+              </TooltipContent>
+            </Tooltip>
+          </p>
+          <p className="text-black">
+            <Tooltip>
+              <TooltipTrigger>
+                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 1)}% total)
+              </TooltipTrigger>
+              <TooltipContent className="bg-black text-white max-w-[400px]">
+                Total earnings if our target is reached at expiration
               </TooltipContent>
             </Tooltip>
           </p>
@@ -159,7 +159,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
                 Dollar-per-dollar gain over just buying the underlying outright. The idea of Leverage comes from being able to afford to buy more Deltas (more calls) than I should have been able to afford had I not financed part of those calls through bond interests plus selling calls+puts. This allows me to kick up my exposure to the position without locking up more than the originally intended nominal (which is the amount I'm freezing in bonds). Remember though that you have also given up on the dividend yield, so that needs to be accounted for.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Leverage<br />vs Underlying</p>
+            <p className="text-xs text-black">Leverage<br />vs Options</p>
           </div>
           <div className="text-center">
             <Tooltip>
