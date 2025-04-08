@@ -53,7 +53,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const leverage = maxGainDollars / ((note.nominal * (note.strike_target - note.strike_entry)) + totalDividend)
 
   // Calculate convexity (leverage vs bond)
-  const convexity = maxGainDollars / (noteNet - wiggleDollars + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365))))
+  const convexity = maxGainDollars / (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365)))
 
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
@@ -167,7 +167,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
                 <p className={`${getConvexityColor(convexity)} text-xl font-bold`}>x {formatNumber(convexity, 1)}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
-                How many dollars can I potentially earn for every dollar I give up at the risk-free rate. Anything above 4-to-1 is a pretty good convexity bet
+                How many dollars can I potentially earn (if Target is reached by expiration) for every dollar I give up at the risk-free rate. Anything above 4-to-1 is a pretty good convexity bet
               </TooltipContent>
             </Tooltip>
             <p className="text-xs text-black">Leverage<br />vs Risk Free</p>
