@@ -53,7 +53,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const leverage = maxGainDollars / ((note.nominal * (note.strike_target - note.strike_entry)) + totalDividend)
 
   // Calculate convexity (leverage vs bond)
-  const convexity = maxGainDollars / (noteNet - wiggleDollars) + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365))))
+  const convexity = maxGainDollars / ((noteNet - wiggleDollars) + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365))))
 
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
