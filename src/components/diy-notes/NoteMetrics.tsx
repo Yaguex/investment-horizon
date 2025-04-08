@@ -53,7 +53,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   const leverage = maxGainDollars / ((note.nominal * (note.strike_target - note.strike_entry)) + totalDividend)
 
   // Calculate convexity (leverage vs bond)
-  const convexity = maxGainDollars / ((noteNet - wiggleDollars) + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365))))
+  const convexity = maxGainDollars / (noteNet - wiggleDollars + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365))))
 
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
@@ -153,7 +153,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
           <div className="text-center">
             <Tooltip>
               <TooltipTrigger>
-                <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x {formatNumber(leverage, 2)}</p>
+                <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x {formatNumber(leverage, 1)}</p>
               </TooltipTrigger>
               <TooltipContent className="bg-black text-white max-w-[400px]">
                 Dollar-per-dollar gain over just buying the underlying outright. The idea of Leverage comes from being able to afford to buy more Deltas (more calls) than I should have been able to afford had I not financed part of those calls through bond interests plus selling calls+puts. This allows me to kick up my exposure to the position without locking up more than the originally intended nominal (which is the amount I'm freezing in bonds). Remember though that you have also given up on the dividend yield, so that needs to be accounted for.
