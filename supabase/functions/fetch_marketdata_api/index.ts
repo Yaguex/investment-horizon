@@ -11,6 +11,11 @@ function generateTransactionId(): string {
   return `txn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// Helper function to add delay between API calls
+async function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function processStrike(strike: StrikeRequest, transactionId: string): Promise<StrikeResponse | null> {
   console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Processing strike request:`, strike);
   
@@ -78,17 +83,30 @@ Deno.serve(async (req) => {
       console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Strike #${index + 1}: ticker=${strike.ticker}, expiration=${strike.expiration}, type=${strike.type}, strike=${strike.strike}`);
     });
 
-    // Process all strikes
-    console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Starting to process ${strikes.length} strikes`);
-    const responsePromises = strikes.map(strike => processStrike(strike, transactionId));
-    const responses = await Promise.all(
-      responsePromises.map(promise => 
-        promise.catch(error => {
-          console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Strike processing error:`, error);
-          return null;
-        })
-      )
-    );
+    // Process strikes sequentially with a delay between requests
+    // This helps prevent rate limiting by not making all requests simultaneously
+    const DELAY_BETWEEN_REQUESTS = 500; // 500ms delay between requests
+    console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Starting to process ${strikes.length} strikes with ${DELAY_BETWEEN_REQUESTS}ms delay between requests`);
+    
+    const responses: (StrikeResponse | null)[] = [];
+    
+    for (let i = 0; i < strikes.length; i++) {
+      try {
+        console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Processing strike ${i + 1}/${strikes.length}`);
+        const response = await processStrike(strikes[i], transactionId);
+        responses.push(response);
+        
+        // Add delay between requests (except after the last one)
+        if (i < strikes.length - 1) {
+          console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Adding delay of ${DELAY_BETWEEN_REQUESTS}ms before next request`);
+          await delay(DELAY_BETWEEN_REQUESTS);
+        }
+      } catch (error) {
+        console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Error processing strike ${i + 1}:`, error);
+        responses.push(null);
+      }
+    }
+    
     console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Finished processing ${strikes.length} strikes`);
 
     // Check if any strike processing failed completely
