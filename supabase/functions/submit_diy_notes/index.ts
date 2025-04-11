@@ -45,9 +45,28 @@ Deno.serve(async (req) => {
   try {
     const requestStartTime = Date.now();
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Starting to parse request body`);
-    const { note, profile_id } = await req.json()
+    
+    // Clone request to log raw body if needed
+    const clonedReq = req.clone();
+    let rawBody;
+    try {
+      rawBody = await clonedReq.text();
+      console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Raw request body: ${rawBody}`);
+    } catch (e) {
+      console.error(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Failed to read raw request body: ${e}`);
+    }
+    
+    const { note, profile_id } = await req.json();
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Request parsing took ${Date.now() - requestStartTime}ms`);
-    console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Processing note submission for profile ${profile_id}:`, note)
+    console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Processing note submission for profile ${profile_id}:`, note);
+    
+    // Log data types for critical fields
+    console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Data types check: 
+      - note type: ${typeof note}
+      - note.strike_entry: ${note.strike_entry} (${typeof note.strike_entry})
+      - note.strike_target: ${note.strike_target} (${typeof note.strike_target})
+      - note.strike_protection: ${note.strike_protection} (${typeof note.strike_protection})
+    `);
 
     // Initialize Supabase client
     const initStartTime = Date.now();
@@ -113,35 +132,59 @@ Deno.serve(async (req) => {
       strike_entry: note.strike_entry,
       strike_target: note.strike_target,
       strike_protection: note.strike_protection
-    })
+    });
 
     const strikes = []
 
-    if (note.strike_entry) {
-      strikes.push({
-        ticker: note.ticker,
-        expiration: note.expiration,
-        type: 'call',
-        strike: note.strike_entry
-      })
+    // Apply explicit Number conversion and validation for strike_entry
+    if (note.strike_entry !== null && note.strike_entry !== undefined) {
+      const numericStrikeEntry = Number(note.strike_entry);
+      if (isNaN(numericStrikeEntry) || numericStrikeEntry <= 0) {
+        await logError(supabase, `Invalid strike_entry value: ${note.strike_entry}`, transactionId);
+        console.error(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Invalid strike_entry value: ${note.strike_entry}, converted to: ${numericStrikeEntry}`);
+      } else {
+        console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding entry strike: ${numericStrikeEntry} (original: ${note.strike_entry}, type: ${typeof note.strike_entry})`);
+        strikes.push({
+          ticker: note.ticker,
+          expiration: note.expiration,
+          type: 'call',
+          strike: numericStrikeEntry
+        });
+      }
     }
 
-    if (note.strike_target) {
-      strikes.push({
-        ticker: note.ticker,
-        expiration: note.expiration,
-        type: 'call',
-        strike: note.strike_target
-      })
+    // Apply explicit Number conversion and validation for strike_target
+    if (note.strike_target !== null && note.strike_target !== undefined) {
+      const numericStrikeTarget = Number(note.strike_target);
+      if (isNaN(numericStrikeTarget) || numericStrikeTarget <= 0) {
+        await logError(supabase, `Invalid strike_target value: ${note.strike_target}`, transactionId);
+        console.error(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Invalid strike_target value: ${note.strike_target}, converted to: ${numericStrikeTarget}`);
+      } else {
+        console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding target strike: ${numericStrikeTarget} (original: ${note.strike_target}, type: ${typeof note.strike_target})`);
+        strikes.push({
+          ticker: note.ticker,
+          expiration: note.expiration,
+          type: 'call',
+          strike: numericStrikeTarget
+        });
+      }
     }
 
-    if (note.strike_protection) {
-      strikes.push({
-        ticker: note.ticker,
-        expiration: note.expiration,
-        type: 'put',
-        strike: note.strike_protection
-      })
+    // Apply explicit Number conversion and validation for strike_protection
+    if (note.strike_protection !== null && note.strike_protection !== undefined) {
+      const numericStrikeProtection = Number(note.strike_protection);
+      if (isNaN(numericStrikeProtection) || numericStrikeProtection <= 0) {
+        await logError(supabase, `Invalid strike_protection value: ${note.strike_protection}`, transactionId);
+        console.error(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Invalid strike_protection value: ${note.strike_protection}, converted to: ${numericStrikeProtection}`);
+      } else {
+        console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding protection strike: ${numericStrikeProtection} (original: ${note.strike_protection}, type: ${typeof note.strike_protection})`);
+        strikes.push({
+          ticker: note.ticker,
+          expiration: note.expiration,
+          type: 'put',
+          strike: numericStrikeProtection
+        });
+      }
     }
 
     if (strikes.length === 0) {
@@ -152,15 +195,23 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Log the final strikes array that will be sent
+    console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Final strikes array:`, JSON.stringify(strikes));
+
     // Step 5: Fetch market data
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Fetching market data for strikes:`, strikes)
     const apiStartTime = Date.now();
+    const requestBody = { 
+      strikes,
+      callerTransactionId: transactionId // Pass the transaction ID to the fetch_marketdata_api function
+    };
+    
+    console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Request body for fetch_marketdata_api:`, JSON.stringify(requestBody));
+    
     const { data: marketData, error: marketDataError } = await supabase.functions.invoke('fetch_marketdata_api', {
-      body: { 
-        strikes,
-        callerTransactionId: transactionId // Pass the transaction ID to the fetch_marketdata_api function
-      }
-    })
+      body: requestBody
+    });
+    
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Market data API call took ${Date.now() - apiStartTime}ms`);
 
     if (marketDataError) {
