@@ -1,4 +1,3 @@
-
 import { corsHeaders } from './utils.ts';
 import { fetchOptionData } from './marketData.ts';
 import { generateOptionSymbol } from './utils.ts';
@@ -85,7 +84,7 @@ Deno.serve(async (req) => {
 
     // Process strikes sequentially with a delay between requests
     // This helps prevent rate limiting by not making all requests simultaneously
-    const DELAY_BETWEEN_REQUESTS = 500; // 500ms delay between requests
+    const DELAY_BETWEEN_REQUESTS = 2000; // Increased from 500ms to 2000ms
     console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Starting to process ${strikes.length} strikes with ${DELAY_BETWEEN_REQUESTS}ms delay between requests`);
     
     const responses: (StrikeResponse | null)[] = [];
