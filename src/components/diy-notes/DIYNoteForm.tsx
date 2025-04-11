@@ -76,7 +76,8 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
       // If the value is not null or undefined, ensure it's a valid number
       if (value !== null && value !== undefined) {
         const numValue = Number(value);
-        validated[field] = isNaN(numValue) ? null : numValue;
+        // Use type assertion to tell TypeScript this is a valid assignment
+        validated[field] = (isNaN(numValue) ? null : numValue) as any;
         
         // Log if there was a conversion issue
         if (isNaN(numValue) && value !== null) {
