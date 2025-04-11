@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
@@ -58,22 +59,60 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
     }
   })
 
+  // Helper function to ensure all numeric fields are actually numbers
+  const validateNumericFields = (data: DIYNoteFormValues) => {
+    // Create a new object with the same structure
+    const validated = { ...data };
+    
+    // Ensure numeric fields are actual numbers
+    const numericFields: (keyof DIYNoteFormValues)[] = [
+      'nominal', 'bond_yield', 'strike_entry', 'strike_target', 
+      'strike_protection', 'wiggle', 'dividend_yield'
+    ];
+    
+    numericFields.forEach(field => {
+      const value = data[field];
+      
+      // If the value is not null or undefined, ensure it's a valid number
+      if (value !== null && value !== undefined) {
+        const numValue = Number(value);
+        validated[field] = isNaN(numValue) ? null : numValue;
+        
+        // Log if there was a conversion issue
+        if (isNaN(numValue) && value !== null) {
+          console.warn(`Invalid numeric value for ${field}: ${value} (${typeof value})`);
+        }
+      }
+    });
+    
+    return validated;
+  };
+
   const onSubmit = async (data: DIYNoteFormValues) => {
     try {
       setIsLoading(true)
 
       if (!user) {
-        toast.error("You must be logged in to save a dividend")
+        toast.error("You must be logged in to save a note")
         setIsLoading(false)
         return
       }
+      
+      // Ensure all numeric fields are actually numbers before sending
+      const validatedData = validateNumericFields(data);
+      
+      // Log the data being sent to help with debugging
+      console.log("Submitting note data:", {
+        original: data,
+        validated: validatedData
+      });
 
       const { error } = await supabase.functions.invoke('submit_diy_notes', {
         body: {
           note: {
-            ...data,
+            ...validatedData,
             id: note?.id,
-            expiration: data.expiration || null,
+            expiration: validatedData.expiration || null,
           },
           profile_id: (await supabase.auth.getUser()).data.user?.id
         }

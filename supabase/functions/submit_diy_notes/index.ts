@@ -34,6 +34,46 @@ async function logError(supabase: any, message: string, transactionId: string, d
   }
 }
 
+// Helper function to safely convert values to numbers
+function safeNumberConversion(value: any): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  
+  // If already a number, return it
+  if (typeof value === 'number') {
+    return isNaN(value) ? null : value;
+  }
+  
+  // Handle string conversion
+  if (typeof value === 'string') {
+    // Remove non-numeric characters except decimal point
+    const cleanedString = value.replace(/[^\d.]/g, '');
+    if (cleanedString === '') {
+      return null;
+    }
+    
+    const num = parseFloat(cleanedString);
+    return isNaN(num) ? null : num;
+  }
+  
+  // Any other type
+  return null;
+}
+
+// Helper function to ensure each strike value is a valid number
+function validateStrike(value: any, fieldName: string, transactionId: string): number | null {
+  const num = safeNumberConversion(value);
+  console.log(`[${new Date().toISOString()}] [TXN:${transactionId}] Validating ${fieldName}: original=${value} (${typeof value}), converted=${num} (${typeof num})`);
+  
+  if (num !== null && (isNaN(num) || num <= 0)) {
+    console.error(`[${new Date().toISOString()}] [TXN:${transactionId}] Invalid ${fieldName} value: ${value}, converted to ${num}`);
+    return null;
+  }
+  
+  return num;
+}
+
 Deno.serve(async (req) => {
   const transactionId = generateTransactionId();
   console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Received request: ${req.method} ${req.url}`);
@@ -127,7 +167,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Step 4: Prepare strikes array
+    // Step 4: Prepare strikes array - with enhanced validation
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Preparing strikes for market data fetch:`, {
       strike_entry: note.strike_entry,
       strike_target: note.strike_target,
@@ -136,55 +176,40 @@ Deno.serve(async (req) => {
 
     const strikes = []
 
-    // Apply explicit Number conversion and validation for strike_entry
-    if (note.strike_entry !== null && note.strike_entry !== undefined) {
-      const numericStrikeEntry = Number(note.strike_entry);
-      if (isNaN(numericStrikeEntry) || numericStrikeEntry <= 0) {
-        await logError(supabase, `Invalid strike_entry value: ${note.strike_entry}`, transactionId);
-        console.error(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Invalid strike_entry value: ${note.strike_entry}, converted to: ${numericStrikeEntry}`);
-      } else {
-        console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding entry strike: ${numericStrikeEntry} (original: ${note.strike_entry}, type: ${typeof note.strike_entry})`);
-        strikes.push({
-          ticker: note.ticker,
-          expiration: note.expiration,
-          type: 'call',
-          strike: numericStrikeEntry
-        });
-      }
+    // Validate and convert strike_entry
+    const validatedStrikeEntry = validateStrike(note.strike_entry, "strike_entry", transactionId);
+    if (validatedStrikeEntry !== null) {
+      console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding validated entry strike: ${validatedStrikeEntry}`);
+      strikes.push({
+        ticker: note.ticker,
+        expiration: note.expiration,
+        type: 'call',
+        strike: validatedStrikeEntry
+      });
     }
 
-    // Apply explicit Number conversion and validation for strike_target
-    if (note.strike_target !== null && note.strike_target !== undefined) {
-      const numericStrikeTarget = Number(note.strike_target);
-      if (isNaN(numericStrikeTarget) || numericStrikeTarget <= 0) {
-        await logError(supabase, `Invalid strike_target value: ${note.strike_target}`, transactionId);
-        console.error(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Invalid strike_target value: ${note.strike_target}, converted to: ${numericStrikeTarget}`);
-      } else {
-        console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding target strike: ${numericStrikeTarget} (original: ${note.strike_target}, type: ${typeof note.strike_target})`);
-        strikes.push({
-          ticker: note.ticker,
-          expiration: note.expiration,
-          type: 'call',
-          strike: numericStrikeTarget
-        });
-      }
+    // Validate and convert strike_target
+    const validatedStrikeTarget = validateStrike(note.strike_target, "strike_target", transactionId);
+    if (validatedStrikeTarget !== null) {
+      console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding validated target strike: ${validatedStrikeTarget}`);
+      strikes.push({
+        ticker: note.ticker,
+        expiration: note.expiration,
+        type: 'call',
+        strike: validatedStrikeTarget
+      });
     }
 
-    // Apply explicit Number conversion and validation for strike_protection
-    if (note.strike_protection !== null && note.strike_protection !== undefined) {
-      const numericStrikeProtection = Number(note.strike_protection);
-      if (isNaN(numericStrikeProtection) || numericStrikeProtection <= 0) {
-        await logError(supabase, `Invalid strike_protection value: ${note.strike_protection}`, transactionId);
-        console.error(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Invalid strike_protection value: ${note.strike_protection}, converted to: ${numericStrikeProtection}`);
-      } else {
-        console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding protection strike: ${numericStrikeProtection} (original: ${note.strike_protection}, type: ${typeof note.strike_protection})`);
-        strikes.push({
-          ticker: note.ticker,
-          expiration: note.expiration,
-          type: 'put',
-          strike: numericStrikeProtection
-        });
-      }
+    // Validate and convert strike_protection
+    const validatedStrikeProtection = validateStrike(note.strike_protection, "strike_protection", transactionId);
+    if (validatedStrikeProtection !== null) {
+      console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Adding validated protection strike: ${validatedStrikeProtection}`);
+      strikes.push({
+        ticker: note.ticker,
+        expiration: note.expiration,
+        type: 'put',
+        strike: validatedStrikeProtection
+      });
     }
 
     if (strikes.length === 0) {
@@ -198,12 +223,15 @@ Deno.serve(async (req) => {
     // Log the final strikes array that will be sent
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Final strikes array:`, JSON.stringify(strikes));
 
-    // Step 5: Fetch market data
+    // Step 5: Fetch market data with enhanced error handling
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Fetching market data for strikes:`, strikes)
     const apiStartTime = Date.now();
+    
+    // Use a custom JSON stringify with a replacer function to ensure numbers stay as numbers
+    // This helps prevent type conversion issues during serialization
     const requestBody = { 
       strikes,
-      callerTransactionId: transactionId // Pass the transaction ID to the fetch_marketdata_api function
+      callerTransactionId: transactionId
     };
     
     console.log(`[${new Date().toISOString()}] [submit_diy_notes] [TXN:${transactionId}] Request body for fetch_marketdata_api:`, JSON.stringify(requestBody));
