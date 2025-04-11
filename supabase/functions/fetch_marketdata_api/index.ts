@@ -1,3 +1,4 @@
+
 import { corsHeaders } from './utils.ts';
 import { fetchOptionData } from './marketData.ts';
 import { generateOptionSymbol } from './utils.ts';
@@ -22,57 +23,8 @@ function calculateBackoff(attempt: number, baseDelay: number = 2000, maxDelay: n
   return exponentialDelay + (Math.random() * 1000);
 }
 
-// New helper function to safely parse and validate strike values
-function validateStrikeValue(strike: any, strikeIndex: number, transactionId: string): number | null {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [validateStrikeValue] [TXN:${transactionId}] Validating strike #${strikeIndex}: ${strike} (${typeof strike})`);
-  
-  // Handle different input types
-  let numericStrike: number;
-  
-  if (strike === null || strike === undefined) {
-    console.error(`[${timestamp}] [validateStrikeValue] [TXN:${transactionId}] Strike #${strikeIndex} is ${strike === null ? 'null' : 'undefined'}`);
-    return null;
-  }
-  
-  if (typeof strike === 'number') {
-    numericStrike = strike;
-  } else if (typeof strike === 'string') {
-    // Try to extract a valid number from the string
-    const cleanedString = strike.replace(/[^\d.]/g, '');
-    if (cleanedString === '') {
-      console.error(`[${timestamp}] [validateStrikeValue] [TXN:${transactionId}] Strike #${strikeIndex} cleaned to empty string: "${strike}"`);
-      return null;
-    }
-    numericStrike = parseFloat(cleanedString);
-  } else {
-    console.error(`[${timestamp}] [validateStrikeValue] [TXN:${transactionId}] Strike #${strikeIndex} has unsupported type: ${typeof strike}`);
-    return null;
-  }
-  
-  // Final validation
-  if (isNaN(numericStrike)) {
-    console.error(`[${timestamp}] [validateStrikeValue] [TXN:${transactionId}] Strike #${strikeIndex} is NaN: ${strike}`);
-    return null;
-  }
-  
-  if (numericStrike <= 0) {
-    console.error(`[${timestamp}] [validateStrikeValue] [TXN:${transactionId}] Strike #${strikeIndex} is not positive: ${numericStrike}`);
-    return null;
-  }
-  
-  console.log(`[${timestamp}] [validateStrikeValue] [TXN:${transactionId}] Strike #${strikeIndex} validated: ${numericStrike}`);
-  return numericStrike;
-}
-
 async function processStrike(strike: StrikeRequest, transactionId: string, maxRetries: number = 2): Promise<StrikeResponse> {
   console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Processing strike request:`, strike);
-  console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Strike object data types check:
-    - ticker: ${typeof strike.ticker} (${strike.ticker})
-    - expiration: ${typeof strike.expiration} (${strike.expiration})
-    - type: ${typeof strike.type} (${strike.type})
-    - strike: ${typeof strike.strike} (${strike.strike})
-  `);
   
   try {
     // Validate strike request
@@ -89,55 +41,14 @@ async function processStrike(strike: StrikeRequest, transactionId: string, maxRe
       };
     }
     
-    // Enhanced strike validation with detailed logging
-    const numericStrike = typeof strike.strike === 'number' ? 
-      strike.strike : 
-      parseFloat(String(strike.strike).replace(/[^\d.]/g, ''));
-      
-    console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Strike conversion check: 
-      - Original value: ${strike.strike} (${typeof strike.strike})
-      - Parsed value: ${numericStrike} (${typeof numericStrike})
-      - Is valid number: ${!isNaN(numericStrike) && numericStrike > 0}
-    `);
-    
-    if (isNaN(numericStrike) || numericStrike <= 0) {
-      console.error(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Invalid strike value: ${strike.strike}, converted to: ${numericStrike}`);
-      return {
-        symbol: "INVALID",
-        marketData: null,
-        error: {
-          type: ErrorType.VALIDATION_ERROR,
-          message: `Invalid strike value: ${strike.strike} (${typeof strike.strike})`,
-          retryable: false
-        }
-      };
-    }
-    
-    console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Generating symbol for ${strike.ticker} ${strike.type} at strike ${numericStrike}`);
-    
-    let symbol;
-    try {
-      symbol = generateOptionSymbol(
-        strike.ticker,
-        strike.expiration,
-        strike.type === 'call' ? 'C' : 'P',
-        numericStrike
-      );
-      console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Successfully generated symbol ${symbol} for ${strike.ticker} ${strike.type} at strike ${numericStrike}`);
-    } catch (error) {
-      console.error(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Error generating symbol: ${error.message}`);
-      console.error(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Error occurred with input: ticker=${strike.ticker}, expiration=${strike.expiration}, type=${strike.type}, strike=${strike.strike} (${typeof strike.strike})`);
-      
-      return {
-        symbol: "SYMBOL_ERROR",
-        marketData: null,
-        error: {
-          type: ErrorType.VALIDATION_ERROR,
-          message: `Symbol generation error: ${error.message}`,
-          retryable: false
-        }
-      };
-    }
+    console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Generating symbol for ${strike.ticker} ${strike.type} at strike ${strike.strike}`);
+    const symbol = generateOptionSymbol(
+      strike.ticker,
+      strike.expiration,
+      strike.type === 'call' ? 'C' : 'P',
+      strike.strike
+    );
+    console.log(`[${new Date().toISOString()}] [processStrike] [TXN:${transactionId}] Generated symbol ${symbol} for ${strike.ticker} ${strike.type} at strike ${strike.strike}`);
 
     // Retry logic with exponential backoff
     let attempts = 0;
@@ -203,83 +114,17 @@ Deno.serve(async (req) => {
   try {
     const startTime = Date.now();
     console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Starting to parse request body`);
-    
-    // Clone request to log raw body
-    const clonedReq = req.clone();
-    let rawBody;
-    try {
-      rawBody = await clonedReq.text();
-      console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Raw request body: ${rawBody}`);
-    } catch (e) {
-      console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Failed to read raw request body: ${e}`);
-    }
-    
-    // Parse the request body with a reviver function to ensure numbers remain numbers
-    let requestBody;
-    try {
-      // Use JSON.parse with a reviver function to preserve number types
-      requestBody = JSON.parse(rawBody, (key, value) => {
-        // If the key is 'strike' and the value is a string that looks like a number, convert it
-        if (key === 'strike' && typeof value === 'string') {
-          const numericValue = Number(value);
-          if (!isNaN(numericValue)) {
-            console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Converting strike from string "${value}" to number ${numericValue}`);
-            return numericValue;
-          }
-        }
-        return value;
-      });
-    } catch (e) {
-      console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Error parsing request body with reviver:`, e);
-      // Fall back to standard JSON.parse
-      requestBody = await req.json();
-    }
-    
+    const requestBody = await req.json();
     console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Request body parsed in ${Date.now() - startTime}ms`);
-    
-    // Extract the caller transaction ID if available
-    const callerTransactionId = requestBody.callerTransactionId;
-    if (callerTransactionId) {
-      console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Request from caller with transaction ID: ${callerTransactionId}`);
-    }
     
     const { strikes } = requestBody as { strikes: StrikeRequest[] };
     console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Received request for ${strikes?.length || 0} strikes:`, strikes);
 
-    // Deep validation of strikes array
-    if (!strikes) {
-      console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Invalid request: strikes array is undefined`);
+    if (!strikes || !Array.isArray(strikes) || strikes.length === 0) {
+      console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Invalid request: strikes array is required`);
       return new Response(
         JSON.stringify({ 
-          error: "Invalid request: strikes array is undefined",
-          transactionId 
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    if (!Array.isArray(strikes)) {
-      console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Invalid request: strikes is not an array, it's a ${typeof strikes}`);
-      return new Response(
-        JSON.stringify({ 
-          error: "Invalid request: strikes is not an array",
-          transactionId 
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    if (strikes.length === 0) {
-      console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Invalid request: strikes array is empty`);
-      return new Response(
-        JSON.stringify({ 
-          error: "Invalid request: strikes array is empty",
+          error: "Invalid request: strikes array is required",
           transactionId 
         }),
         { 
@@ -289,13 +134,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Log individual strike details with enhanced type checking
+    // Log individual strike details
     strikes.forEach((strike, index) => {
-      const strikeValue = strike.strike;
-      const strikeType = typeof strikeValue;
-      const strikeNumber = validateStrikeValue(strikeValue, index, transactionId);
-      
-      console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Strike #${index + 1}: ticker=${strike.ticker}, expiration=${strike.expiration}, type=${strike.type}, strike=${strikeValue} (type: ${strikeType}, validated value: ${strikeNumber}, is valid: ${strikeNumber !== null})`);
+      console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Strike #${index + 1}: ticker=${strike.ticker}, expiration=${strike.expiration}, type=${strike.type}, strike=${strike.strike}`);
     });
 
     // Process strikes sequentially with a delay between requests
@@ -307,34 +148,7 @@ Deno.serve(async (req) => {
     
     for (let i = 0; i < strikes.length; i++) {
       console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Processing strike ${i + 1}/${strikes.length}`);
-      
-      // Make a defensive copy of the strike object and ensure strike is a number
-      const strike = { ...strikes[i] };
-      
-      // Apply explicit Number conversion and validation
-      if (strike.strike !== undefined && strike.strike !== null) {
-        const originalStrike = strike.strike;
-        const validatedStrike = validateStrikeValue(originalStrike, i, transactionId);
-        
-        if (validatedStrike === null) {
-          console.error(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Strike ${i + 1} validation failed, skipping: ${originalStrike} (${typeof originalStrike})`);
-          responses.push({
-            symbol: "INVALID_STRIKE",
-            marketData: null,
-            error: {
-              type: ErrorType.VALIDATION_ERROR,
-              message: `Invalid strike value: ${originalStrike}`,
-              retryable: false
-            }
-          });
-          continue;
-        }
-        
-        strike.strike = validatedStrike;
-        console.log(`[${new Date().toISOString()}] [fetch_marketdata_api] [TXN:${transactionId}] Strike ${i + 1} - original value: ${originalStrike} (${typeof originalStrike}), validated value: ${strike.strike} (${typeof strike.strike})`);
-      }
-      
-      const response = await processStrike(strike, transactionId);
+      const response = await processStrike(strikes[i], transactionId);
       responses.push(response);
       
       // Add delay between requests (except after the last one)
@@ -398,8 +212,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         responses: responses,
-        successCount: responses.filter(response => response.marketData !== null).length,
-        errorCount: responses.filter(response => response.marketData === null).length,
+        successCount: successfulResponses.length,
+        errorCount: responses.length - successfulResponses.length,
         transactionId 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
