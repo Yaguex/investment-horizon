@@ -4,100 +4,36 @@ import { corsHeaders } from './utils.ts'
 
 console.log("Submit DIY notes function initialized")
 
-// Generate a unique transaction ID for request tracking
-function generateTransactionId() {
-  return `tx-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
-}
-
-// Log detailed messages with transaction ID for tracing
-function logWithTransaction(txId: string, message: string, data?: any) {
-  const timestamp = new Date().toISOString()
-  const logMessage = `[${timestamp}] [TxID: ${txId}] ${message}`
-  
-  console.log(logMessage)
-  if (data) {
-    console.log(`[${timestamp}] [TxID: ${txId}] Data:`, data)
-  }
-  
-  return { timestamp, txId, message, data }
-}
-
-// Save log entry to database for persistent tracking
-async function saveLogToDB(supabase: any, level: string, txId: string, message: string, data?: any) {
-  try {
-    const { error } = await supabase
-      .from('log_error')
-      .insert([{ 
-        level,
-        id_1: txId,
-        function_id: 'submit_diy_notes',
-        event_message: message,
-        event_type: 'api_request',
-        timestamp: new Date().toISOString()
-      }])
-    
-    if (error) {
-      console.error(`[${new Date().toISOString()}] Error saving log to database:`, error)
-    }
-  } catch (e) {
-    console.error(`[${new Date().toISOString()}] Exception saving log to database:`, e)
-  }
-}
-
 Deno.serve(async (req) => {
-  // Generate unique transaction ID for request tracing
-  const txId = generateTransactionId()
-  logWithTransaction(txId, "New request received")
-  
   if (req.method === 'OPTIONS') {
-    logWithTransaction(txId, "Handling OPTIONS request")
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const startTime = Date.now()
-    const requestBody = await req.json()
-    logWithTransaction(txId, "Request body parsed", { 
-      profile_id: requestBody.profile_id,
-      note_id: requestBody.note?.id || 'new',
-      ticker: requestBody.note?.ticker,
-      hasStrikeEntry: !!requestBody.note?.strike_entry,
-      hasStrikeTarget: !!requestBody.note?.strike_target,
-      hasStrikeProtection: !!requestBody.note?.strike_protection
-    })
+    const { note, profile_id } = await req.json()
+    console.log(`[${new Date().toISOString()}] Processing note submission for profile ${profile_id}:`, note)
 
-    const { note, profile_id } = requestBody
-    
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    await saveLogToDB(supabase, 'info', txId, 'Processing note submission', {
-      ticker: note.ticker,
-      expiration: note.expiration
-    })
-
     // Step 1: If updating an existing note, first delete the record
     if (note.id) {
-      logWithTransaction(txId, `Deleting existing note with ID ${note.id}`)
+      console.log(`[${new Date().toISOString()}] Deleting existing note with ID ${note.id}`)
       const { error: deleteError } = await supabase
         .from('diy_notes')
         .delete()
         .eq('id', note.id)
       
       if (deleteError) {
-        const errorMsg = `Error deleting existing note: ${deleteError.message}`
-        logWithTransaction(txId, errorMsg, deleteError)
-        await saveLogToDB(supabase, 'error', txId, errorMsg, deleteError)
+        console.error(`[${new Date().toISOString()}] Error deleting existing note:`, deleteError)
         throw deleteError
       }
-      
-      logWithTransaction(txId, `Successfully deleted note with ID ${note.id}`)
     }
 
     // Step 2: Insert new note record
-    logWithTransaction(txId, "Inserting new note record")
+    console.log(`[${new Date().toISOString()}] Inserting new note record`)
     const { data: savedNote, error: saveError } = await supabase
       .from('diy_notes')
       .insert([{ 
@@ -109,28 +45,21 @@ Deno.serve(async (req) => {
       .single()
 
     if (saveError) {
-      const errorMsg = `Error saving note: ${saveError.message}`
-      logWithTransaction(txId, errorMsg, saveError)
-      await saveLogToDB(supabase, 'error', txId, errorMsg, saveError)
+      console.error(`[${new Date().toISOString()}] Error saving note:`, saveError)
       throw saveError
     }
 
-    logWithTransaction(txId, `Successfully saved note with ID ${savedNote.id}`)
-
     // Step 3: Validate required fields and prepare market data request
     if (!note.ticker || !note.expiration) {
-      const skipMsg = "Missing required fields for market data, skipping market data fetch"
-      logWithTransaction(txId, skipMsg)
-      await saveLogToDB(supabase, 'warn', txId, skipMsg)
-      
+      console.log(`[${new Date().toISOString()}] Missing required fields for market data`)
       return new Response(
-        JSON.stringify({ success: true, txId }),
+        JSON.stringify({ success: true }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     // Step 4: Prepare strikes array
-    logWithTransaction(txId, "Preparing strikes for market data fetch", {
+    console.log(`[${new Date().toISOString()}] Preparing strikes for market data fetch:`, {
       strike_entry: note.strike_entry,
       strike_target: note.strike_target,
       strike_protection: note.strike_protection
@@ -166,52 +95,26 @@ Deno.serve(async (req) => {
     }
 
     if (strikes.length === 0) {
-      const skipMsg = "No valid strikes to process, skipping market data fetch"
-      logWithTransaction(txId, skipMsg)
-      await saveLogToDB(supabase, 'warn', txId, skipMsg)
-      
+      console.log(`[${new Date().toISOString()}] No valid strikes to process`)
       return new Response(
-        JSON.stringify({ success: true, txId }),
+        JSON.stringify({ success: true }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     // Step 5: Fetch market data
-    logWithTransaction(txId, "Invoking fetch_marketdata_api function", { strikes })
-    await saveLogToDB(supabase, 'info', txId, 'Invoking market data API', { strikeCount: strikes.length })
-    
-    const marketDataStartTime = Date.now()
+    console.log(`[${new Date().toISOString()}] Fetching market data for strikes:`, strikes)
     const { data: marketData, error: marketDataError } = await supabase.functions.invoke('fetch_marketdata_api', {
-      body: { 
-        strikes,
-        txId // Pass transaction ID to connect logs
-      }
+      body: { strikes }
     })
-    const marketDataDuration = Date.now() - marketDataStartTime
-    
-    logWithTransaction(txId, `Market data API response received in ${marketDataDuration}ms`)
-    
-    if (marketDataError) {
-      const errorMsg = `Market data API error: ${marketDataError}`
-      logWithTransaction(txId, errorMsg, marketDataError)
-      await saveLogToDB(supabase, 'error', txId, errorMsg, marketDataError)
-      throw new Error(errorMsg)
-    }
-    
-    if (marketData.error === "API failure") {
-      const errorMsg = "Market data API failure reported"
-      logWithTransaction(txId, errorMsg, marketData)
-      await saveLogToDB(supabase, 'error', txId, errorMsg, marketData)
+
+    if (marketDataError || marketData.error === "API failure") {
+      console.error(`[${new Date().toISOString()}] Market data API error:`, marketDataError || "API failure")
       throw new Error("Function failure")
     }
 
-    logWithTransaction(txId, "Market data API response processed successfully", { 
-      responseCount: marketData.responses?.length || 0,
-      hasNullResponses: marketData.responses?.some(r => r === null) || false
-    })
-
     // Step 6: Update note with market data using Position Size's methodology
-    logWithTransaction(txId, "Updating note with market data")
+    console.log(`[${new Date().toISOString()}] Updating note with market data`)
     const updateData: any = {}
 
     // Handle entry strike data if present
@@ -245,51 +148,26 @@ Deno.serve(async (req) => {
       updateData.strike_protection_extrinsic_value = marketData.responses[2]?.marketData?.extrinsicValue || null
     }
 
-    logWithTransaction(txId, "Prepared update data for database", { 
-      updateFields: Object.keys(updateData),
-      hasUnderlyingPrice: !!updateData.underlying_price,
-      entryDataPresent: !!updateData.strike_entry_mid,
-      targetDataPresent: !!updateData.strike_target_mid,
-      protectionDataPresent: !!updateData.strike_protection_mid
-    })
+    const { error: updateError } = await supabase
+      .from('diy_notes')
+      .update(updateData)
+      .eq('id', savedNote.id)
 
-    if (Object.keys(updateData).length === 0) {
-      const warnMsg = "No market data fields to update"
-      logWithTransaction(txId, warnMsg)
-      await saveLogToDB(supabase, 'warn', txId, warnMsg)
-    } else {
-      const { error: updateError } = await supabase
-        .from('diy_notes')
-        .update(updateData)
-        .eq('id', savedNote.id)
-
-      if (updateError) {
-        const errorMsg = `Error updating note with market data: ${updateError.message}`
-        logWithTransaction(txId, errorMsg, updateError)
-        await saveLogToDB(supabase, 'error', txId, errorMsg, updateError)
-        throw updateError
-      }
-
-      logWithTransaction(txId, `Successfully updated note ${savedNote.id} with market data`)
-      await saveLogToDB(supabase, 'info', txId, 'Successfully updated note with market data', {
-        noteId: savedNote.id,
-        fieldCount: Object.keys(updateData).length
-      })
+    if (updateError) {
+      console.error(`[${new Date().toISOString()}] Error updating note with market data:`, updateError)
+      throw updateError
     }
 
-    const totalDuration = Date.now() - startTime
-    logWithTransaction(txId, `Successfully processed note submission in ${totalDuration}ms`)
+    console.log(`[${new Date().toISOString()}] Successfully processed note submission`)
     return new Response(
-      JSON.stringify({ success: true, txId, duration: totalDuration }),
+      JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    const errorMsg = `Error processing request: ${error.message}`
-    logWithTransaction(txId, errorMsg, error)
-    
+    console.error(`[${new Date().toISOString()}] Error:`, error)
     return new Response(
-      JSON.stringify({ error: error.message, txId }),
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

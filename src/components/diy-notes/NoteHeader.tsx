@@ -1,4 +1,3 @@
-
 import { Copy, Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatDate, formatNumber } from "./utils/formatters"
@@ -28,39 +27,26 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
       queryClient.invalidateQueries({ queryKey: ['diy-notes'] })
     } catch (error) {
       console.error('Error deleting note:', error)
-      toast.error(`Error deleting note: ${error.message || 'Unknown error'}`)
+      toast.error('Error deleting note')
     }
   }
 
   const handleClone = async () => {
     try {
-      // Create a new note object without the id and market data
-      const { 
-        id, 
-        strike_entry_mid, strike_entry_open_interest, strike_entry_iv, strike_entry_delta, 
-        strike_entry_intrinsic_value, strike_entry_extrinsic_value,
-        strike_target_mid, strike_target_open_interest, strike_target_iv, strike_target_delta, 
-        strike_target_intrinsic_value, strike_target_extrinsic_value,
-        strike_protection_mid, strike_protection_open_interest, strike_protection_iv, strike_protection_delta, 
-        strike_protection_intrinsic_value, strike_protection_extrinsic_value,
-        underlying_price,
-        ...noteWithoutMarketData 
-      } = note
+      // Create a new note object without the id
+      const { id, ...noteWithoutId } = note
 
-      const { data, error } = await supabase.functions.invoke('submit_diy_notes', {
-        body: {
-          note: noteWithoutMarketData,
-          profile_id: (await supabase.auth.getUser()).data.user?.id
-        }
-      })
+      const { error } = await supabase
+        .from('diy_notes')
+        .insert([noteWithoutId])
 
       if (error) throw error
 
-      toast.success(`Note cloned successfully${data?.txId ? ` (TxID: ${data.txId})` : ''}`)
+      toast.success('Note cloned successfully')
       queryClient.invalidateQueries({ queryKey: ['diy-notes'] })
     } catch (error) {
       console.error('Error cloning note:', error)
-      toast.error(`Error cloning note: ${error.message || 'Unknown error'}`)
+      toast.error('Error cloning note')
     }
   }
 
