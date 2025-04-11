@@ -60,9 +60,9 @@ export function DIYNoteForm({ open, onOpenChange, note }: DIYNoteFormProps) {
   })
 
   // Helper function to ensure all numeric fields are actually numbers
-  const validateNumericFields = (data: DIYNoteFormValues) => {
+  const validateNumericFields = (data: DIYNoteFormValues): DIYNoteFormValues => {
     // Create a new object with the same structure
-    const validated = { ...data };
+    const validated: DIYNoteFormValues = { ...data };
     
     // Ensure numeric fields are actual numbers
     const numericFields: (keyof DIYNoteFormValues)[] = [
