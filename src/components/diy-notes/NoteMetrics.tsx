@@ -1,5 +1,5 @@
-import { formatNumber } from "../trade/utils/formatters"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
+import { formatNumber, formatDate } from "./utils/formatters"
 
 interface NoteMetricsProps {
   note: any
@@ -9,171 +9,117 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
   // Calculate days until expiration
   const today = new Date()
   const expirationDate = note.expiration ? new Date(note.expiration) : today
-  const daysUntilExpiration = (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  const daysUntilExpiration = Math.max(0, Math.round((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
   const yearsUntilExpiration = daysUntilExpiration / 365
 
-  // Calculate total dividend amount
-  const totalDividend = note.nominal * (note.dividend_yield / 100) * yearsUntilExpiration
+  // Calculate protection contracts
+  const protectionContracts = note.strike_protection ? Math.round(note.nominal / note.strike_protection / 100) : 0
 
-  // Calculate total bond yield amount
+  // Calculate bond yield
   const totalBondYield = note.nominal * (note.bond_yield / 100) * yearsUntilExpiration
 
-  // Calculate protection contracts
-  const protectionContracts = Math.round(note.nominal / note.strike_protection / 100)
-
   // Calculate entry contracts
-  const entryContracts = Math.round(
-    ((totalBondYield * -1) - (protectionContracts * note.strike_protection_mid * 100)) / 
-    ((note.strike_target_mid * 100) - (note.strike_entry_mid * 100))
-  )
+  const entryContracts = note.strike_entry && note.strike_target && note.strike_protection && note.strike_entry_mid && note.strike_target_mid && note.strike_protection_mid ? 
+    Math.round(
+      ((totalBondYield * -1) - (protectionContracts * note.strike_protection_mid * 100)) / 
+      ((note.strike_target_mid * 100) - (note.strike_entry_mid * 100))
+    ) : 0
 
-  // Calculate target contracts (equal to entry contracts)
+  // Calculate target contracts (same as entry contracts)
   const targetContracts = entryContracts
 
-  // Calculate fees
-  const protectionFee = protectionContracts * note.strike_protection_mid * 100
-  const entryFee = entryContracts * note.strike_entry_mid * 100 * -1
-  const targetFee = targetContracts * note.strike_target_mid * 100
-  const totalFee = entryFee + targetFee + protectionFee
-  const wiggleDollars = totalFee * (note.wiggle/100)
+  // Calculate fees and net cost
+  const protectionFee = protectionContracts * (note.strike_protection_mid || 0) * 100
+  const entryFee = entryContracts * (note.strike_entry_mid || 0) * 100 * -1
+  const targetFee = targetContracts * (note.strike_target_mid || 0) * 100
+  const noteNet = protectionFee + entryFee + targetFee
 
-  // Calculate note's net
-  const noteNet = totalBondYield + totalFee
+  // Calculate wiggle as percentage of target strike
+  const wiggleDollars = (note.wiggle || 0) / 100 * note.nominal
 
-  // Calculate max gain in dollars
-  const maxGainDollars = ((note.strike_target - note.strike_entry) * entryContracts * 100) + noteNet - (totalFee * (note.wiggle/100))
+  // Calculate total dividend
+  const totalDividend = (note.dividend_yield || 0) / 100 * note.nominal * yearsUntilExpiration
 
-  // Calculate max gain percentage
-  const maxGainPercentage = (maxGainDollars / note.nominal) * 100
-
-  // Calculate max annual ROI
-  const maxAnnualROI = maxGainPercentage * (365 / daysUntilExpiration)
-
-  // Calculate leverage (leverage vs underlying)
-  const leverage = maxGainDollars / (((note.nominal / note.underlying_price) * (note.strike_target - note.strike_entry)) + totalDividend)
+  // Calculate potential outcomes
+  const maxGainDollars = entryContracts * 100 * (note.strike_target - note.strike_entry)
+  
+  // Calculate leverage (max gain / difference between target and entry strikes)
+  const denominator = ((note.nominal * (note.strike_target - note.strike_entry)) + totalDividend)
+  const leverage = denominator !== 0 ? maxGainDollars / denominator : 0
 
   // Calculate convexity (leverage vs bond)
-  const convexity = maxAnnualROI / note.bond_yield
+  // Fixed the syntax error in this line by balancing the parentheses
+  const convexity = (noteNet - wiggleDollars) !== 0 ? 
+    maxGainDollars / ((noteNet - wiggleDollars) + (note.nominal * ((note.bond_yield/100) * (daysUntilExpiration/365)))) : 0
 
   // Determine the color based on noteNet value
   const getNetColor = (value: number) => {
-    if (value > 0) return "text-green-600"
-    if (value < 0) return "text-red-600"
-    return "text-black"
+    if (value > 0) return "text-green-500"
+    if (value < 0) return "text-red-500"
+    return "text-gray-500"
   }
-
-  // Determine the color based on maxAnnualROI value
-  const getROIColor = (value: number) => {
-    if (value > 15) return "text-green-600"
-    if (value < 12) return "text-red-600"
-    return "text-orange-500"  // for values between 12 and 15 (inclusive)
-  }
-
-  // Determine the color based on convexity value
-  const getConvexityColor = (value: number) => {
-    if (value > 4) return "text-green-600"
-    if (value < 3) return "text-red-600"
-    return "text-orange-500"  // for values between 3 and 4 (inclusive)
-  }
-
-  // Determine the color based on leverage value
-  const getLeverageColor = (value: number) => {
-    if (value > 1.50) return "text-green-600"
-    if (value < 1.20) return "text-red-600"
-    return "text-orange-500"  // for values between 1.20 and 1.50 (inclusive)
-  }
-
+  
   return (
-    <TooltipProvider delayDuration={100}>
-      <div className="text-sm space-y-2 flex justify-between">
-        <div>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
-                Hypothetical dividends: <span className={getNetColor(totalDividend)}>${formatNumber(totalDividend, 0)}</span> ({note.dividend_yield}% annual)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-              Dividend earnings (after withholding tax) throughout the entire lifespan of the note if we had bought the underlying instead of going for the DIY Note.
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
-                Bond income: <span className={getNetColor(totalBondYield)}>${formatNumber(totalBondYield, 0)}</span> ({note.bond_yield}% annual)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total interests we will earn from a bond with similar maturity interests throughout the entire lifespan of the note
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
-               Note's net: <span className={getNetColor(noteNet)}>${formatNumber(noteNet, 0)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Cost of the option structure minus what we will recoup through bond interests. Ideally, you should be aiming for a costless note
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
-                Options premium: <span className="text-red-600">${formatNumber(totalFee, 0)}</span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Outlay in premiums to enter the trade today
-              </TooltipContent>
-            </Tooltip>
-          </p>
-          <p className="text-black">
-            <Tooltip>
-              <TooltipTrigger>
-                Max gain: <span className={getNetColor(maxGainDollars)}>${formatNumber(maxGainDollars, 0)}</span> ({formatNumber(maxGainPercentage, 1)}% total)
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Total earnings if our target is reached at expiration
-              </TooltipContent>
-            </Tooltip>
-          </p>
-        </div>
-        <div className="flex gap-8 items-start">
-          <div className="text-center">
-            <Tooltip>
-              <TooltipTrigger>
-                <p className={`${getROIColor(maxAnnualROI)} text-xl font-bold`}>{formatNumber(maxAnnualROI, 1)}%</p>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                Annualized ROI should we reach our target by expiration
-              </TooltipContent>
-            </Tooltip>
-            <p className="text-xs text-black">Max ROI<br />annualized</p>
-          </div>
-          <div className="text-center">
-            <Tooltip>
-              <TooltipTrigger>
-                <p className={`${getLeverageColor(leverage)} text-xl font-bold`}>x {formatNumber(leverage, 1)}</p>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                How many dollars can I potentially earn (if Target is reached by expiration) vs simply buying the underlying. The idea of Leverage comes from being able to afford to buy more Deltas (more calls) than I should have been able to afford had I not financed part of those calls through bond interests plus selling calls+puts. This allows me to kick up my exposure to the position without locking up more than the originally intended nominal (which is the amount I'm freezing in bonds). Remember though that you have also given up on the dividend yield, so that needs to be accounted for.
-              </TooltipContent>
-            </Tooltip>
-            <p className="text-xs text-black">Leverage<br />vs Options</p>
-          </div>
-          <div className="text-center">
-            <Tooltip>
-              <TooltipTrigger>
-                <p className={`${getConvexityColor(convexity)} text-xl font-bold`}>x {formatNumber(convexity, 1)}</p>
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white max-w-[400px]">
-                How many dollars can I potentially earn (if Target is reached by expiration) vs simply buying the bond. Anything above 4-to-1 is a pretty good convexity bet
-              </TooltipContent>
-            </Tooltip>
-            <p className="text-xs text-black">Leverage<br />vs Risk Free</p>
-          </div>
-        </div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Days Until Expiration</div>
+        <div className="text-xl font-semibold">{daysUntilExpiration}</div>
       </div>
-    </TooltipProvider>
+      
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Entry Contracts</div>
+        <div className="text-xl font-semibold">{entryContracts}</div>
+      </div>
+      
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Protection Contracts</div>
+        <div className="text-xl font-semibold">{protectionContracts}</div>
+      </div>
+      
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Target Contracts</div>
+        <div className="text-xl font-semibold">{targetContracts}</div>
+      </div>
+      
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Protection Fee</div>
+        <div className={`text-xl font-semibold ${getNetColor(protectionFee)}`}>${formatNumber(protectionFee, 0)}</div>
+      </div>
+      
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Entry Fee</div>
+        <div className={`text-xl font-semibold ${getNetColor(entryFee)}`}>${formatNumber(entryFee, 0)}</div>
+      </div>
+      
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Target Fee</div>
+        <div className={`text-xl font-semibold ${getNetColor(targetFee)}`}>${formatNumber(targetFee, 0)}</div>
+      </div>
+      
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Net</div>
+        <div className={`text-xl font-semibold ${getNetColor(noteNet)}`}>${formatNumber(noteNet, 0)}</div>
+      </div>
+
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Max Gain</div>
+        <div className="text-xl font-semibold text-green-500">${formatNumber(maxGainDollars, 0)}</div>
+      </div>
+
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Leverage</div>
+        <div className="text-xl font-semibold">{formatNumber(leverage, 2)}x</div>
+      </div>
+
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Convexity</div>
+        <div className="text-xl font-semibold">{formatNumber(convexity, 2)}x</div>
+      </div>
+
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-500">Dividend Yield</div>
+        <div className="text-xl font-semibold">{formatNumber(note.dividend_yield || 0, 2)}%</div>
+      </div>
+    </div>
   )
 }
