@@ -1,5 +1,7 @@
 
-import { MarketData } from './types.ts';
+import { MarketData, ErrorType, APIError } from './types.ts';
+
+const REQUEST_TIMEOUT = 10000; // 10 seconds timeout
 
 const safeGetArrayValue = (data: any, field: string): number | null => {
   if (!data[field]) {
@@ -17,28 +19,131 @@ const safeGetArrayValue = (data: any, field: string): number | null => {
   return Number(data[field][0]);
 };
 
-export async function fetchOptionData(symbol: string): Promise<MarketData | null> {
+// Implement fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
+// Function to classify errors and create structured error objects
+function classifyError(error: any, status?: number): APIError {
+  // Network errors
+  if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    return {
+      type: ErrorType.NETWORK_ERROR,
+      message: 'Network error - unable to reach MarketData API',
+      retryable: true
+    };
+  }
+  
+  // Timeout errors
+  if (error.name === 'AbortError') {
+    return {
+      type: ErrorType.TIMEOUT_ERROR,
+      message: 'Request timed out after ' + REQUEST_TIMEOUT + 'ms',
+      retryable: true
+    };
+  }
+  
+  // Handle HTTP status based errors
+  if (status) {
+    if (status === 429) {
+      return {
+        type: ErrorType.RATE_LIMIT_ERROR,
+        status,
+        message: 'Rate limit exceeded for MarketData API',
+        retryable: true
+      };
+    }
+    
+    if (status === 404) {
+      return {
+        type: ErrorType.NOT_FOUND_ERROR,
+        status,
+        message: 'Symbol not found in MarketData API',
+        retryable: false
+      };
+    }
+    
+    if (status === 401 || status === 403) {
+      return {
+        type: ErrorType.API_ERROR,
+        status,
+        message: 'Authentication error with MarketData API - check API key',
+        retryable: false
+      };
+    }
+    
+    if (status >= 500) {
+      return {
+        type: ErrorType.API_ERROR,
+        status,
+        message: 'MarketData API server error',
+        retryable: true
+      };
+    }
+    
+    return {
+      type: ErrorType.API_ERROR,
+      status,
+      message: `HTTP error ${status}`,
+      retryable: status >= 500 // Only server errors are retryable
+    };
+  }
+  
+  // Default case - unknown error
+  return {
+    type: ErrorType.UNKNOWN_ERROR,
+    message: error.message || 'Unknown error occurred',
+    retryable: true
+  };
+}
+
+export async function fetchOptionData(symbol: string, transactionId?: string): Promise<{ data: MarketData | null, error: APIError | null }> {
   const apiKey = Deno.env.get('MARKETDATA_API_KEY');
   if (!apiKey) {
-    console.error(`[${new Date().toISOString()}] [fetchOptionData] CRITICAL ERROR: MARKETDATA_API_KEY not found in environment variables`);
-    throw new Error('MARKETDATA_API_KEY not found in environment variables');
+    console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] CRITICAL ERROR: MARKETDATA_API_KEY not found in environment variables`);
+    return {
+      data: null,
+      error: {
+        type: ErrorType.VALIDATION_ERROR,
+        message: 'MARKETDATA_API_KEY not found in environment variables',
+        retryable: false
+      }
+    };
   } else {
-    console.log(`[${new Date().toISOString()}] [fetchOptionData] API key is configured (length: ${apiKey.length})`);
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] API key is configured (length: ${apiKey.length})`);
   }
 
   const url = `https://api.marketdata.app/v1/options/quotes/${symbol}/`;
-  console.log(`[${new Date().toISOString()}] [fetchOptionData] Making request to MarketData API for symbol: ${symbol}`);
-  console.log(`[${new Date().toISOString()}] [fetchOptionData] Request URL: ${url}`);
+  console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Making request to MarketData API for symbol: ${symbol}`);
+  console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Request URL: ${url}`);
   
   const startTime = Date.now();
   try {
-    const response = await fetch(url, {
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Initiating API request with ${REQUEST_TIMEOUT}ms timeout`);
+    
+    const response = await fetchWithTimeout(url, {
       headers: {
         'Authorization': `Token ${apiKey}`,
       }
-    });
+    }, REQUEST_TIMEOUT);
+    
     const endTime = Date.now();
-    console.log(`[${new Date().toISOString()}] [fetchOptionData] API Response time: ${endTime - startTime}ms for symbol: ${symbol}`);
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] API Response time: ${endTime - startTime}ms for symbol: ${symbol}`);
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] API Response status: ${response.status}`);
     
     // Log rate limit information from headers if available
     const rateLimitLimit = response.headers.get('X-RateLimit-Limit');
@@ -46,47 +151,59 @@ export async function fetchOptionData(symbol: string): Promise<MarketData | null
     const rateLimitReset = response.headers.get('X-RateLimit-Reset');
     
     if (rateLimitLimit && rateLimitRemaining && rateLimitReset) {
-      console.log(`[${new Date().toISOString()}] [fetchOptionData] Rate limit info - Limit: ${rateLimitLimit}, Remaining: ${rateLimitRemaining}, Reset: ${rateLimitReset}`);
+      console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Rate limit info - Limit: ${rateLimitLimit}, Remaining: ${rateLimitRemaining}, Reset: ${rateLimitReset}`);
     }
     
     if (!response.ok) {
-      console.error(`[${new Date().toISOString()}] [fetchOptionData] HTTP error! status: ${response.status}, statusText: ${response.statusText}`);
+      console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] HTTP error! status: ${response.status}, statusText: ${response.statusText}`);
       
       // Try to get more information about the error
       try {
         const errorBody = await response.text();
-        console.error(`[${new Date().toISOString()}] [fetchOptionData] Error response body: ${errorBody}`);
+        console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Error response body: ${errorBody}`);
       } catch (e) {
-        console.error(`[${new Date().toISOString()}] [fetchOptionData] Could not read error response body: ${e}`);
+        console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Could not read error response body: ${e}`);
       }
       
-      // Classify error type based on status code
-      if (response.status === 429) {
-        console.error(`[${new Date().toISOString()}] [fetchOptionData] Rate limit exceeded for MarketData API`);
-      } else if (response.status >= 500) {
-        console.error(`[${new Date().toISOString()}] [fetchOptionData] MarketData API server error`);
-      } else if (response.status === 401 || response.status === 403) {
-        console.error(`[${new Date().toISOString()}] [fetchOptionData] Authentication error with MarketData API - check API key`);
-      } else if (response.status === 404) {
-        console.error(`[${new Date().toISOString()}] [fetchOptionData] Symbol not found in MarketData API: ${symbol}`);
-      }
+      // Classify the error based on status code
+      const apiError = classifyError(new Error(`HTTP error ${response.status}`), response.status);
       
-      return null;
+      console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Classified as ${apiError.type}: ${apiError.message}`);
+      
+      return { data: null, error: apiError };
     }
 
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Successfully received response from API, parsing JSON`);
+    const parseStartTime = Date.now();
     const data = await response.json();
-    console.log(`[${new Date().toISOString()}] [fetchOptionData] API Response for ${symbol}:`, data);
+    const parseEndTime = Date.now();
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] JSON parsing time: ${parseEndTime - parseStartTime}ms`);
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] API Response for ${symbol} has keys: ${Object.keys(data).join(', ')}`);
     
     // Validate response structure
     if (!data) {
-      console.error(`[${new Date().toISOString()}] [fetchOptionData] API returned empty or null response`);
-      return null;
+      console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] API returned empty or null response`);
+      return { 
+        data: null, 
+        error: {
+          type: ErrorType.API_ERROR,
+          message: 'API returned empty or null response',
+          retryable: true
+        }
+      };
     }
     
     if (data.s !== 'ok') {
-      console.error(`[${new Date().toISOString()}] [fetchOptionData] API returned non-OK status:`, data.s);
-      console.error(`[${new Date().toISOString()}] [fetchOptionData] Complete response:`, data);
-      return null;
+      console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] API returned non-OK status: ${data.s}`);
+      console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Complete response: ${JSON.stringify(data)}`);
+      return { 
+        data: null, 
+        error: {
+          type: ErrorType.API_ERROR,
+          message: `API returned non-OK status: ${data.s}`,
+          retryable: true
+        }
+      };
     }
     
     // Check if required fields exist
@@ -94,7 +211,7 @@ export async function fetchOptionData(symbol: string): Promise<MarketData | null
     const missingFields = requiredFields.filter(field => !data[field] || data[field].length === 0);
     
     if (missingFields.length > 0) {
-      console.warn(`[${new Date().toISOString()}] [fetchOptionData] Missing expected fields in API response: ${missingFields.join(', ')}`);
+      console.warn(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Missing expected fields in API response: ${missingFields.join(', ')}`);
     }
 
     // Apply safeGetArrayValue to all fields and return whatever we get
@@ -122,25 +239,27 @@ export async function fetchOptionData(symbol: string): Promise<MarketData | null
       .map(([key]) => key);
     
     if (nullFields.length > 0) {
-      console.warn(`[${new Date().toISOString()}] [fetchOptionData] Null values detected in fields: ${nullFields.join(', ')}`);
+      console.warn(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Null values detected in fields: ${nullFields.join(', ')}`);
     } else {
-      console.log(`[${new Date().toISOString()}] [fetchOptionData] Successfully parsed all relevant fields for ${symbol}`);
+      console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Successfully parsed all relevant fields for ${symbol}`);
     }
+
+    // Log the actual data values for debugging
+    console.log(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Extracted data values - mid: ${marketData.mid}, iv: ${marketData.iv}, delta: ${marketData.delta}, underlyingPrice: ${marketData.underlyingPrice}`);
     
-    return marketData;
+    return { data: marketData, error: null };
   } catch (error: any) {
-    console.error(`[${new Date().toISOString()}] [fetchOptionData] Error fetching option data for ${symbol}:`, error);
-    console.error(`[${new Date().toISOString()}] [fetchOptionData] Error name: ${error.name}, message: ${error.message}`);
+    console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Error fetching option data for ${symbol}:`, error);
+    console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Error name: ${error.name}, message: ${error.message}`);
     
     if (error.stack) {
-      console.error(`[${new Date().toISOString()}] [fetchOptionData] Error stack: ${error.stack}`);
+      console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Error stack: ${error.stack}`);
     }
     
-    // Try to determine the type of error
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      console.error(`[${new Date().toISOString()}] [fetchOptionData] Network error - unable to reach MarketData API`);
-    }
+    // Classify the error
+    const apiError = classifyError(error);
+    console.error(`[${new Date().toISOString()}] [fetchOptionData] [TXN:${transactionId || 'NOTX'}] Classified as ${apiError.type}: ${apiError.message}`);
     
-    return null;
+    return { data: null, error: apiError };
   }
 }

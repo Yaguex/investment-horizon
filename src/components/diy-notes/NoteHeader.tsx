@@ -50,8 +50,8 @@ export function NoteHeader({ note, onEdit }: NoteHeaderProps) {
     }
   }
 
-  const protectionOTM = note.strike_entry ? Math.round(((note.strike_protection - note.strike_entry) * -1) / note.strike_entry * 100) : 0
-  const targetOTM = note.strike_entry ? Math.round((note.strike_target - note.strike_entry) / note.strike_entry * 100) : 0
+  const protectionOTM = note.strike_entry ? Math.round(((note.strike_protection - note.underlying_price) * -1) / note.underlying_price * 100) : 0
+  const targetOTM = note.strike_entry ? Math.round((note.strike_target - note.underlying_price) / note.underlying_price * 100) : 0
 
   return (
     <div className="flex justify-between items-center">

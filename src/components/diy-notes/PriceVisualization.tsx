@@ -32,23 +32,23 @@ const calculateCirclePositions = (note: any) => {
   )
   
   // Calculate BE strikes with updated formulas
-  const be1Strike = note.strike_entry * (1 + ((note.bond_yield/100) * yearsUntilExpiration))
-  const be2Strike = note.strike_entry * (1 + ((7/100) * yearsUntilExpiration))
+  const be1Strike = note.underlying_price * (1 + ((note.bond_yield/100) * yearsUntilExpiration))
+  const be2Strike = note.underlying_price * (1 + ((7/100) * yearsUntilExpiration))
 
   if (targetDiff >= protectionDiff) {
     rightPosition = 90
     leftPosition = 50 - ((protectionDiff * 40) / targetDiff)
     
     // Calculate BE positions relative to entry and target
-    be1Position = Math.min(100, 50 + ((be1Strike - note.strike_entry) * 40 / targetDiff))
-    be2Position = Math.min(100, 50 + ((be2Strike - note.strike_entry) * 40 / targetDiff))
+    be1Position = Math.min(100, 50 + ((be1Strike - note.underlying_price) * 40 / targetDiff))
+    be2Position = Math.min(100, 50 + ((be2Strike - note.underlying_price) * 40 / targetDiff))
   } else {
     leftPosition = 10
     rightPosition = 50 + ((targetDiff * 40) / protectionDiff)
     
     // Calculate BE positions relative to entry and target
-    be1Position = Math.min(100, 50 + ((be1Strike - note.strike_entry) * 40 / protectionDiff))
-    be2Position = Math.min(100, 50 + ((be2Strike - note.strike_entry) * 40 / protectionDiff))
+    be1Position = Math.min(100, 50 + ((be1Strike - note.underlying_price) * 40 / protectionDiff))
+    be2Position = Math.min(100, 50 + ((be2Strike - note.underlying_price) * 40 / protectionDiff))
   }
 
   return { leftPosition, middlePosition, rightPosition, be1Position, be2Position, be1Strike, be2Strike }

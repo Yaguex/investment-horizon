@@ -159,7 +159,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
                 How many dollars can I potentially earn (if Target is reached by expiration) vs simply buying the underlying. The idea of Leverage comes from being able to afford to buy more Deltas (more calls) than I should have been able to afford had I not financed part of those calls through bond interests plus selling calls+puts. This allows me to kick up my exposure to the position without locking up more than the originally intended nominal (which is the amount I'm freezing in bonds). Remember though that you have also given up on the dividend yield, so that needs to be accounted for.
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Leverage<br />vs Options</p>
+            <p className="text-xs text-black">Leverage<br />vs Underlying</p>
           </div>
           <div className="text-center">
             <Tooltip>
@@ -170,7 +170,7 @@ export function NoteMetrics({ note }: NoteMetricsProps) {
                 How many dollars can I potentially earn (if Target is reached by expiration) vs simply buying the bond. Anything above 4-to-1 is a pretty good convexity bet
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-black">Leverage<br />vs Risk Free</p>
+            <p className="text-xs text-black">Leverage<br />vs Bond</p>
           </div>
         </div>
       </div>
