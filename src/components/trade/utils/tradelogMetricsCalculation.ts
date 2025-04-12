@@ -528,6 +528,7 @@ export const updateTradeAndRecalculate = async (
           .update({
             commission: parentMetrics.totalCommission,
             pnl: parentMetrics.totalPnl,
+            date_entry: parentMetrics.oldestDateEntry,
             date_exit: parentMetrics.dateExit,
             days_in_trade: parentMetrics.daysInTrade,
             roi: parentMetrics.parentRoi,
